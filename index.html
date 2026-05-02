@@ -801,12 +801,12 @@ function renderSummaryView(rows) {
   function refreshData() { loadDataFromAPI(); }
   function resetFilters() { document.getElementById("searchInput").value=""; if(startPicker) startPicker.clear(); if(endPicker) endPicker.clear(); document.getElementById("empFilter").value=""; document.getElementById("sideFilter").value=""; document.getElementById("columnSelector").value=""; document.getElementById("typeValueGroup").style.display="none"; processData(); }
 
-  function openPreview() {
+ function openPreview() {
     const start = document.getElementById("startDate").value || "N/A";
     const end = document.getElementById("endDate").value || "N/A";
-    const emp = document.getElementById("empFilter").options[document.getElementById("empFilter").selectedIndex].text;
-    const side = document.getElementById("sideFilter").options[document.getElementById("sideFilter").selectedIndex].text;
-    const filterType = document.getElementById("columnSelector").options[document.getElementById("columnSelector").selectedIndex].text;
+    const emp = document.getElementById("empFilter")?.options[document.getElementById("empFilter").selectedIndex].text || "N/A";
+    const side = document.getElementById("sideFilter")?.options[document.getElementById("sideFilter").selectedIndex].text || "N/A";
+    const filterType = document.getElementById("columnSelector")?.options[document.getElementById("columnSelector").selectedIndex].text || "None";
     const filterVal = document.getElementById("typeValueSelect")?.options[document.getElementById("typeValueSelect")?.selectedIndex]?.text || "None";
     
     const tableHeader = document.getElementById('tableHead').innerHTML;
@@ -828,7 +828,6 @@ function renderSummaryView(rows) {
                 color: #000; 
                 background: #fff;
             }
-            /* Preview Only Section */
             .preview-meta-info {
                 background: #fdfdfd;
                 border: 2px solid #1d3a6d;
@@ -867,14 +866,10 @@ function renderSummaryView(rows) {
             }
 
             .text-start { text-align: left !important; padding-left: 8px !important; }
-            
             .total-attendance-col { font-weight: bold; background: #fff9e6 !important; }
             .highlight-col { font-weight: bold; background: #e6fffa !important; }
 
-            /* Ensure Foot appears only on the last page and stays at the end of the table content */
-            tfoot { 
-                display: table-footer-group; 
-            }
+            tfoot { display: table-footer-group; }
             
             .grand-total-row td { 
                 font-weight: 900 !important; 
@@ -894,23 +889,38 @@ function renderSummaryView(rows) {
 
             .no-print-btn { position: fixed; top: 15px; right: 15px; z-index: 1000; padding: 10px 20px; font-weight: bold; border-radius: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: none; background-color: #1d3a6d; color: #fff; }
 
+            /* প্রিন্ট করার জন্য বিশেষ সেটিংস (সাদা-কালো) */
             @media print {
                 .no-print, .no-print-btn, .preview-meta-info { display: none !important; }
-                body { padding: 0; margin: 0; }
-                .report-header { margin-top: 0; }
-                table { border-width: 1.5pt; }
+                body { padding: 0; margin: 0; background-color: white !important; }
                 
-                /* This wrapper ensures the total row and signatures appear together at the end */
-                .print-footer-container {
-                    page-break-inside: avoid;
+                /* সব কালার ব্ল্যাক অ্যান্ড হোয়াইট করা */
+                * {
+                    -webkit-print-color-adjust: exact !important; 
+                    print-color-adjust: exact !important;
+                    color: #000 !important;
                 }
+                
+                .report-header h2, .report-header .statement-title { color: #000 !important; border-color: #000 !important; }
+                
+                /* টেবিলের ব্যাকগ্রাউন্ড কালার মুছে ফেলা */
+                th, td, .total-attendance-col, .highlight-col, .grand-total-row td {
+                    background-color: transparent !important;
+                    background: none !important;
+                    color: #000 !important;
+                }
+                
+                /* হেডারে হালকা ধূসর শেড রাখা (ঐচ্ছিক, চাইলে white করতে পারেন) */
+                th { background-color: #f2f2f2 !important; }
+
+                table { border: 1.5pt solid #000 !important; }
+                .print-footer-container { page-break-inside: avoid; }
             }
           </style>
         </head>
         <body>
           <button class="no-print-btn" onclick="window.print()">PRINT REPORT</button>
           
-          <!-- Detailed Meta Info - Preview Only -->
           <div class="preview-meta-info">
              <div class="meta-item">
                 <span class="meta-label">Period / Range</span>
@@ -939,7 +949,6 @@ function renderSummaryView(rows) {
           <table>
             <thead>${tableHeader}</thead>
             <tbody>${tableBody}</tbody>
-            <!-- The tfoot automatically repeats or stays at the end of the data based on browser -->
             <tfoot>${tableFoot}</tfoot>
           </table>
 
@@ -952,7 +961,7 @@ function renderSummaryView(rows) {
       </html>
     `);
     previewWindow.document.close();
-  }
+}
   
 
   function showAttendanceFilter() { matrixModal.show(); }
