@@ -896,7 +896,7 @@ function renderSummaryView(rows) {
   
 
   function showAttendanceFilter() { matrixModal.show(); }
- function generateFilteredAttendanceSheet() {
+function generateFilteredAttendanceSheet() {
     const monthInput = document.getElementById('matrixMonth').value;
     const sideFilter = document.getElementById('matrixSideFilter').value;
     if (!monthInput) { alert("Please select a month."); return; }
@@ -977,9 +977,7 @@ function renderSummaryView(rows) {
             const isSun = d.getDay() === 0;
             const isPubHol = publicHolidayDates.has(dateStr);
             
-            // রবিবারের জন্য ব্যাকগ্রাউন্ড সাদা কিন্তু টেক্সট লাল
             let headerStyle = isSun ? 'background:#fff; color:red;' : (isPubHol ? 'background:#fff; color:red;' : '');
-            
             let headerContent = `<div style="line-height: 1;">${d.getDate()}<br><span style="font-size:7px">${dayName}</span></div>`;
             
             if (isPubHol) {
@@ -1015,26 +1013,29 @@ function renderSummaryView(rows) {
             const isPubHol = publicHolidayDates.has(ds);
             let stat = attendanceMap[id] && attendanceMap[id][ds] ? attendanceMap[id][ds] : '-';
             
-            // ডাটা আপডেট
+            // --- ডাটা আপডেট (সংশোধিত অংশ) ---
             if (stat === 'P') { 
-                countP++; 
-                dayTotals[dIdx]++; 
-                if (isSunday) countSun++; 
-                if (isPubHol) countHol++; 
+                dayTotals[dIdx]++; // ডেইলি টোটাল কলামে সব উপস্থিতি দেখাবে
+
+                if (isSunday) {
+                    countSun++; // শুধুমাত্র রবিবার কলামে যোগ হবে
+                } else if (isPubHol) {
+                    countHol++; // শুধুমাত্র পাবলিক হলিডে কলামে যোগ হবে
+                } else {
+                    countP++;   // সাধারণ দিন হলে তবেই P কলামে যোগ হবে
+                }
             }
             if (stat === 'A') countA++;
 
-            // কন্ডিশনাল স্টাইলিং: রবিবারের জন্য ব্যাকগ্রাউন্ড অন্যগুলোর মতোই
+            // কন্ডিশনাল স্টাইলিং
             if (isSunday) {
                 return `<td style="color:red; font-weight:bold;">${stat !== '-' ? stat : ''}</td>`;
             }
             
-            // পাবলিক হলিডের জন্য (চাইলে এখানে ব্যাকগ্রাউন্ড রাখতে পারেন)
             if (isPubHol) {
                 return `<td style="background-color: #fffafa; color:red; font-weight:bold;">${stat !== '-' ? stat : ''}</td>`;
             }
 
-            // সাধারণ দিনের জন্য
             if (stat === 'P') return `<td>P</td>`;
             if (stat === 'A') return `<td style="color:red">A</td>`;
             if (stat === 'H' || stat === 'L') return `<td style="color:green">${stat}</td>`;
@@ -1052,7 +1053,6 @@ function renderSummaryView(rows) {
       <html>
         <head>
           <title>Attendance Summary</title>
-          <link rel="icon" type="image/png" href="https://drive.google.com/thumbnail?id=11bxOPboUUmQxIkT6gMYWYqxfh9jZSiLo&sz=w500">
           <style>
             @page { size: A4 landscape; margin: 5mm; }
             body { font-family: sans-serif; padding: 10px; margin: 0; zoom: 1.4; }
@@ -1079,10 +1079,10 @@ function renderSummaryView(rows) {
             <table style="width: auto; min-width: 220px;">
               <thead><tr><th colspan="2" style="padding: 2px; height: 18px;">OVERALL SUMMARY</th></tr></thead>
               <tbody>
-                <tr><td style="text-align:left; padding:2px 10px; font-weight:bold;">Total Present (P)</td><td style="font-weight:bold; width:60px;">${grandTotalP}</td></tr>
+                <tr><td style="text-align:left; padding:2px 10px; font-weight:bold;">Total Workday Present (P)</td><td style="font-weight:bold; width:60px;">${grandTotalP}</td></tr>
                 <tr><td style="text-align:left; padding:2px 10px; font-weight:bold; color:red;">Total Absent (A)</td><td style="font-weight:bold; color:red;">${grandTotalA}</td></tr>
-                <tr><td style="text-align:left; padding:2px 10px; font-weight:bold; color:#b58900;">Total Sundays (S)</td><td style="font-weight:bold; color:#b58900;">${grandTotalSun}</td></tr>
-                <tr><td style="text-align:left; padding:2px 10px; font-weight:bold;">Total Holidays (HOL)</td><td style="font-weight:bold;">${grandTotalHol}</td></tr>
+                <tr><td style="text-align:left; padding:2px 10px; font-weight:bold; color:#b58900;">Total Sundays Present (S)</td><td style="font-weight:bold; color:#b58900;">${grandTotalSun}</td></tr>
+                <tr><td style="text-align:left; padding:2px 10px; font-weight:bold;">Total Holiday Present (HOL)</td><td style="font-weight:bold;">${grandTotalHol}</td></tr>
               </tbody>
             </table>
           </div>
