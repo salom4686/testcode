@@ -79,6 +79,66 @@
     .search-input-group input { border-top-left-radius: 0; border-bottom-left-radius: 0; font-size: 10px; }
     
     .grand-total-row td { background-color: #f0f4f8 !important; font-weight: 900 !important; color: var(--brand-blue); }
+    /* প্রিন্ট সেটিংস: স্ক্রিনে রঙিন থাকলেও প্রিন্ট হবে সাদা-কালো */
+  @media print {
+    /* পুরো পেজের কালার মোড অফ করা */
+    body {
+      background-color: #ffffff !important;
+      color: #000000 !important;
+      padding: 0;
+    }
+
+    /* কার্ড শ্যাডো এবং বর্ডার রিমুভ করা */
+    .main-card {
+      box-shadow: none !important;
+      border: none !important;
+    }
+
+    /* টেবিলের ব্যাকগ্রাউন্ড কালারগুলো সাদা করা এবং লেখা কালো করা */
+    .attendance-table thead th {
+      background-color: #f2f2f2 !important; /* হালকা গ্রে শেড যাতে হেড বোঝা যায় */
+      color: #000000 !important;
+      border: 1px solid #000000 !important;
+    }
+
+    .attendance-table tbody td {
+      background-color: #ffffff !important;
+      color: #000000 !important;
+      border: 1px solid #000000 !important;
+    }
+
+    /* কন্ডিশনাল কালার কলামগুলো (P, SUN, HOL) থেকে কালার মুছে ফেলা */
+    .total-attendance-col, 
+    .highlight-col, 
+    .deduction-col,
+    .grand-total-row td {
+      background-color: transparent !important;
+      color: #000000 !important;
+    }
+
+    /* রবিবারের লাল রঙ বা ছুটির দিনের স্পেশাল রঙ থাকলে তা কালো করা */
+    [style*="color: red"], 
+    [style*="color:red"],
+    [style*="color: green"],
+    .date-text, 
+    .day-text {
+      color: #000000 !important;
+      fill: #000000 !important;
+    }
+
+    /* প্রিন্টের সময় অপ্রয়োজনীয় বাটন ও ফিল্টার লুকিয়ে ফেলা */
+    .page-header, 
+    .filter-section, 
+    .no-print, 
+    button {
+      display: none !important;
+    }
+
+    /* টেবিল যাতে ফেটে না যায় */
+    .table-responsive {
+      overflow: visible !important;
+    }
+  }
   </style>
 </head>
 <body id="bodyRoot">
