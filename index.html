@@ -1,0 +1,99 @@
+/**
+ * ALAMHOW CO LTD - Attendance Backend
+ * এই স্ক্রিপ্টটি গুগল শিটের সাথে ডাটা কানেক্ট করার জন্য ব্যবহৃত হবে।
+ */
+
+const SPREADSHEET_ID = "1CaMe4R9hSLRO1NAiM7trz6jtFapSu63jORYdWMjkF8o"; // আপনার গুগল শিটের আইডি এখানে দিন
+const ATTENDANCE_SHEET_NAME = "ADVANCE";
+const EMPLOYEE_SHEET_NAME = "Employees";
+
+/**
+ * GET রিকোয়েস্ট হ্যান্ডেল করার জন্য (ডাটা পড়ার জন্য)
+ */
+function doGet(e) {
+  const action = e.parameter.action;
+  
+  if (action === "getEmployees") {
+    return getEmployeeData();
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({status: "error", message: "Invalid Action"}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * POST রিকোয়েস্ট হ্যান্ডেল করার জন্য (ডাটা সেভ করার জন্য)
+ */
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(ATTENDANCE_SHEET_NAME) || ss.insertSheet(ATTENDANCE_SHEET_NAME);
+    
+    // হেডার যদি না থাকে তবে তৈরি করা
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(["SL", "Date", "ID", "Name", "Designation", "OT Hours", "Holiday", "Sunday", "Site", "Status", "Remark", "Timestamp"]);
+    }
+    
+    // ডাটা লুপ করে শিটে সেভ করা
+    data.forEach(item => {
+      sheet.appendRow([
+        item.sl,
+        item.date,
+        item.id,
+        item.name,
+        item.desig,
+        item.ot,
+        item.holi,
+        item.sun,
+        item.site,
+        item.status,
+        item.remark,
+        new Date()
+      ]);
+    });
+    
+    return createJsonResponse({status: "success", message: "ডাটা সফলভাবে সেভ হয়েছে!"});
+    
+  } catch (err) {
+    return createJsonResponse({status: "error", message: err.toString()});
+  }
+}
+
+/**
+ * এমপ্লয়ী ডাটা ফেচ করার ফাংশন
+ */
+function getEmployeeData() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(EMPLOYEE_SHEET_NAME);
+  if (!sheet) return createJsonResponse([]);
+  
+  const values = sheet.getDataRange().getValues();
+  const headers = values.shift();
+  
+  const data = values.map(row => {
+    let obj = {};
+    headers.forEach((header, i) => {
+      obj[header.toLowerCase()] = row[i];
+    });
+    return obj;
+  });
+  
+  return createJsonResponse(data);
+}
+
+/**
+ * হেল্পার ফাংশন - JSON রেসপন্স তৈরি করা
+ */
+function createJsonResponse(data) {
+  return ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * CORS ইস্যু সমাধানের জন্য (নিরাপত্তা নিশ্চিত করতে)
+ */
+function createJsonResponse(data) {
+  return ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
