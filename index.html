@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALAMHOW CO LTD - Attendance System</title>
+    <title>ALAMHOW CO LTD - Advance System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         .loading-spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 36px;
-            height: 36px;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             border-left-color: #2563eb;
             animation: spin 1s linear infinite;
@@ -18,233 +18,338 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-        /* Custom Suggestion styling */
         .search-results {
-            max-height: 250px;
+            max-height: 300px;
             overflow-y: auto;
             position: absolute;
             width: 100%;
             z-index: 50;
             background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
             display: none;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            margin-top: 2px;
         }
         .search-item {
-            padding: 12px;
+            padding: 12px 15px;
             cursor: pointer;
-            border-bottom: 1px solid #f3f4f6;
-            transition: background 0.2s;
+            border-bottom: 1px solid #f1f5f9;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
         }
         .search-item:hover {
             background-color: #eff6ff;
+            border-left: 4px solid #2563eb;
         }
-        .search-item:last-child {
-            border-bottom: none;
+        .id-badge {
+            background-color: #f1f5f9;
+            color: #1e293b;
+            font-weight: 900;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            margin-right: 12px;
+            min-width: 60px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+        input:read-only {
+            background-color: #f8fafc;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+        .input-compact {
+            padding: 0.6rem 0.8rem !important;
+            font-size: 0.85rem !important;
+        }
+        .label-compact {
+            font-size: 9px !important;
+            margin-bottom: 3px !important;
+        }
+        th, td {
+            white-space: nowrap;
+        }
+        /* Modal Animation */
+        .modal-animate {
+            animation: modalIn 0.3s ease-out;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Print Style */
+        @media print {
+            body * { visibility: hidden; }
+            #receipt-print-area, #receipt-print-area * { visibility: visible; }
+            #receipt-print-area { position: absolute; left: 0; top: 0; width: 100%; }
+            .receipt-slip { page-break-after: always; border: 2px solid #000; margin-bottom: 20px; padding: 20px; }
+            .no-print { display: none; }
+        }
+
+        .receipt-slip {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 20px auto;
+            border: 1px dashed #cbd5e1;
+            padding: 20px;
+            background: white;
+            color: #334155;
+            font-family: 'Courier New', Courier, monospace;
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen font-sans">
+<body class="bg-slate-50 min-h-screen font-sans antialiased">
 
-    <!-- Navigation -->
-    <nav class="bg-blue-700 text-white shadow-xl p-4 sticky top-0 z-40">
+    <!-- Header Section -->
+    <nav class="bg-blue-800 text-white shadow-md p-3 sticky top-0 z-40">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                <i class="fas fa-building text-2xl"></i>
-                <h1 class="text-xl font-bold uppercase tracking-tighter text-white">ALAMHOW CO LTD</h1>
+                <div class="bg-white p-1.5 rounded-lg">
+                    <i class="fas fa-money-bill-wave text-blue-800 text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-black uppercase tracking-tight leading-none">ALAMHOW CO LTD</h1>
+                    <p class="text-[8px] font-bold opacity-70 tracking-widest mt-0.5">ADVANCE MANAGEMENT SYSTEM</p>
+                </div>
             </div>
-            <div class="flex items-center space-x-4">
-                <span id="current-date" class="bg-blue-800 px-3 py-1 rounded text-sm font-mono"></span>
-            </div>
+            <div id="header-date" class="text-[9px] font-mono bg-blue-900/40 px-3 py-1.5 rounded-lg border border-blue-700/30 uppercase"></div>
         </div>
     </nav>
 
-    <main class="container mx-auto p-4 max-w-6xl">
-        <!-- Input Section -->
-        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
-            <h2 class="text-lg font-bold mb-6 text-gray-800 flex items-center">
-                <span class="bg-blue-100 p-2 rounded-lg mr-3 text-blue-600">
-                    <i class="fas fa-user-check"></i>
-                </span>
-                Attendance & Advance Entry
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Employee Selection with Search & Click Suggestions -->
-                <div class="relative">
-                    <label class="block text-sm font-semibold text-gray-600 mb-2">Select/Search Employee</label>
-                    <div class="relative">
-                        <input type="text" id="emp-search" placeholder="Click or type to search..." autocomplete="off" class="block w-full rounded-lg border-gray-200 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border transition-all pr-10">
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
-                            <i class="fas fa-search text-sm"></i>
-                        </div>
+    <main class="container mx-auto p-3 lg:p-6 max-w-full">
+        <!-- Input Form Section -->
+        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                
+                <!-- Search Employee -->
+                <div class="md:col-span-3 relative">
+                    <label class="label-compact block font-black text-slate-400 uppercase tracking-wider ml-1">Search Employee</label>
+                    <div class="relative group">
+                        <input type="text" id="emp-search" placeholder="ID or Name..." autocomplete="off" class="input-compact block w-full rounded-xl border border-slate-200 bg-slate-50 focus:border-blue-500 focus:bg-white transition-all font-bold text-slate-800">
+                        <button onclick="resetSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-red-500 transition-colors">
+                            <i class="fas fa-times-circle"></i>
+                        </button>
                     </div>
-                    <div id="search-results" class="search-results mt-1">
-                        <!-- Suggestions will appear here -->
-                    </div>
+                    <div id="search-results" class="search-results"></div>
                     <input type="hidden" id="selected-emp-id">
                 </div>
 
-                <!-- OT Hours -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-2">OT Hours</label>
-                    <input type="number" id="ot-hours" value="0" step="0.5" min="0" class="block w-full rounded-lg border-gray-200 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border transition-all">
+                <!-- Auto-fill Name -->
+                <div class="md:col-span-3">
+                    <label class="label-compact block font-black text-slate-400 uppercase tracking-wider ml-1">Full Name</label>
+                    <input type="text" id="display-name" readonly placeholder="---" class="input-compact block w-full rounded-xl border border-slate-100 font-bold uppercase">
                 </div>
 
-                <!-- Site Name -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-2">Site Name</label>
-                    <input type="text" id="site-name" placeholder="Work Site Name" class="block w-full rounded-lg border-gray-200 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border transition-all">
+                <!-- Auto-fill Designation -->
+                <div class="md:col-span-3">
+                    <label class="label-compact block font-black text-slate-400 uppercase tracking-wider ml-1">Designation</label>
+                    <input type="text" id="auto-desig" readonly placeholder="---" class="input-compact block w-full rounded-xl border border-slate-100 font-semibold">
                 </div>
 
-                <!-- Status Selection -->
-                <div class="relative">
-                    <label class="block text-sm font-semibold text-gray-600 mb-2">Status</label>
-                    <select id="att-status" class="block w-full rounded-lg border-gray-200 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border transition-all appearance-none">
-                        <option value="Present">Present</option>
-                        <option value="Absent">Absent</option>
-                        <option value="Holiday">Holiday</option>
-                        <option value="Sunday">Sunday</option>
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 pt-8 text-gray-400">
-                        <i class="fas fa-chevron-down"></i>
+                <!-- Auto-fill Passport -->
+                <div class="md:col-span-3">
+                    <label class="label-compact block font-black text-slate-400 uppercase tracking-wider ml-1">Passport No</label>
+                    <input type="text" id="auto-passport" readonly placeholder="---" class="input-compact block w-full rounded-xl border border-slate-100 font-mono">
+                </div>
+
+                <!-- Entry Date -->
+                <div class="md:col-span-3">
+                    <label class="label-compact block font-black text-slate-400 uppercase tracking-wider ml-1">Record Date</label>
+                    <input type="date" id="record-date" class="input-compact block w-full rounded-xl border border-slate-200 bg-white focus:border-blue-500 font-bold">
+                </div>
+
+                <!-- Advance Amount -->
+                <div class="md:col-span-3">
+                    <label class="label-compact block font-black text-slate-400 uppercase tracking-wider ml-1">Advance Amount</label>
+                    <input type="number" id="advance-amount" value="0" class="input-compact block w-full rounded-xl border border-slate-200 bg-white focus:border-blue-500 outline-none font-black text-blue-600">
+                </div>
+
+                <!-- Reference -->
+                <div class="md:col-span-3">
+                    <label class="label-compact block font-black text-slate-400 uppercase tracking-wider ml-1">Reference</label>
+                    <input type="text" id="reference" placeholder="Ref Name" class="input-compact block w-full rounded-xl border border-slate-200 bg-white focus:border-blue-500 outline-none font-semibold">
+                </div>
+
+                <!-- Remark -->
+                <div class="md:col-span-3 flex gap-2 items-end">
+                    <div class="flex-grow">
+                        <label class="label-compact block font-black text-slate-400 uppercase tracking-wider ml-1">Remark</label>
+                        <input type="text" id="remark" placeholder="Note" class="input-compact block w-full rounded-xl border border-slate-200 bg-white focus:border-blue-500 outline-none">
                     </div>
+                    <button onclick="addToList()" class="bg-blue-600 hover:bg-blue-700 text-white font-black h-[38px] px-4 rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center uppercase text-[10px]">
+                        <i class="fas fa-plus"></i>
+                    </button>
                 </div>
-            </div>
-
-            <div class="mt-6 flex flex-col md:flex-row md:justify-between items-center gap-4 border-t pt-6">
-                <p class="text-xs text-gray-400">Source: Employee List (Cloud)</p>
-                <button onclick="addToList()" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition duration-300 transform hover:-translate-y-1 flex items-center justify-center">
-                    <i class="fas fa-plus-circle mr-2 text-lg"></i> Add to List
-                </button>
             </div>
         </div>
 
-        <!-- Table Section -->
-        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-            <div class="p-5 bg-gradient-to-r from-gray-50 to-white border-b flex justify-between items-center">
-                <h3 class="font-bold text-gray-700 flex items-center">
-                    <i class="fas fa-list-alt mr-2 text-blue-500"></i> Data Preview
-                </h3>
-                <span id="row-count" class="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">0 Rows Added</span>
+        <!-- Table View -->
+        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+            <div class="px-5 py-4 bg-slate-50/50 border-b flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center">
+                        <div class="bg-blue-600 w-1.5 h-6 rounded-full mr-3"></div>
+                        <h3 class="font-black text-slate-800 uppercase tracking-tight text-sm">Draft Entries</h3>
+                    </div>
+                    <!-- Next Advance No Display -->
+                    <div class="flex items-center bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                        <span class="text-[9px] font-black text-blue-400 uppercase tracking-widest mr-2">Next Advance No:</span>
+                        <span id="next-adv-no" class="text-[11px] font-mono font-black text-blue-700 tracking-wider">---</span>
+                    </div>
+                </div>
+                <div id="row-count-badge" class="bg-white text-blue-600 text-[9px] font-black px-3 py-1.5 rounded-lg border border-blue-50 shadow-sm uppercase tracking-wider">0 Records</div>
             </div>
             
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead>
-                        <tr class="bg-gray-50">
-                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Employee Info</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Designation</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">OT Hours</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Site</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Action</th>
+                <table class="min-w-full divide-y divide-slate-100">
+                    <thead class="bg-slate-50/30">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-[9px] font-black text-slate-400 uppercase tracking-widest">ID</th>
+                            <th class="px-4 py-3 text-left text-[9px] font-black text-slate-400 uppercase tracking-widest">Employee Name</th>
+                            <th class="px-4 py-3 text-left text-[9px] font-black text-slate-400 uppercase tracking-widest">Record Date</th>
+                            <th class="px-4 py-3 text-left text-[9px] font-black text-slate-400 uppercase tracking-widest">Designation</th>
+                            <th class="px-4 py-3 text-left text-[9px] font-black text-slate-400 uppercase tracking-widest">Passport</th>
+                            <th class="px-4 py-3 text-left text-[9px] font-black text-slate-400 uppercase tracking-widest">Amount</th>
+                            <th class="px-4 py-3 text-left text-[9px] font-black text-slate-400 uppercase tracking-widest">Reference</th>
+                            <th class="px-4 py-3 text-left text-[9px] font-black text-slate-400 uppercase tracking-widest">Remark</th>
+                            <th class="px-4 py-3 text-center text-[9px] font-black text-slate-400 uppercase tracking-widest">Action</th>
                         </tr>
                     </thead>
-                    <tbody id="attendance-body" class="bg-white divide-y divide-gray-100">
+                    <tbody id="data-body" class="bg-white divide-y divide-slate-50 text-[11px]">
                         <tr id="empty-state">
-                            <td colspan="6" class="px-6 py-12 text-center text-gray-400 italic">
-                                No data added. Click or search above to begin.
+                            <td colspan="9" class="px-5 py-16 text-center">
+                                <div class="opacity-10">
+                                    <i class="fas fa-folder-open text-6xl mb-3"></i>
+                                    <p class="font-black text-sm uppercase tracking-widest">No draft records found</p>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <div class="p-6 bg-gray-50 border-t flex flex-col md:flex-row justify-between items-center gap-4">
-                <button onclick="clearList()" class="text-sm text-red-500 hover:text-red-700 font-medium transition">
+            <!-- Footer Actions -->
+            <div class="px-6 py-5 bg-slate-50/80 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
+                <button onclick="clearAll()" class="text-slate-400 hover:text-red-500 text-[10px] font-black transition uppercase tracking-widest">
                     <i class="fas fa-trash-alt mr-1"></i> Clear All
                 </button>
-                <button id="save-btn" onclick="saveToSheet()" disabled class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-black py-4 px-10 rounded-xl shadow-xl shadow-green-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all transform hover:scale-105 flex items-center justify-center">
-                    <i class="fas fa-check-double mr-2 text-xl"></i> Confirm & Save to Cloud
+                <button id="save-btn" onclick="saveToSheet()" disabled class="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white font-black py-3 px-12 rounded-xl shadow-lg disabled:opacity-20 transition-all active:scale-95 flex items-center justify-center text-sm uppercase">
+                    <i class="fas fa-cloud-arrow-up mr-2"></i> Sync To ADVANCE Sheet
                 </button>
             </div>
         </div>
     </main>
 
-    <!-- Overlay Loader -->
-    <div id="loader" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-xs w-full">
-            <div class="loading-spinner mb-6"></div>
-            <p id="loader-text" class="text-gray-800 font-bold text-center">Cloud ডাটা প্রসেস হচ্ছে...</p>
+    <!-- Custom Success Modal -->
+    <div id="success-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-[60]">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full mx-4 modal-animate flex flex-col items-center text-center border border-slate-100">
+            <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-3xl mb-4 shadow-inner">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="text-xl font-black text-slate-800 mb-1 uppercase tracking-tight">Sync Completed!</h3>
+            <p class="text-slate-500 font-medium text-[11px] mb-6 uppercase tracking-wider">The data is safe in the Google Sheet.</p>
+            
+            <div class="grid grid-cols-2 gap-3 w-full">
+                <button onclick="prepareAndPrint()" class="bg-blue-600 hover:bg-blue-700 text-white font-black py-3 rounded-xl shadow-md transition-all active:scale-95 uppercase text-[10px] tracking-widest flex items-center justify-center">
+                    <i class="fas fa-print mr-2"></i> Print Receipts
+                </button>
+                <button onclick="closeSuccessModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-black py-3 rounded-xl transition-all active:scale-95 uppercase text-[10px] tracking-widest">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Receipt Area (Hidden by default, used for printing) -->
+    <div id="receipt-print-area" class="hidden"></div>
+
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 px-8 py-3 rounded-xl shadow-2xl text-white font-black hidden z-50 text-[11px] uppercase tracking-wider"></div>
+
+    <div id="loader" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center">
+            <div class="loading-spinner mb-4"></div>
+            <p class="text-slate-800 font-black text-sm uppercase tracking-widest">Synchronizing...</p>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzhmAYu0RWFiAo0U_1cqtUy1OwrVM2cBIf9Dw-yO8EEYblsLt4bYoxPqF1mesCobrmXJA/exec"; 
-
+        
         let employees = [];
-        let attendanceEntries = [];
+        let recordEntries = [];
+        let lastSavedEntries = []; 
 
         window.onload = () => {
-            document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('record-date').value = today;
+            const now = new Date();
+            document.getElementById('header-date').innerText = now.toLocaleDateString('en-GB', { 
+                weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' 
+            }).toUpperCase();
+            
+            updateNextAdvanceNo();
             fetchEmployees();
             setupSearch();
         };
 
-        // Fetch Employees
+        // ড্রাফট এন্ট্রির শিরোনামের পাশে নেক্সট এডভান্স নম্বর আপডেট করার ফাংশন
+        function updateNextAdvanceNo() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const nextIndex = recordEntries.length + 1;
+            const serial = nextIndex.toString().padStart(3, '0');
+            const nextNo = `ACL-ADV-${year}-${month}-${serial}`;
+            document.getElementById('next-adv-no').innerText = nextNo;
+        }
+
         async function fetchEmployees() {
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=getEmployees`);
                 employees = await response.json();
-                console.log("Employees Loaded:", employees.length);
             } catch (error) {
-                console.error("Fetch error:", error);
+                showToast("Connection Failed!", "bg-red-500");
             }
         }
 
-        // Search & Click Suggestion Logic
         function setupSearch() {
             const searchInput = document.getElementById('emp-search');
             const resultsDiv = document.getElementById('search-results');
 
-            // মাউস দিয়ে ক্লিক করলে সব দেখাবে
-            searchInput.addEventListener('click', () => {
-                showSuggestions(searchInput.value);
-            });
-
-            // টাইপ করলে ফিল্টার করে দেখাবে
+            searchInput.addEventListener('click', () => showSuggestions(searchInput.value));
             searchInput.addEventListener('input', (e) => {
+                clearAutoFields();
                 showSuggestions(e.target.value);
             });
 
             function showSuggestions(term) {
-                const searchTerm = term.toLowerCase();
-                
-                // যদি সার্চ বক্স খালি থাকে, প্রথম ১০০ জন দেখাবে (পারফরম্যান্স এর জন্য)
-                // অথবা যদি টাইপ করা হয়, তবে ফিল্টার করবে
+                const searchTerm = term.toLowerCase().trim();
                 const filtered = employees.filter(emp => {
-                    if (!searchTerm) return true;
-                    return (emp.id && emp.id.toString().toLowerCase().includes(searchTerm)) || 
-                           (emp['employee name'] && emp['employee name'].toLowerCase().includes(searchTerm)) ||
-                           (emp.name && emp.name.toLowerCase().includes(searchTerm));
-                }).slice(0, 100);
+                    const name = (emp['employee name'] || emp.name || "").toString().toLowerCase();
+                    const id = (emp.id || "").toString().toLowerCase();
+                    return name.includes(searchTerm) || id.includes(searchTerm);
+                }).slice(0, 50);
 
                 if (filtered.length > 0) {
                     resultsDiv.innerHTML = filtered.map(emp => {
                         const name = emp['employee name'] || emp.name || "N/A";
                         const id = emp.id || "N/A";
-                        const desig = emp.designation || emp.desig || "";
                         return `
-                            <div class="search-item" onclick="selectEmployee('${id}', '${name.replace(/'/g, "\\'")}')">
-                                <div class="flex justify-between items-center">
-                                    <span class="font-bold text-blue-600">${id}</span>
-                                    <span class="text-xs text-gray-400 italic">${desig}</span>
-                                </div>
-                                <div class="text-sm text-gray-700 font-medium">${name}</div>
+                            <div class="search-item" onclick="selectEmployee('${id}')">
+                                <span class="id-badge">${id}</span>
+                                <span class="text-slate-900 font-bold text-[13px] capitalize">${name.toLowerCase()}</span>
                             </div>
                         `;
                     }).join('');
                     resultsDiv.style.display = 'block';
                 } else {
-                    resultsDiv.innerHTML = '<div class="p-3 text-gray-400 text-sm">No match found</div>';
-                    resultsDiv.style.display = 'block';
+                    resultsDiv.style.display = 'none';
                 }
             }
 
-            // বাইরে ক্লিক করলে সাজেশন বক্স বন্ধ হবে
             document.addEventListener('click', (e) => {
                 if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
                     resultsDiv.style.display = 'none';
@@ -252,137 +357,212 @@
             });
         }
 
-        function selectEmployee(id, name) {
-            document.getElementById('emp-search').value = `${id} - ${name}`;
-            document.getElementById('selected-emp-id').value = id;
-            document.getElementById('search-results').style.display = 'none';
+        function clearAutoFields() {
+            document.getElementById('selected-emp-id').value = "";
+            document.getElementById('display-name').value = "";
+            document.getElementById('auto-desig').value = "";
+            document.getElementById('auto-passport').value = "";
         }
 
-        // Add to Table
-        function addToList() {
-            const empId = document.getElementById('selected-emp-id').value;
-            const ot = document.getElementById('ot-hours').value || 0;
-            const site = document.getElementById('site-name').value || "N/A";
-            const status = document.getElementById('att-status').value;
+        function selectEmployee(id) {
+            const emp = employees.find(e => e.id == id);
+            if (emp) {
+                document.getElementById('emp-search').value = id;
+                document.getElementById('selected-emp-id').value = id;
+                document.getElementById('display-name').value = (emp['employee name'] || emp.name || "N/A").toUpperCase();
+                document.getElementById('auto-desig').value = emp.designation || emp.desig || "---";
+                document.getElementById('auto-passport').value = emp['passport no'] || emp.passport || "---";
+                document.getElementById('search-results').style.display = 'none';
+                document.getElementById('advance-amount').focus();
+            }
+        }
 
-            if (!empId) {
-                alert("দয়া করে সাজেশন থেকে একজন এমপ্লয়ি সিলেক্ট করুন!");
+        function resetSearch() {
+            document.getElementById('emp-search').value = "";
+            clearAutoFields();
+            document.getElementById('emp-search').focus();
+        }
+
+        function addToList() {
+            const id = document.getElementById('selected-emp-id').value;
+            if (!id || document.getElementById('advance-amount').value <= 0) {
+                showToast("Check ID & Amount!", "bg-amber-500");
                 return;
             }
 
-            const emp = employees.find(e => e.id == empId);
-            
+            const now = new Date();
+            const tsDate = now.toLocaleDateString('en-GB'); 
+            const tsTime = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
             const entry = {
-                sl: attendanceEntries.length + 1,
-                date: new Date().toLocaleDateString('en-GB'),
-                id: emp.id,
-                name: emp['employee name'] || emp.name || "N/A",
-                desig: emp.designation || emp.desig || "N/A",
-                ot: parseFloat(ot),
-                holi: status === 'Holiday' ? 1 : 0,
-                sun: status === 'Sunday' ? 1 : 0,
-                site: site,
-                status: status,
-                remark: ""
+                tsDate: tsDate,      
+                tsTime: tsTime,      
+                id: id,
+                name: document.getElementById('display-name').value,
+                recordDate: document.getElementById('record-date').value,
+                desig: document.getElementById('auto-desig').value,
+                passport: document.getElementById('auto-passport').value,
+                amount: document.getElementById('advance-amount').value,
+                reference: document.getElementById('reference').value,
+                remark: document.getElementById('remark').value
             };
 
-            attendanceEntries.push(entry);
+            recordEntries.push(entry);
             renderTable();
-            
-            // Reset fields
-            document.getElementById('ot-hours').value = 0;
-            document.getElementById('emp-search').value = "";
-            document.getElementById('selected-emp-id').value = "";
+            updateNextAdvanceNo();
+            resetInputs();
+        }
+
+        function resetInputs() {
+            resetSearch();
+            document.getElementById('advance-amount').value = 0;
+            document.getElementById('reference').value = "";
+            document.getElementById('remark').value = "";
         }
 
         function renderTable() {
-            const tbody = document.getElementById('attendance-body');
-            
-            if (attendanceEntries.length === 0) {
-                tbody.innerHTML = `<tr id="empty-state"><td colspan="6" class="px-6 py-12 text-center text-gray-400 italic">No data added.</td></tr>`;
+            const tbody = document.getElementById('data-body');
+            if (recordEntries.length === 0) {
+                tbody.innerHTML = `<tr id="empty-state"><td colspan="9" class="px-5 py-16 text-center opacity-10"><i class="fas fa-folder-open text-6xl mb-3"></i><p class="font-black text-sm uppercase tracking-widest">No draft records found</p></td></tr>`;
                 document.getElementById('save-btn').disabled = true;
-                document.getElementById('row-count').innerText = `0 Rows Added`;
+                document.getElementById('row-count-badge').innerText = "0 Records";
                 return;
             }
 
-            tbody.innerHTML = "";
-            attendanceEntries.forEach((entry, index) => {
-                const row = `
-                    <tr class="hover:bg-blue-50/50 transition-colors">
-                        <td class="px-6 py-4">
-                            <div class="flex flex-col">
-                                <span class="text-sm font-bold text-gray-900">${entry.name}</span>
-                                <span class="text-xs text-gray-500 font-mono">${entry.id}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-xs text-gray-600 font-medium">${entry.desig}</td>
-                        <td class="px-6 py-4 text-sm font-semibold text-blue-600">${entry.ot} hrs</td>
-                        <td class="px-6 py-4 text-sm text-gray-600 font-medium">${entry.site}</td>
-                        <td class="px-6 py-4">
-                            <span class="px-3 py-1 text-xs font-black rounded-full uppercase ${getStatusBadge(entry.status)}">
-                                ${entry.status}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-center">
-                            <button onclick="removeEntry(${index})" class="text-red-400 hover:text-red-600 transition p-2">
-                                <i class="fas fa-times-circle"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-                tbody.innerHTML += row;
-            });
+            tbody.innerHTML = recordEntries.map((entry, index) => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-4 py-3 font-black text-blue-600">${entry.id}</td>
+                    <td class="px-4 py-3 font-bold text-slate-800 capitalize">${entry.name.toLowerCase()}</td>
+                    <td class="px-4 py-3 text-slate-600 font-mono">${entry.recordDate}</td>
+                    <td class="px-4 py-3 text-slate-500 font-semibold uppercase text-[9px]">${entry.desig}</td>
+                    <td class="px-4 py-3 font-mono text-slate-400">${entry.passport}</td>
+                    <td class="px-4 py-3 font-black text-blue-700 text-sm">${entry.amount}</td>
+                    <td class="px-4 py-3 font-bold text-slate-700">${entry.reference || '---'}</td>
+                    <td class="px-4 py-3 text-slate-500 italic max-w-[150px] truncate">${entry.remark || '---'}</td>
+                    <td class="px-4 py-3 text-center">
+                        <button onclick="removeRow(${index})" class="text-slate-300 hover:text-red-500 transition-all p-2">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
 
-            document.getElementById('row-count').innerText = `${attendanceEntries.length} Rows Added`;
+            document.getElementById('row-count-badge').innerText = `${recordEntries.length} Records`;
             document.getElementById('save-btn').disabled = false;
         }
 
-        function getStatusBadge(status) {
-            switch(status) {
-                case 'Present': return 'bg-green-100 text-green-700';
-                case 'Absent': return 'bg-red-100 text-red-700';
-                case 'Holiday': return 'bg-amber-100 text-amber-700';
-                case 'Sunday': return 'bg-indigo-100 text-indigo-700';
-                default: return 'bg-gray-100 text-gray-700';
-            }
-        }
-
-        function removeEntry(index) {
-            attendanceEntries.splice(index, 1);
+        function removeRow(i) {
+            recordEntries.splice(i, 1);
             renderTable();
+            updateNextAdvanceNo();
         }
 
-        function clearList() {
-            if (confirm("সব ডাটা মুছে ফেলবেন?")) {
-                attendanceEntries = [];
+        function clearAll() {
+            if (confirm("Clear all draft entries?")) {
+                recordEntries = [];
                 renderTable();
+                updateNextAdvanceNo();
             }
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('success-modal').classList.add('hidden');
         }
 
         async function saveToSheet() {
             const loader = document.getElementById('loader');
+            const saveBtn = document.getElementById('save-btn');
             loader.classList.remove('hidden');
+            saveBtn.disabled = true;
 
             try {
                 await fetch(SCRIPT_URL, {
                     method: "POST",
-                    mode: "no-cors", 
-                    cache: "no-cache",
+                    mode: "no-cors",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(attendanceEntries)
+                    body: JSON.stringify(recordEntries)
                 });
-
+                
                 setTimeout(() => {
                     loader.classList.add('hidden');
-                    alert("✅ ডাটা সফলভাবে ADVANCE শিটে সেভ হয়েছে!");
-                    attendanceEntries = [];
+                    lastSavedEntries = [...recordEntries]; 
+                    document.getElementById('success-modal').classList.remove('hidden');
+                    recordEntries = [];
                     renderTable();
+                    updateNextAdvanceNo();
                 }, 1500);
 
-            } catch (error) {
+            } catch (e) {
                 loader.classList.add('hidden');
-                alert("❌ ডাটা সেভ করতে সমস্যা হয়েছে।");
+                saveBtn.disabled = false;
+                showToast("Sync Error!", "bg-red-600");
             }
+        }
+
+        function prepareAndPrint() {
+            const printArea = document.getElementById('receipt-print-area');
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            
+            let htmlContent = '';
+
+            lastSavedEntries.forEach((item, index) => {
+                const serialNo = `ACL-ADV-${year}-${month}-${(index + 1).toString().padStart(3, '0')}`;
+                
+                htmlContent += `
+                    <div class="receipt-slip">
+                        <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
+                            <h2 style="margin: 0; font-size: 18px; font-weight: 900;">ALAMHOW CO LTD</h2>
+                            <p style="margin: 2px 0; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">Money Advance Receipt</p>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 15px;">
+                            <span>No: <b>${serialNo}</b></span>
+                            <span>Date: <b>${item.tsDate}</b></span>
+                        </div>
+
+                        <div style="font-size: 12px; line-height: 1.8;">
+                            <div>ID: <span style="border-bottom: 1px dotted #000; font-weight: bold;">${item.id}</span></div>
+                            <div>Name: <span style="border-bottom: 1px dotted #000; font-weight: bold; text-transform: uppercase;">${item.name}</span></div>
+                            <div>Desig: <span style="border-bottom: 1px dotted #000;">${item.desig}</span></div>
+                            <div>Passport: <span style="border-bottom: 1px dotted #000;">${item.passport}</span></div>
+                            <div style="margin-top: 10px; background: #f8fafc; padding: 10px; border: 1px solid #000;">
+                                <b>ADVANCE AMOUNT: ${item.amount} /-</b>
+                            </div>
+                            <div style="margin-top: 5px;">Ref: <span style="border-bottom: 1px dotted #000;">${item.reference || 'N/A'}</span></div>
+                            <div>Note: <span style="border-bottom: 1px dotted #000;">${item.remark || 'N/A'}</span></div>
+                        </div>
+
+                        <div style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 10px;">
+                            <div style="text-align: center; width: 100px;">
+                                <div style="border-top: 1px solid #000; padding-top: 5px;">Receiver</div>
+                            </div>
+                            <div style="text-align: center; width: 100px;">
+                                <div style="border-top: 1px solid #000; padding-top: 5px;">Accounts</div>
+                            </div>
+                            <div style="text-align: center; width: 100px;">
+                                <div style="border-top: 1px solid #000; padding-top: 5px;">Manager</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px; font-size: 8px; text-align: center; opacity: 0.5;">
+                            System Generated Receipt - ${item.tsTime}
+                        </div>
+                    </div>
+                `;
+            });
+
+            printArea.innerHTML = htmlContent;
+            window.print();
+            closeSuccessModal();
+        }
+
+        function showToast(msg, colorClass) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.className = `fixed bottom-6 left-1/2 -translate-x-1/2 px-8 py-3 rounded-xl shadow-2xl text-white font-black z-50 ${colorClass}`;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
         }
     </script>
 </body>
