@@ -1,99 +1,258 @@
-/**
- * ALAMHOW CO LTD - Attendance Backend
- * এই স্ক্রিপ্টটি গুগল শিটের সাথে ডাটা কানেক্ট করার জন্য ব্যবহৃত হবে।
- */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALAMHOW CO LTD - Attendance System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
 
-const SPREADSHEET_ID = "1CaMe4R9hSLRO1NAiM7trz6jtFapSu63jORYdWMjkF8o"; // আপনার গুগল শিটের আইডি এখানে দিন
-const ATTENDANCE_SHEET_NAME = "ADVANCE";
-const EMPLOYEE_SHEET_NAME = "Employees";
+    <!-- Navigation -->
+    <nav class="bg-blue-600 text-white shadow-lg p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold uppercase tracking-wider">ALAMHOW CO LTD</h1>
+            <div class="space-x-4">
+                <span id="current-date" class="hidden md:inline text-sm"></span>
+            </div>
+        </div>
+    </nav>
 
-/**
- * GET রিকোয়েস্ট হ্যান্ডেল করার জন্য (ডাটা পড়ার জন্য)
- */
-function doGet(e) {
-  const action = e.parameter.action;
-  
-  if (action === "getEmployees") {
-    return getEmployeeData();
-  }
-  
-  return ContentService.createTextOutput(JSON.stringify({status: "error", message: "Invalid Action"}))
-    .setMimeType(ContentService.MimeType.JSON);
-}
+    <main class="container mx-auto p-4 mt-6">
+        <!-- Input Section -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <h2 class="text-lg font-semibold mb-4 border-b pb-2 flex items-center">
+                <i class="fas fa-user-check mr-2 text-blue-500"></i> Daily Attendance Entry
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Select Employee</label>
+                    <select id="emp-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
+                        <option value="">Loading Employees...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">OT Hours</label>
+                    <input type="number" id="ot-hours" value="0" step="0.5" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Site Name</label>
+                    <input type="text" id="site-name" placeholder="Factory/Office" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Status</label>
+                    <select id="att-status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
+                        <option value="Present">Present</option>
+                        <option value="Absent">Absent</option>
+                        <option value="Holiday">Holiday</option>
+                        <option value="Sunday">Sunday</option>
+                    </select>
+                </div>
+            </div>
 
-/**
- * POST রিকোয়েস্ট হ্যান্ডেল করার জন্য (ডাটা সেভ করার জন্য)
- */
-function doPost(e) {
-  try {
-    const data = JSON.parse(e.postData.contents);
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const sheet = ss.getSheetByName(ATTENDANCE_SHEET_NAME) || ss.insertSheet(ATTENDANCE_SHEET_NAME);
-    
-    // হেডার যদি না থাকে তবে তৈরি করা
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow(["SL", "Date", "ID", "Name", "Designation", "OT Hours", "Holiday", "Sunday", "Site", "Status", "Remark", "Timestamp"]);
-    }
-    
-    // ডাটা লুপ করে শিটে সেভ করা
-    data.forEach(item => {
-      sheet.appendRow([
-        item.sl,
-        item.date,
-        item.id,
-        item.name,
-        item.desig,
-        item.ot,
-        item.holi,
-        item.sun,
-        item.site,
-        item.status,
-        item.remark,
-        new Date()
-      ]);
-    });
-    
-    return createJsonResponse({status: "success", message: "ডাটা সফলভাবে সেভ হয়েছে!"});
-    
-  } catch (err) {
-    return createJsonResponse({status: "error", message: err.toString()});
-  }
-}
+            <div class="mt-4 flex justify-end">
+                <button onclick="addToList()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition duration-200 flex items-center">
+                    <i class="fas fa-plus mr-2"></i> Add to List
+                </button>
+            </div>
+        </div>
 
-/**
- * এমপ্লয়ী ডাটা ফেচ করার ফাংশন
- */
-function getEmployeeData() {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  const sheet = ss.getSheetByName(EMPLOYEE_SHEET_NAME);
-  if (!sheet) return createJsonResponse([]);
-  
-  const values = sheet.getDataRange().getValues();
-  const headers = values.shift();
-  
-  const data = values.map(row => {
-    let obj = {};
-    headers.forEach((header, i) => {
-      obj[header.toLowerCase()] = row[i];
-    });
-    return obj;
-  });
-  
-  return createJsonResponse(data);
-}
+        <!-- Table Section -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="p-4 bg-gray-100 border-b flex justify-between items-center">
+                <h3 class="font-bold text-gray-700">Preview (Not Saved Yet)</h3>
+                <span id="row-count" class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">0 Rows</span>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">OT</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Site</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendance-body" class="bg-white divide-y divide-gray-200">
+                        <!-- Data will appear here -->
+                    </tbody>
+                </table>
+            </div>
 
-/**
- * হেল্পার ফাংশন - JSON রেসপন্স তৈরি করা
- */
-function createJsonResponse(data) {
-  return ContentService.createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
-}
+            <div class="p-6 bg-gray-50 border-t flex justify-end">
+                <button id="save-btn" onclick="saveToSheet()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition duration-200 flex items-center">
+                    <i class="fas fa-cloud-upload-alt mr-2"></i> Save All to Google Sheet
+                </button>
+            </div>
+        </div>
+    </main>
 
-/**
- * CORS ইস্যু সমাধানের জন্য (নিরাপত্তা নিশ্চিত করতে)
- */
-function createJsonResponse(data) {
-  return ContentService.createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
-}
+    <!-- Overlay Loader -->
+    <div id="loader" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
+            <div class="loading-spinner mb-4"></div>
+            <p id="loader-text" class="text-gray-700 font-medium">Processing...</p>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        // আপনার Google Apps Script Web App URL এখানে বসান
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzhmAYu0RWFiAo0U_1cqtUy1OwrVM2cBIf9Dw-yO8EEYblsLt4bYoxPqF1mesCobrmXJA/exec"; 
+
+        let employees = [];
+        let attendanceEntries = [];
+
+        // Initialize
+        window.onload = () => {
+            document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-GB');
+            fetchEmployees();
+        };
+
+        // Fetch Employees from Google Sheet
+        async function fetchEmployees() {
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=getEmployees`);
+                employees = await response.json();
+                
+                const select = document.getElementById('emp-select');
+                select.innerHTML = '<option value="">-- Select Employee --</option>';
+                
+                employees.forEach(emp => {
+                    const opt = document.createElement('option');
+                    opt.value = emp.id;
+                    opt.textContent = `${emp.id} - ${emp.name}`;
+                    select.appendChild(opt);
+                });
+            } catch (error) {
+                console.error("Error fetching employees:", error);
+                alert("Could not load employee list. Check Web App URL.");
+            }
+        }
+
+        // Add Entry to Local List
+        function addToList() {
+            const empId = document.getElementById('emp-select').value;
+            const ot = document.getElementById('ot-hours').value;
+            const site = document.getElementById('site-name').value;
+            const status = document.getElementById('att-status').value;
+
+            if (!empId) {
+                alert("Please select an employee!");
+                return;
+            }
+
+            const emp = employees.find(e => e.id == empId);
+            const entry = {
+                sl: attendanceEntries.length + 1,
+                date: new Date().toLocaleDateString('en-GB'),
+                id: emp.id,
+                name: emp.name,
+                desig: emp.designation || emp.desig || "N/A",
+                ot: ot,
+                holi: status === 'Holiday' ? 1 : 0,
+                sun: status === 'Sunday' ? 1 : 0,
+                site: site || "N/A",
+                status: status,
+                remark: ""
+            };
+
+            attendanceEntries.push(entry);
+            renderTable();
+        }
+
+        // Render Local Table
+        function renderTable() {
+            const tbody = document.getElementById('attendance-body');
+            tbody.innerHTML = "";
+            
+            attendanceEntries.forEach((entry, index) => {
+                const row = `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${entry.id}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${entry.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${entry.ot}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${entry.site}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(entry.status)}">
+                                ${entry.status}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button onclick="removeEntry(${index})" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+
+            document.getElementById('row-count').innerText = `${attendanceEntries.length} Rows`;
+            document.getElementById('save-btn').disabled = attendanceEntries.length === 0;
+        }
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'Present': return 'bg-green-100 text-green-800';
+                case 'Absent': return 'bg-red-100 text-red-800';
+                case 'Holiday': return 'bg-yellow-100 text-yellow-800';
+                case 'Sunday': return 'bg-blue-100 text-blue-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function removeEntry(index) {
+            attendanceEntries.splice(index, 1);
+            renderTable();
+        }
+
+        // Save All to Google Sheet (CORS Friendly)
+        async function saveToSheet() {
+            if (!confirm("Are you sure you want to save all records to the cloud?")) return;
+
+            const loader = document.getElementById('loader');
+            loader.classList.remove('hidden');
+
+            try {
+                // Apps Script এ POST রিকোয়েস্ট পাঠানোর জন্য
+                const response = await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors", // গিটহাব থেকে গুগল স্ক্রিপ্টে CORS সমস্যার সহজ সমাধান
+                    cache: "no-cache",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(attendanceEntries)
+                });
+
+                // যেহেতু mode: 'no-cors' ব্যবহার করা হয়েছে, আমরা সরাসরি রেসপন্স পড়তে পারব না
+                // তবে রিকোয়েস্ট যদি সফলভাবে চলে যায়, তবে আমরা ধরে নিব সেভ হয়েছে।
+                alert("Data Submitted Successfully! (Please check your Google Sheet after a moment)");
+                attendanceEntries = [];
+                renderTable();
+
+            } catch (error) {
+                console.error("Save Error:", error);
+                alert("Failed to save data. Please check your internet or URL.");
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
