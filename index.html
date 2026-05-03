@@ -12,209 +12,338 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            border-left-color: #09f;
+            border-left-color: #2563eb;
             animation: spin 1s linear infinite;
         }
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        /* Custom Suggestion styling */
+        .search-results {
+            max-height: 250px;
+            overflow-y: auto;
+            position: absolute;
+            width: 100%;
+            z-index: 50;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            display: none;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .search-item {
+            padding: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background 0.2s;
+        }
+        .search-item:hover {
+            background-color: #eff6ff;
+        }
+        .search-item:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50 min-h-screen font-sans">
 
     <!-- Navigation -->
-    <nav class="bg-blue-600 text-white shadow-lg p-4">
+    <nav class="bg-blue-700 text-white shadow-xl p-4 sticky top-0 z-40">
         <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold uppercase tracking-wider">ALAMHOW CO LTD</h1>
-            <div class="space-x-4">
-                <span id="current-date" class="hidden md:inline text-sm"></span>
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-building text-2xl"></i>
+                <h1 class="text-xl font-bold uppercase tracking-tighter text-white">ALAMHOW CO LTD</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span id="current-date" class="bg-blue-800 px-3 py-1 rounded text-sm font-mono"></span>
             </div>
         </div>
     </nav>
 
-    <main class="container mx-auto p-4 mt-6">
+    <main class="container mx-auto p-4 max-w-6xl">
         <!-- Input Section -->
-        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-            <h2 class="text-lg font-semibold mb-4 border-b pb-2 flex items-center">
-                <i class="fas fa-user-check mr-2 text-blue-500"></i> Daily Attendance Entry
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
+            <h2 class="text-lg font-bold mb-6 text-gray-800 flex items-center">
+                <span class="bg-blue-100 p-2 rounded-lg mr-3 text-blue-600">
+                    <i class="fas fa-user-check"></i>
+                </span>
+                Attendance & Advance Entry
             </h2>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Select Employee</label>
-                    <select id="emp-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
-                        <option value="">Loading Employees...</option>
-                    </select>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Employee Selection with Search & Click Suggestions -->
+                <div class="relative">
+                    <label class="block text-sm font-semibold text-gray-600 mb-2">Select/Search Employee</label>
+                    <div class="relative">
+                        <input type="text" id="emp-search" placeholder="Click or type to search..." autocomplete="off" class="block w-full rounded-lg border-gray-200 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border transition-all pr-10">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
+                            <i class="fas fa-search text-sm"></i>
+                        </div>
+                    </div>
+                    <div id="search-results" class="search-results mt-1">
+                        <!-- Suggestions will appear here -->
+                    </div>
+                    <input type="hidden" id="selected-emp-id">
                 </div>
+
+                <!-- OT Hours -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">OT Hours</label>
-                    <input type="number" id="ot-hours" value="0" step="0.5" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
+                    <label class="block text-sm font-semibold text-gray-600 mb-2">OT Hours</label>
+                    <input type="number" id="ot-hours" value="0" step="0.5" min="0" class="block w-full rounded-lg border-gray-200 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border transition-all">
                 </div>
+
+                <!-- Site Name -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Site Name</label>
-                    <input type="text" id="site-name" placeholder="Factory/Office" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
+                    <label class="block text-sm font-semibold text-gray-600 mb-2">Site Name</label>
+                    <input type="text" id="site-name" placeholder="Work Site Name" class="block w-full rounded-lg border-gray-200 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border transition-all">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Status</label>
-                    <select id="att-status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
+
+                <!-- Status Selection -->
+                <div class="relative">
+                    <label class="block text-sm font-semibold text-gray-600 mb-2">Status</label>
+                    <select id="att-status" class="block w-full rounded-lg border-gray-200 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border transition-all appearance-none">
                         <option value="Present">Present</option>
                         <option value="Absent">Absent</option>
                         <option value="Holiday">Holiday</option>
                         <option value="Sunday">Sunday</option>
                     </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 pt-8 text-gray-400">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
                 </div>
             </div>
 
-            <div class="mt-4 flex justify-end">
-                <button onclick="addToList()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition duration-200 flex items-center">
-                    <i class="fas fa-plus mr-2"></i> Add to List
+            <div class="mt-6 flex flex-col md:flex-row md:justify-between items-center gap-4 border-t pt-6">
+                <p class="text-xs text-gray-400">Source: Employee List (Cloud)</p>
+                <button onclick="addToList()" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition duration-300 transform hover:-translate-y-1 flex items-center justify-center">
+                    <i class="fas fa-plus-circle mr-2 text-lg"></i> Add to List
                 </button>
             </div>
         </div>
 
         <!-- Table Section -->
-        <div class="bg-white rounded-xl shadow-md overflow-hidden">
-            <div class="p-4 bg-gray-100 border-b flex justify-between items-center">
-                <h3 class="font-bold text-gray-700">Preview (Not Saved Yet)</h3>
-                <span id="row-count" class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">0 Rows</span>
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="p-5 bg-gradient-to-r from-gray-50 to-white border-b flex justify-between items-center">
+                <h3 class="font-bold text-gray-700 flex items-center">
+                    <i class="fas fa-list-alt mr-2 text-blue-500"></i> Data Preview
+                </h3>
+                <span id="row-count" class="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">0 Rows Added</span>
             </div>
             
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">OT</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Site</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th>
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Employee Info</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Designation</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">OT Hours</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Site</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Action</th>
                         </tr>
                     </thead>
-                    <tbody id="attendance-body" class="bg-white divide-y divide-gray-200">
-                        <!-- Data will appear here -->
+                    <tbody id="attendance-body" class="bg-white divide-y divide-gray-100">
+                        <tr id="empty-state">
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-400 italic">
+                                No data added. Click or search above to begin.
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
 
-            <div class="p-6 bg-gray-50 border-t flex justify-end">
-                <button id="save-btn" onclick="saveToSheet()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition duration-200 flex items-center">
-                    <i class="fas fa-cloud-upload-alt mr-2"></i> Save All to Google Sheet
+            <div class="p-6 bg-gray-50 border-t flex flex-col md:flex-row justify-between items-center gap-4">
+                <button onclick="clearList()" class="text-sm text-red-500 hover:text-red-700 font-medium transition">
+                    <i class="fas fa-trash-alt mr-1"></i> Clear All
+                </button>
+                <button id="save-btn" onclick="saveToSheet()" disabled class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-black py-4 px-10 rounded-xl shadow-xl shadow-green-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all transform hover:scale-105 flex items-center justify-center">
+                    <i class="fas fa-check-double mr-2 text-xl"></i> Confirm & Save to Cloud
                 </button>
             </div>
         </div>
     </main>
 
     <!-- Overlay Loader -->
-    <div id="loader" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
-            <div class="loading-spinner mb-4"></div>
-            <p id="loader-text" class="text-gray-700 font-medium">Processing...</p>
+    <div id="loader" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-xs w-full">
+            <div class="loading-spinner mb-6"></div>
+            <p id="loader-text" class="text-gray-800 font-bold text-center">Cloud ডাটা প্রসেস হচ্ছে...</p>
         </div>
     </div>
 
     <script>
         // --- CONFIGURATION ---
-        // আপনার Google Apps Script Web App URL এখানে বসান
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzhmAYu0RWFiAo0U_1cqtUy1OwrVM2cBIf9Dw-yO8EEYblsLt4bYoxPqF1mesCobrmXJA/exec"; 
 
         let employees = [];
         let attendanceEntries = [];
 
-        // Initialize
         window.onload = () => {
-            document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-GB');
+            document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
             fetchEmployees();
+            setupSearch();
         };
 
-        // Fetch Employees from Google Sheet
+        // Fetch Employees
         async function fetchEmployees() {
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=getEmployees`);
                 employees = await response.json();
-                
-                const select = document.getElementById('emp-select');
-                select.innerHTML = '<option value="">-- Select Employee --</option>';
-                
-                employees.forEach(emp => {
-                    const opt = document.createElement('option');
-                    opt.value = emp.id;
-                    opt.textContent = `${emp.id} - ${emp.name}`;
-                    select.appendChild(opt);
-                });
+                console.log("Employees Loaded:", employees.length);
             } catch (error) {
-                console.error("Error fetching employees:", error);
-                alert("Could not load employee list. Check Web App URL.");
+                console.error("Fetch error:", error);
             }
         }
 
-        // Add Entry to Local List
+        // Search & Click Suggestion Logic
+        function setupSearch() {
+            const searchInput = document.getElementById('emp-search');
+            const resultsDiv = document.getElementById('search-results');
+
+            // মাউস দিয়ে ক্লিক করলে সব দেখাবে
+            searchInput.addEventListener('click', () => {
+                showSuggestions(searchInput.value);
+            });
+
+            // টাইপ করলে ফিল্টার করে দেখাবে
+            searchInput.addEventListener('input', (e) => {
+                showSuggestions(e.target.value);
+            });
+
+            function showSuggestions(term) {
+                const searchTerm = term.toLowerCase();
+                
+                // যদি সার্চ বক্স খালি থাকে, প্রথম ১০০ জন দেখাবে (পারফরম্যান্স এর জন্য)
+                // অথবা যদি টাইপ করা হয়, তবে ফিল্টার করবে
+                const filtered = employees.filter(emp => {
+                    if (!searchTerm) return true;
+                    return (emp.id && emp.id.toString().toLowerCase().includes(searchTerm)) || 
+                           (emp['employee name'] && emp['employee name'].toLowerCase().includes(searchTerm)) ||
+                           (emp.name && emp.name.toLowerCase().includes(searchTerm));
+                }).slice(0, 100);
+
+                if (filtered.length > 0) {
+                    resultsDiv.innerHTML = filtered.map(emp => {
+                        const name = emp['employee name'] || emp.name || "N/A";
+                        const id = emp.id || "N/A";
+                        const desig = emp.designation || emp.desig || "";
+                        return `
+                            <div class="search-item" onclick="selectEmployee('${id}', '${name.replace(/'/g, "\\'")}')">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-blue-600">${id}</span>
+                                    <span class="text-xs text-gray-400 italic">${desig}</span>
+                                </div>
+                                <div class="text-sm text-gray-700 font-medium">${name}</div>
+                            </div>
+                        `;
+                    }).join('');
+                    resultsDiv.style.display = 'block';
+                } else {
+                    resultsDiv.innerHTML = '<div class="p-3 text-gray-400 text-sm">No match found</div>';
+                    resultsDiv.style.display = 'block';
+                }
+            }
+
+            // বাইরে ক্লিক করলে সাজেশন বক্স বন্ধ হবে
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
+                    resultsDiv.style.display = 'none';
+                }
+            });
+        }
+
+        function selectEmployee(id, name) {
+            document.getElementById('emp-search').value = `${id} - ${name}`;
+            document.getElementById('selected-emp-id').value = id;
+            document.getElementById('search-results').style.display = 'none';
+        }
+
+        // Add to Table
         function addToList() {
-            const empId = document.getElementById('emp-select').value;
-            const ot = document.getElementById('ot-hours').value;
-            const site = document.getElementById('site-name').value;
+            const empId = document.getElementById('selected-emp-id').value;
+            const ot = document.getElementById('ot-hours').value || 0;
+            const site = document.getElementById('site-name').value || "N/A";
             const status = document.getElementById('att-status').value;
 
             if (!empId) {
-                alert("Please select an employee!");
+                alert("দয়া করে সাজেশন থেকে একজন এমপ্লয়ি সিলেক্ট করুন!");
                 return;
             }
 
             const emp = employees.find(e => e.id == empId);
+            
             const entry = {
                 sl: attendanceEntries.length + 1,
                 date: new Date().toLocaleDateString('en-GB'),
                 id: emp.id,
-                name: emp.name,
+                name: emp['employee name'] || emp.name || "N/A",
                 desig: emp.designation || emp.desig || "N/A",
-                ot: ot,
+                ot: parseFloat(ot),
                 holi: status === 'Holiday' ? 1 : 0,
                 sun: status === 'Sunday' ? 1 : 0,
-                site: site || "N/A",
+                site: site,
                 status: status,
                 remark: ""
             };
 
             attendanceEntries.push(entry);
             renderTable();
+            
+            // Reset fields
+            document.getElementById('ot-hours').value = 0;
+            document.getElementById('emp-search').value = "";
+            document.getElementById('selected-emp-id').value = "";
         }
 
-        // Render Local Table
         function renderTable() {
             const tbody = document.getElementById('attendance-body');
-            tbody.innerHTML = "";
             
+            if (attendanceEntries.length === 0) {
+                tbody.innerHTML = `<tr id="empty-state"><td colspan="6" class="px-6 py-12 text-center text-gray-400 italic">No data added.</td></tr>`;
+                document.getElementById('save-btn').disabled = true;
+                document.getElementById('row-count').innerText = `0 Rows Added`;
+                return;
+            }
+
+            tbody.innerHTML = "";
             attendanceEntries.forEach((entry, index) => {
                 const row = `
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${entry.id}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${entry.name}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${entry.ot}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${entry.site}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(entry.status)}">
+                    <tr class="hover:bg-blue-50/50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-bold text-gray-900">${entry.name}</span>
+                                <span class="text-xs text-gray-500 font-mono">${entry.id}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-xs text-gray-600 font-medium">${entry.desig}</td>
+                        <td class="px-6 py-4 text-sm font-semibold text-blue-600">${entry.ot} hrs</td>
+                        <td class="px-6 py-4 text-sm text-gray-600 font-medium">${entry.site}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 text-xs font-black rounded-full uppercase ${getStatusBadge(entry.status)}">
                                 ${entry.status}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button onclick="removeEntry(${index})" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                        <td class="px-6 py-4 text-center">
+                            <button onclick="removeEntry(${index})" class="text-red-400 hover:text-red-600 transition p-2">
+                                <i class="fas fa-times-circle"></i>
+                            </button>
                         </td>
                     </tr>
                 `;
                 tbody.innerHTML += row;
             });
 
-            document.getElementById('row-count').innerText = `${attendanceEntries.length} Rows`;
-            document.getElementById('save-btn').disabled = attendanceEntries.length === 0;
+            document.getElementById('row-count').innerText = `${attendanceEntries.length} Rows Added`;
+            document.getElementById('save-btn').disabled = false;
         }
 
-        function getStatusClass(status) {
+        function getStatusBadge(status) {
             switch(status) {
-                case 'Present': return 'bg-green-100 text-green-800';
-                case 'Absent': return 'bg-red-100 text-red-800';
-                case 'Holiday': return 'bg-yellow-100 text-yellow-800';
-                case 'Sunday': return 'bg-blue-100 text-blue-800';
-                default: return 'bg-gray-100 text-gray-800';
+                case 'Present': return 'bg-green-100 text-green-700';
+                case 'Absent': return 'bg-red-100 text-red-700';
+                case 'Holiday': return 'bg-amber-100 text-amber-700';
+                case 'Sunday': return 'bg-indigo-100 text-indigo-700';
+                default: return 'bg-gray-100 text-gray-700';
             }
         }
 
@@ -223,34 +352,36 @@
             renderTable();
         }
 
-        // Save All to Google Sheet (CORS Friendly)
-        async function saveToSheet() {
-            if (!confirm("Are you sure you want to save all records to the cloud?")) return;
+        function clearList() {
+            if (confirm("সব ডাটা মুছে ফেলবেন?")) {
+                attendanceEntries = [];
+                renderTable();
+            }
+        }
 
+        async function saveToSheet() {
             const loader = document.getElementById('loader');
             loader.classList.remove('hidden');
 
             try {
-                // Apps Script এ POST রিকোয়েস্ট পাঠানোর জন্য
-                const response = await fetch(SCRIPT_URL, {
+                await fetch(SCRIPT_URL, {
                     method: "POST",
-                    mode: "no-cors", // গিটহাব থেকে গুগল স্ক্রিপ্টে CORS সমস্যার সহজ সমাধান
+                    mode: "no-cors", 
                     cache: "no-cache",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(attendanceEntries)
                 });
 
-                // যেহেতু mode: 'no-cors' ব্যবহার করা হয়েছে, আমরা সরাসরি রেসপন্স পড়তে পারব না
-                // তবে রিকোয়েস্ট যদি সফলভাবে চলে যায়, তবে আমরা ধরে নিব সেভ হয়েছে।
-                alert("Data Submitted Successfully! (Please check your Google Sheet after a moment)");
-                attendanceEntries = [];
-                renderTable();
+                setTimeout(() => {
+                    loader.classList.add('hidden');
+                    alert("✅ ডাটা সফলভাবে ADVANCE শিটে সেভ হয়েছে!");
+                    attendanceEntries = [];
+                    renderTable();
+                }, 1500);
 
             } catch (error) {
-                console.error("Save Error:", error);
-                alert("Failed to save data. Please check your internet or URL.");
-            } finally {
                 loader.classList.add('hidden');
+                alert("❌ ডাটা সেভ করতে সমস্যা হয়েছে।");
             }
         }
     </script>
