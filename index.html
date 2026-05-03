@@ -207,6 +207,7 @@
                 <table class="min-w-full divide-y divide-slate-100">
                     <thead class="bg-slate-50/30">
                         <tr>
+                            <th class="px-4 py-3 text-left text-[9px] font-black text-slate-400 uppercase tracking-widest">Advance No</th>
                             <th class="px-4 py-3 text-left text-[9px] font-black text-slate-400 uppercase tracking-widest">ID</th>
                             <th class="px-4 py-3 text-left text-[9px] font-black text-slate-400 uppercase tracking-widest">Employee Name</th>
                             <th class="px-4 py-3 text-left text-[9px] font-black text-slate-400 uppercase tracking-widest">Record Date</th>
@@ -220,7 +221,7 @@
                     </thead>
                     <tbody id="data-body" class="bg-white divide-y divide-slate-50 text-[11px]">
                         <tr id="empty-state">
-                            <td colspan="9" class="px-5 py-16 text-center">
+                            <td colspan="10" class="px-5 py-16 text-center">
                                 <div class="opacity-10">
                                     <i class="fas fa-folder-open text-6xl mb-3"></i>
                                     <p class="font-black text-sm uppercase tracking-widest">No draft records found</p>
@@ -295,14 +296,18 @@
             setupSearch();
         };
 
-        // ড্রাফট এন্ট্রির শিরোনামের পাশে নেক্সট এডভান্স নম্বর আপডেট করার ফাংশন
-        function updateNextAdvanceNo() {
+        // বর্তমান সিরিয়াল অনুযায়ী নম্বর জেনারেট করার ফাংশন
+        function generateAdvanceNo(indexOffset) {
             const now = new Date();
             const year = now.getFullYear();
             const month = (now.getMonth() + 1).toString().padStart(2, '0');
-            const nextIndex = recordEntries.length + 1;
+            const nextIndex = recordEntries.length + indexOffset;
             const serial = nextIndex.toString().padStart(3, '0');
-            const nextNo = `ACL-ADV-${year}-${month}-${serial}`;
+            return `ACL-ADV-${year}-${month}-${serial}`;
+        }
+
+        function updateNextAdvanceNo() {
+            const nextNo = generateAdvanceNo(1);
             document.getElementById('next-adv-no').innerText = nextNo;
         }
 
@@ -394,7 +399,11 @@
             const tsDate = now.toLocaleDateString('en-GB'); 
             const tsTime = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
+            // ড্রাফট লিস্টে অ্যাড করার সময়ই Advance No জেনারেট করে অবজেক্টে সেভ করছি
+            const currentAdvNo = generateAdvanceNo(1);
+
             const entry = {
+                advanceNo: currentAdvNo, // গুগল শিটে সেভ হওয়ার জন্য এই ফিল্ডটি যোগ হলো
                 tsDate: tsDate,      
                 tsTime: tsTime,      
                 id: id,
@@ -423,7 +432,7 @@
         function renderTable() {
             const tbody = document.getElementById('data-body');
             if (recordEntries.length === 0) {
-                tbody.innerHTML = `<tr id="empty-state"><td colspan="9" class="px-5 py-16 text-center opacity-10"><i class="fas fa-folder-open text-6xl mb-3"></i><p class="font-black text-sm uppercase tracking-widest">No draft records found</p></td></tr>`;
+                tbody.innerHTML = `<tr id="empty-state"><td colspan="10" class="px-5 py-16 text-center opacity-10"><i class="fas fa-folder-open text-6xl mb-3"></i><p class="font-black text-sm uppercase tracking-widest">No draft records found</p></td></tr>`;
                 document.getElementById('save-btn').disabled = true;
                 document.getElementById('row-count-badge').innerText = "0 Records";
                 return;
@@ -431,7 +440,8 @@
 
             tbody.innerHTML = recordEntries.map((entry, index) => `
                 <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="px-4 py-3 font-black text-blue-600">${entry.id}</td>
+                    <td class="px-4 py-3 font-mono font-black text-blue-500 text-[10px]">${entry.advanceNo}</td>
+                    <td class="px-4 py-3 font-black text-slate-700">${entry.id}</td>
                     <td class="px-4 py-3 font-bold text-slate-800 capitalize">${entry.name.toLowerCase()}</td>
                     <td class="px-4 py-3 text-slate-600 font-mono">${entry.recordDate}</td>
                     <td class="px-4 py-3 text-slate-500 font-semibold uppercase text-[9px]">${entry.desig}</td>
@@ -453,6 +463,9 @@
 
         function removeRow(i) {
             recordEntries.splice(i, 1);
+            // ডিলিট করার পর সিরিয়াল নম্বর ঠিক রাখার জন্য ড্রাফট এন্ট্রিগুলোর নম্বর রিসেট করা যেতে পারে
+            // কিন্তু রিয়েল লাইফ সিনারিওতে সিরিয়াল স্ট্যাটিক থাকাই ভালো। 
+            // এখানে ডিলিট করার পর নেক্সট এন্ট্রি প্রেডিকশন আপডেট করছি।
             renderTable();
             updateNextAdvanceNo();
         }
@@ -476,6 +489,7 @@
             saveBtn.disabled = true;
 
             try {
+                // recordEntries এ এখন 'advanceNo' অন্তর্ভুক্ত আছে, তাই সিটে সেভ হবে
                 await fetch(SCRIPT_URL, {
                     method: "POST",
                     mode: "no-cors",
@@ -501,15 +515,9 @@
 
         function prepareAndPrint() {
             const printArea = document.getElementById('receipt-print-area');
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = (now.getMonth() + 1).toString().padStart(2, '0');
-            
             let htmlContent = '';
 
-            lastSavedEntries.forEach((item, index) => {
-                const serialNo = `ACL-ADV-${year}-${month}-${(index + 1).toString().padStart(3, '0')}`;
-                
+            lastSavedEntries.forEach((item) => {
                 htmlContent += `
                     <div class="receipt-slip">
                         <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
@@ -518,7 +526,7 @@
                         </div>
                         
                         <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 15px;">
-                            <span>No: <b>${serialNo}</b></span>
+                            <span>No: <b>${item.advanceNo}</b></span>
                             <span>Date: <b>${item.tsDate}</b></span>
                         </div>
 
