@@ -1359,7 +1359,10 @@
           a.localeCompare(b, undefined, { numeric: true }),
         );
 
-        let dayTotals = Array(dateRange.length).fill(0);
+        let dayTotalsP = Array(dateRange.length).fill(0);
+        let dayTotalsSun = Array(dateRange.length).fill(0);
+        let dayTotalsHol = Array(dateRange.length).fill(0);
+        let dayTotalsA = Array(dateRange.length).fill(0);
         let grandTotalP = 0,
           grandTotalA = 0,
           grandTotalSun = 0,
@@ -1439,12 +1442,21 @@
                     : "-";
 
                 if (stat === "P") {
-                  dayTotals[dIdx]++;
-                  if (isSunday) countSun++;
-                  else if (isPubHol) countHol++;
-                  else countP++;
+                  if (isSunday) {
+                    dayTotalsSun[dIdx]++;
+                    countSun++;
+                  } else if (isPubHol) {
+                    dayTotalsHol[dIdx]++;
+                    countHol++;
+                  } else {
+                    dayTotalsP[dIdx]++;
+                    countP++;
+                  }
                 }
-                if (stat === "A") countA++;
+                if (stat === "A") {
+                  dayTotalsA[dIdx]++;
+                  countA++;
+                }
 
                 // বডি কলাম স্টাইল: হালকা লাল ব্যাকগ্রাউন্ড এবং গাঢ় লাল টেক্সট
                 if (isSunday || isPubHol) {
@@ -1473,11 +1485,14 @@
 
         const tableFooter = `<tr>
             <td colspan="2" style="text-align:left; padding: 4px 8px; font-weight: bold; background: #f3f4f6;">DAILY TOTAL</td>
-            ${dayTotals
-              .map(
-                (total) =>
-                  `<td style="text-align:center; font-weight: bold; background: #f8f9fa;">${total}</td>`,
-              )
+            ${dayTotalsP
+              .map((p, idx) => {
+                const pVal = dayTotalsP[idx];
+                const sunVal = dayTotalsSun[idx];
+                const holVal = dayTotalsHol[idx];
+                const allP = pVal + sunVal + holVal;
+                return `<td style="text-align:center; font-weight: bold; background: #f8f9fa; font-size:9px;">${allP}</td>`;
+              })
               .join("")}
             <td style="font-weight: bold; background: #e6fffa;">${grandTotalP}</td>
             <td style="font-weight: bold; background: #fff0f0;">${grandTotalA}</td>
