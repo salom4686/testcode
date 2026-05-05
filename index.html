@@ -950,7 +950,6 @@ function renderSummaryView(rows) {
     if (sortedIds.length === 0) { alert("No data found for the selected criteria."); return; }
 
     const displaySideName = sideFilter ? ` - ${sideFilter.toUpperCase()}` : " - ALL PROJECT";
-
     matrixModal.hide();
 
     // টেবিল হেডার
@@ -976,12 +975,8 @@ function renderSummaryView(rows) {
             const dateStr = d.toISOString().split('T')[0];
             const isSun = d.getDay() === 0;
             const isPubHol = publicHolidayDates.has(dateStr);
-            
-            // রবিবারের জন্য ব্যাকগ্রাউন্ড সাদা কিন্তু টেক্সট লাল
             let headerStyle = isSun ? 'background:#fff; color:red;' : (isPubHol ? 'background:#fff; color:red;' : '');
-            
             let headerContent = `<div style="line-height: 1;">${d.getDate()}<br><span style="font-size:7px">${dayName}</span></div>`;
-            
             if (isPubHol) {
                 headerContent = `
                 <div class="holiday-box" style="width: 25px; height: 25px;">
@@ -1006,7 +1001,7 @@ function renderSummaryView(rows) {
     let dayTotals = Array(dateRange.length).fill(0);
     let grandTotalP = 0, grandTotalA = 0, grandTotalSun = 0, grandTotalHol = 0;
 
-    // টেবিল বডি
+    // টেবিল বডি (এখানেই মূল পরিবর্তন করা হয়েছে)
     const tableBody = sortedIds.map((id, idx) => {
         let countP = 0, countA = 0, countSun = 0, countHol = 0;
         const daysHtml = dateRange.map((d, dIdx) => {
@@ -1015,26 +1010,27 @@ function renderSummaryView(rows) {
             const isPubHol = publicHolidayDates.has(ds);
             let stat = attendanceMap[id] && attendanceMap[id][ds] ? attendanceMap[id][ds] : '-';
             
-            // ডাটা আপডেট
             if (stat === 'P') { 
-                countP++; 
-                dayTotals[dIdx]++; 
-                if (isSunday) countSun++; 
-                if (isPubHol) countHol++; 
+                dayTotals[dIdx]++; // ডেইলি টোটাল (P) কলামের নিচের জন্য সব P-ই কাউন্ট হবে
+                
+                // কন্ডিশনাল কাউন্টিং: হলিডে ও সানডে বাদ দিয়ে countP হবে
+                if (isSunday) {
+                    countSun++;
+                } else if (isPubHol) {
+                    countHol++;
+                } else {
+                    countP++; // এটিই মূল SUMMARY 'P' কলামে যাবে
+                }
             }
             if (stat === 'A') countA++;
 
-            // কন্ডিশনাল স্টাইলিং: রবিবারের জন্য ব্যাকগ্রাউন্ড অন্যগুলোর মতোই
+            // কন্ডিশনাল স্টাইলিং
             if (isSunday) {
                 return `<td style="color:red; font-weight:bold;">${stat !== '-' ? stat : ''}</td>`;
             }
-            
-            // পাবলিক হলিডের জন্য (চাইলে এখানে ব্যাকগ্রাউন্ড রাখতে পারেন)
             if (isPubHol) {
                 return `<td style="background-color: #fffafa; color:red; font-weight:bold;">${stat !== '-' ? stat : ''}</td>`;
             }
-
-            // সাধারণ দিনের জন্য
             if (stat === 'P') return `<td>P</td>`;
             if (stat === 'A') return `<td style="color:red">A</td>`;
             if (stat === 'H' || stat === 'L') return `<td style="color:green">${stat}</td>`;
@@ -1052,7 +1048,6 @@ function renderSummaryView(rows) {
       <html>
         <head>
           <title>Attendance Summary</title>
-          <link rel="icon" type="image/png" href="https://drive.google.com/thumbnail?id=11bxOPboUUmQxIkT6gMYWYqxfh9jZSiLo&sz=w500">
           <style>
             @page { size: A4 landscape; margin: 5mm; }
             body { font-family: sans-serif; padding: 10px; margin: 0; zoom: 1.4; }
@@ -1086,24 +1081,10 @@ function renderSummaryView(rows) {
               </tbody>
             </table>
           </div>
-          <div style="margin-top: 40px; display: flex; justify-content: space-between; padding: 0 40px;">
-            <div style="border-top: 1px solid #000; width: 140px; text-align: center; font-size: 10px; font-weight: bold;">Prepared By</div>
-            <div style="border-top: 1px solid #000; width: 140px; text-align: center; font-size: 10px; font-weight: bold;">Authorized Signature</div>
-          </div>
         </body>
       </html>
     `);
-    
     preview.document.close();
-    setTimeout(() => {
-        const monthInputEl = document.getElementById('matrixMonth');
-        const idInputEl = document.getElementById('matrixIdFilter');
-        const sideInputEl = document.getElementById('matrixSideFilter');
-
-        if(monthInputEl) monthInputEl.value = "";
-        if(idInputEl) idInputEl.value = "";
-        if(sideInputEl) sideInputEl.value = "";
-    }, 300);
 }
 </script>
 </body>
