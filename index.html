@@ -97,14 +97,23 @@
             padding: 40px; 
             text-align: center; 
             color: var(--brand-blue); 
-            display: none;
+            display: flex;
             background-color: #ffffff;
             min-height: 96vh;
-            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 30px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+          }
+
+          #loader.hidden {
+            display: none;
           }
 
           #loader img {
@@ -507,7 +516,7 @@
           rawData = data;
           mapSheetColumns(data[0]);
           populateStaticFilters(data);
-          document.getElementById("loader").style.display = "none";
+          document.getElementById("loader").classList.add("hidden");
           document.querySelector(".main-card").classList.add("loaded");
           processData();
         } catch (error) {
