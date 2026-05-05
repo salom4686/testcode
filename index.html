@@ -1471,7 +1471,13 @@
           })
           .join("");
 
-        const tableFooter = "";
+        const tableFooter = `<tr>
+            <td colspan="${2 + dateRange.length}" style="text-align:left; padding: 4px 8px; font-weight: bold; background: #f3f4f6;">TOTAL</td>
+            <td style="font-weight: bold; background: #e6fffa;">${grandTotalP}</td>
+            <td style="font-weight: bold; background: #fff0f0;">${grandTotalA}</td>
+            <td style="font-weight: bold; background: #fff9e6;">${grandTotalSun}</td>
+            <td style="font-weight: bold; background: #f8f9fa;">${grandTotalHol}</td>
+          </tr>`;
 
         // ... (বাকি ক্যালকুলেশন আগের মতোই)
 
@@ -1501,7 +1507,7 @@
         <body>
           <button class="no-print" onclick="window.print()">Print Report</button>
           <h1 class="company-name">ALAMHOW CO LTD</h1>
-          <table>${tableHeader}<tbody>${tableBody}</tbody></table>
+          <table>${tableHeader}<tbody>${tableBody}</tbody><tfoot>${tableFooter}</tfoot></table>
           <div style="margin-top: 15px;">
             <table style="width: auto; min-width: 220px;">
               <thead><tr><th colspan="2" style="padding: 2px; height: 18px;">PRESENT SUMMARY</th></tr></thead>
