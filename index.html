@@ -1472,7 +1472,13 @@
           .join("");
 
         const tableFooter = `<tr>
-            <td colspan="${2 + dateRange.length}" style="text-align:left; padding: 4px 8px; font-weight: bold; background: #f3f4f6;">TOTAL</td>
+            <td colspan="2" style="text-align:left; padding: 4px 8px; font-weight: bold; background: #f3f4f6;">DAILY TOTAL</td>
+            ${dayTotals
+              .map(
+                (total) =>
+                  `<td style="text-align:center; font-weight: bold; background: #f8f9fa;">${total}</td>`,
+              )
+              .join("")}
             <td style="font-weight: bold; background: #e6fffa;">${grandTotalP}</td>
             <td style="font-weight: bold; background: #fff0f0;">${grandTotalA}</td>
             <td style="font-weight: bold; background: #fff9e6;">${grandTotalSun}</td>
