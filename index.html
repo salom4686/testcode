@@ -3,17 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Attendance & Salary</title>
-
+    <title>NEW ATTENDANCE</title>
     <link
       rel="icon"
       type="image/png"
-      href="https://drive.google.com/thumbnail?id=11bxOPboUUmQxIkT6gMYWYqxfh9jZSiLo&sz=w500"
+      href="https://lh3.googleusercontent.com/u/0/d/11bxOPboUUmQxIkT6gMYWYqxfh9jZSiLo"
     />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <script src="https://cdn.tailwindcss.com"></script>
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
@@ -22,1537 +18,1859 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css"
     />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css"
-    />
-
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"
-    />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <style>
-          :root {
-            --brand-blue: #1d3a6d; --header-text: #ffffff; --bg-light: #f4f6f9; --accent-yellow: #fff9e6;  --btn-reset: #dc3545; --highlight-green: #e6fffa; }
-          body {
-            background-color: var(--bg-light);padding: 10px;font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-          .main-card { background: #ffffff; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.08);margin: 0 auto;border: 1px solid #e0e0e0; overflow: hidden; display: flex; flex-direction: column; max-height: 96vh;}
-      /* বাটনের সাধারণ অবস্থা এবং হোভার অবস্থা নিয়ন্ত্রণ */
-      .btn-reset.btn-action {
-          background-color: #ffc107; /* আপনার পছন্দের ব্যাকগ্রাউন্ড কালার */
-          color: #000; /* টেক্সট কালার কালো */
-          border: 1px solid #000;
-          transition: all 0.3s ease; /* স্মুথ ট্রানজিশনের জন্য */
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap");
+
+      :root {
+        --brand-blue: #1e3a5f;
+        --brand-gold: #f1c40f;
       }
 
-      .btn-reset.btn-action:hover {
-          /* হোভার করলে যা হবে */
-          background-color: #ff2802 !important; /* হোভার ব্যাকগ্রাউন্ড (একটু গাঢ় হলুদ) */
-          color: #000000 !important; /* হোভার করলেও টেক্সট কালোই থাকবে, সাদা হবে না */
-          border-color: #f8f7f7 !important;
-          box-shadow: 0 2px 5px rgba(228, 221, 221, 0.2); /* হালকা শ্যাডো */
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f0f4f8;
+        overflow-x: hidden;
       }
 
-      .btn-reset.btn-action:active {
-          background-color: #d39e00 !important;
-          transform: translateY(5px); /* ক্লিক করলে সামান্য নিচে নামবে */
+      #loadingOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
       }
-          .page-header { background-color: #ffffff; padding: 10px 20px;  border-bottom: 4px solid var(--brand-blue);display: flex; justify-content: space-between; align-items: center;  flex-shrink: 0; }
-          .brand-title h2 { color: var(--brand-blue); font-weight: 800; margin: 0; font-size: 1.3rem; }
-          .filter-section {  padding: 12px; background: #f8f9fc; border-bottom: 1px solid #eee; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px;align-items: end; flex-shrink: 0; }
-          .filter-group label { font-size: 9px; font-weight: 700; color: var(--brand-blue); margin-bottom: 2px; display: block; text-transform: uppercase; }
-          .custom-date-input { background-color: #ffffff !important; cursor: pointer !important; font-weight: 600; font-size: 11px; }
-          .btn-action { font-size: 10px; padding: 4px 10px; font-weight: 600; }
-          .btn-reset { background-color: var(--btn-reset); color: white; border: none; }
-          .summary-bar { padding: 8px 20px;background: #eef2f7; border-bottom: 1px solid #ddd;display: flex;gap: 20px; font-weight: bold; color: var(--brand-blue);font-size: 13px;align-items: center; }
-          .stat-box { background: #fff; padding: 2px 10px; border-radius: 4px; border: 1px solid #cbd5e0; }
-          .table-responsive { overflow: auto; flex-grow: 1; position: relative; }
-          .attendance-table { width: 100%; border-collapse: separate; border-spacing: 0; }
-         .attendance-table thead th { background-color: var(--brand-blue) !important; color: var(--header-text) !important; padding: 6px 4px; text-align: center; font-size: 9px;
-       position: sticky;
-            top: 0;
-            z-index: 20;
-            border: 1px solid #142a50; <link rel="icon" type="image/png" href="https://drive.google.com/thumbnail?id=11bxOPboUUmQxIkT6gMYWYqxfh9jZSiLo&sz=w500">
-            text-transform: uppercase;
-            white-space: nowrap;
-          }
 
-          .attendance-table tbody td {
-            padding: 4px 3px;
-            text-align: center;
-            font-size: 10px;
-            border: 1px solid #e0e0e0;
-            white-space: nowrap;
-          }
+      #loadingOverlay.processing-mode {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(4px);
+      }
 
-          .total-attendance-col { background-color: var(--accent-yellow); font-weight: 700; color: var(--brand-blue); }
-          .highlight-col { background-color: var(--highlight-green); font-weight: 700; color: #0d685b; }
-          .deduction-col { background-color: #fff0f0; }
+      .screen-lock-blur {
+        filter: blur(3px);
+        pointer-events: none;
+        user-select: none;
+        transition: all 0.4s ease;
+      }
+      /* অ্যালার্ট বক্সের জন্য অ্যানিমেশন */
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px) scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
 
-          #loader { padding: 40px; text-align: center; color: var(--brand-blue); display: none; }
+      @keyframes slideOut {
+        from {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(-20px) scale(0.9);
+        }
+      }
 
-          .search-input-group { display: flex; }
-          .search-input-group select { border-top-right-radius: 0; border-bottom-right-radius: 0; width: 80px; font-size: 10px; }
-          .search-input-group input { border-top-left-radius: 0; border-bottom-left-radius: 0; font-size: 10px; }
+      /* যখন এ্যালার্ট দেখাবে */
+      .alert-show {
+        display: flex !important;
+        animation: slideIn 0.4s ease-out forwards;
+      }
 
-          .grand-total-row td { background-color: #f0f4f8 !important; font-weight: 900 !important; color: var(--brand-blue); }
+      /* যখন এ্যালার্ট চলে যাবে */
+      .alert-hide {
+        animation: slideOut 0.4s ease-in forwards;
+      }
+      /* কাস্টম অ্যালার্টের উন্নত স্টাইল */
+      /* আপনার স্টাইলে এটি আপডেট করে নিন */
+      .modern-alert {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.8); /* ওপর থেকে ছোট হয়ে আসবে */
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      .modern-alert.show {
+        opacity: 1;
+        transform: translateY(0) scale(1); /* স্বাভাবিক অবস্থানে আসবে */
+      }
+
+      /* ট্রান্সপারেন্ট গ্লাস ইফেক্ট */
+      .glass-effect {
+        background: rgba(255, 255, 255, 0.6) !important;
+        backdrop-filter: blur(15px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(15px) saturate(180%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      }
+
+      .card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+      .input-group label {
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--brand-blue);
+        margin-bottom: 0.15rem;
+        text-transform: uppercase;
+      }
+      .input-field {
+        width: 100%;
+        padding: 0.4rem 0.5rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        outline: none;
+        font-size: 0.8rem;
+        background-color: white;
+      }
+      .input-field:focus {
+        border-color: var(--brand-blue);
+        box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.1);
+      }
+
+      .suggestion-box {
+        position: absolute;
+        left: 0;
+        right: 0;
+        max-height: 250px;
+        overflow-y: auto;
+        background: white;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        z-index: 1000;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+        display: none;
+        margin-top: 4px;
+      }
+      .suggestion-item {
+        padding: 10px 14px;
+        cursor: pointer;
+        border-bottom: 1px solid #f3f4f6;
+      }
+      .suggestion-item:hover {
+        background-color: #fdf9e7;
+      }
+
+      .loader-circle {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid var(--brand-blue);
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+      }
+
+      /* ১. ফুল স্ক্রিন স্পিনারের জন্য (মাঝখানে বড় হয়ে ঘুরবে) */
+      #loadingOverlay.processing-mode {
+        background: rgba(255, 255, 255, 0.4); /* স্বচ্ছ ব্যাকগ্রাউন্ড */
+        backdrop-filter: blur(8px) saturate(150%); /* প্রিমিয়াম ব্লার ইফেক্ট */
+        display: flex !important;
+      }
+
+      /* ২. মডার্ন অ্যালার্ট অ্যানিমেশন */
+      .modern-alert {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transform: scale(0.8);
+        opacity: 0;
+      }
+
+      .modern-alert.show {
+        transform: scale(1);
+        opacity: 1;
+      }
+      /* হলিডে ঘরের মূল ডিজাইন */
+      .holiday-date {
+        position: relative !important;
+        background-color: #f0eaea !important;
+        color: rgb(247, 9, 9) !important;
+        border-radius: 50% !important;
+        font-weight: bold !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        z-index: 1;
+        transition: all 0.3s ease;
+      }
+
+      /* গোল লেখাটি ডিফল্টভাবে ছোট এবং হালকা থাকবে */
+      .holiday-label-svg {
+        position: absolute;
+        width: 130%; /* সার্কেলের চেয়ে একটু বড় */
+        height: 130%;
+        top: -15%;
+        left: -15%;
+        pointer-events: none;
+        opacity: 0.6;
+        transform: scale(0.8); /* ডিফল্টভাবে একটু ছোট থাকবে */
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      .holiday-label-svg text {
+        fill: #050101;
+        font-size: 10px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      /* --- মাউস নিলে (Hover) ইফেক্ট --- */
+      .holiday-date:hover {
+        transform: translateY(-5px); /* পুরো সার্কেলটি সামান্য উপরে উঠবে */
+        z-index: 100; /* অন্য তারিখের উপরে দেখানোর জন্য */
+        box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.4);
+      }
+
+      .holiday-date:hover .holiday-label-svg {
+        opacity: 1;
+        transform: scale(1.2) rotate(45deg); /* জুম হবে এবং সামান্য ঘুরবে */
+      }
+
+      /* সানডে এর সাধারণ লাল রঙ */
+      .sunday-date {
+        color: #ef4444 !important;
+        font-weight: bold !important;
+      }
+
+      /* ৩. ট্রান্সপারেন্ট গ্লাস ইফেক্ট (আইফোনের মতো স্টাইল) */
+      .glass-effect {
+        background: rgba(255, 255, 255, 0.7) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15) !important;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .spinner {
+        width: 14px;
+        height: 14px;
+        border: 2px solid #ffffff;
+        border-bottom-color: transparent;
+        border-radius: 50%;
+        display: inline-block;
+        animation: rotation 1s linear infinite;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+      @keyframes rotation {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .fade-out {
+        opacity: 0;
+        pointer-events: none;
+        visibility: hidden;
+      }
+
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        backdrop-filter: blur(4px);
+      }
+
+      @media print {
+        .no-print {
+          display: none !important;
+        }
+        body {
+          background: white;
+          padding: 0;
+          overflow: visible !important;
+        }
+        .card {
+          box-shadow: none;
+          border: 1px solid #e5e7eb;
+        }
+        #fullPreviewModal {
+          position: relative;
+          background: white;
+          display: block !important;
+          padding: 0;
+          margin: 0;
+        }
+        .modal-overlay {
+          background: white;
+          position: static;
+        }
+        #fullPreviewModal .bg-white {
+          box-shadow: none;
+          width: 100%;
+          max-height: none;
+          overflow: visible;
+        }
+        #fullPreviewContent {
+          overflow: visible !important;
+        }
+        table {
+          font-size: 10px;
+          border-collapse: collapse;
+          width: 100%;
+        }
+        th,
+        td {
+          border: 1px solid #000 !important;
+          padding: 4px !important;
+        }
+      }
     </style>
   </head>
-  <body id="bodyRoot">
-    <div class="container-fluid">
-      <div class="main-card">
-        <div class="page-header">
-          <div class="brand-title">
-            <h2>ALAMHOW CO LTD</h2>
-            <span style="font-size: 0.75rem; color: #666"
-              >Attendance & Salary Repoprt</span
-            >
-          </div>
-          <div class="d-flex gap-2">
-            <button
-              class="btn btn-action btn-outline-success"
-              onclick="showAttendanceFilter()"
-            >
-              Attendance Sheet
-            </button>
-            <button
-              class="btn btn-action btn-outline-primary"
-              onclick="openPreview()"
-            >
-              Salary Report
-            </button>
-            <button class="btn btn-action btn-primary" onclick="refreshData()">
-              Refresh
-            </button>
-          </div>
-        </div>
+  <body class="p-2 md:p-4">
+    <div id="loadingOverlay">
+      <div class="loader-circle mb-6"></div>
+      <h2 class="text-xl font-bold text-slate-800 tracking-tight">
+        ALAMHOW CO LTD
+      </h2>
+      <p id="loadingTask" class="text-sm text-slate-500 mt-2 font-medium">
+        Please Wait...
+      </p>
+    </div>
 
-        <!-- Filters -->
-        <div class="filter-section">
-          <div class="filter-group" style="grid-column: span 2">
-            <label>Search By:</label>
-            <div class="search-input-group">
-              <select
-                id="searchType"
-                class="form-select form-select-sm"
-                onchange="processData()"
-              >
-                <option value="ALL">ALL</option>
-                <option value="EMPLOYEE ID">ID</option>
-                <option value="EMPLOYEE NAME">NAME</option>
-                <option value="PASSPORT NO">PASSPORT</option>
-              </select>
+    <!-- Custom Message Box -->
+    <div id="customAlert" class="modal-overlay">
+      <div
+        class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 transform transition-all border border-slate-100"
+      >
+        <div
+          id="alertIconContainer"
+          class="flex items-center justify-center w-16 h-16 mx-auto rounded-full mb-6"
+        ></div>
+        <h3
+          id="alertTitle"
+          class="text-xl font-bold text-center text-slate-900 mb-2"
+        >
+          Notification
+        </h3>
+        <p
+          id="alertMessage"
+          class="text-sm text-center text-slate-600 mb-8 leading-relaxed"
+        ></p>
+        <div class="flex gap-2">
+          <button
+            id="alertCancelBtn"
+            onclick="closeAlert()"
+            class="hidden flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 rounded-xl transition-all uppercase tracking-wider"
+          >
+            Cancel
+          </button>
+          <button
+            id="alertOkBtn"
+            onclick="closeAlert()"
+            class="flex-1 bg-[#1e3a5f] hover:bg-slate-800 text-white font-bold py-3 rounded-xl transition-all active:scale-95 shadow-lg uppercase tracking-wider"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Sheet Module (Server Data Editor) -->
+    <div id="editSheetModal" class="modal-overlay">
+      <div
+        class="bg-white rounded-xl shadow-2xl w-[95vw] max-h-[90vh] flex flex-col overflow-hidden"
+      >
+        <div
+          class="p-4 bg-[#1e3a5f] text-white flex justify-between items-center"
+        >
+          <div class="flex items-center gap-4">
+            <h3 class="font-bold text-lg">Server Record Editor</h3>
+            <div class="flex items-center gap-2 no-print">
               <input
                 type="text"
-                id="searchInput"
-                class="form-control form-control-sm"
-                placeholder="Type info..."
-                onkeyup="processData()"
+                id="editQueryDate"
+                placeholder="Select Date"
+                class="text-slate-800 px-3 py-1.5 rounded-lg text-sm font-bold w-40 outline-none"
               />
+              <button
+                onclick="fetchDataForEdit()"
+                id="fetchDataBtn"
+                class="bg-[#f1c40f] text-[#1e3a5f] px-4 py-1.5 rounded-lg font-bold text-xs uppercase hover:bg-yellow-400 transition-all"
+              >
+                Load Data
+              </button>
             </div>
           </div>
-          <div class="filter-group">
-            <label>Start Date:</label>
-            <input
-              type="text"
-              id="startDate"
-              class="form-control form-control-sm custom-date-input"
-            />
-          </div>
-          <div class="filter-group">
-            <label>End Date:</label>
-            <input
-              type="text"
-              id="endDate"
-              class="form-control form-control-sm custom-date-input"
-            />
-          </div>
-          <div class="filter-group">
-            <label>Employee NAME:</label>
-            <select
-              id="empFilter"
-              class="form-select form-select-sm"
-              onchange="processData()"
-            ></select>
-          </div>
-          <div class="filter-group">
-            <label>PROJECT NAME:</label>
-            <select
-              id="sideFilter"
-              class="form-select form-select-sm"
-              onchange="processData()"
-            ></select>
-          </div>
-          <div class="filter-group">
-            <label>Status Filter:</label>
-            <select
-              id="columnSelector"
-              class="form-select form-select-sm"
-              onchange="handleTypeChange()"
+          <button
+            onclick="closeEditModal()"
+            class="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <option value="">Select</option>
-              <option value="STATUS">STATUS</option>
-              <option value="HOLIDAY">HOLIDAY</option>
-              <option value="SUNDAY WORK">SUNDAY WORK</option>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+        <div
+          class="p-2 bg-blue-50 text-[10px] font-bold text-blue-800 uppercase text-center border-b"
+        >
+          Only 'Assigned Site' and 'OT Hours' are editable here.
+        </div>
+        <div class="flex-1 overflow-auto bg-white p-2">
+          <table class="w-full text-xs text-left border-collapse min-w-[800px]">
+            <thead class="bg-slate-100 sticky top-0 z-10">
+              <tr class="text-[#1e3a5f]">
+                <th class="p-3 border">ID</th>
+                <th class="p-3 border">NAME</th>
+                <th class="p-3 border">DATE</th>
+                <th class="p-3 border w-64 text-orange-600">ASSIGNED SITE</th>
+                <th class="p-3 border w-24 text-orange-600 text-center">
+                  OT HRS
+                </th>
+                <th class="p-3 border text-center">HOLIDAY</th>
+                <th class="p-3 border text-center">SUNDAY</th>
+                <th class="p-3 border">REMARK</th>
+              </tr>
+            </thead>
+            <tbody id="editSheetBody" class="divide-y divide-slate-200">
+              <tr>
+                <td
+                  colspan="8"
+                  class="p-10 text-center text-slate-400 font-medium"
+                >
+                  Please select a date and click "Load Data" to fetch records
+                  from Google Sheets.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="p-4 border-t bg-slate-50 flex justify-end gap-3">
+          <button
+            onclick="closeEditModal()"
+            class="bg-slate-200 text-slate-700 px-6 py-2 rounded-lg font-bold text-sm uppercase"
+          >
+            Close
+          </button>
+          <button
+            onclick="updateServerRecords()"
+            id="updateRecordsBtn"
+            class="bg-[#1e3a5f] text-white px-8 py-2 rounded-lg font-bold text-sm uppercase shadow-lg hover:bg-slate-800 transition-all"
+          >
+            Update Records
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Full Preview Modal -->
+    <div id="fullPreviewModal" class="modal-overlay">
+      <div
+        class="bg-white rounded-xl shadow-2xl w-[98vw] max-h-[95vh] flex flex-col overflow-hidden"
+      >
+        <div
+          class="p-5 bg-[#1e3a5f] text-white flex justify-between items-center no-print"
+        >
+          <h3 class="font-bold text-xl italic">
+            ALAMHOW <span class="text-[#f1c40f]">CO LTD</span> - Full Preview
+          </h3>
+          <button
+            onclick="closeFullPreview()"
+            class="bg-white/20 hover:bg-white/30 p-2 rounded-full transition-colors"
+          >
+            <svg
+              class="w-7 h-7"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+        <div
+          class="hidden print:block text-center mb-4 p-4 border-b-2 border-black"
+        >
+          <h1 class="text-2xl font-bold">ALAMHOW CO LTD</h1>
+          <p class="text-sm uppercase tracking-widest font-semibold">
+            Daily Attendance Report
+          </p>
+          <p class="text-xs mt-1" id="printReportDate"></p>
+        </div>
+        <div id="fullPreviewContent" class="overflow-auto p-2 flex-1 bg-white">
+          <table
+            class="w-full text-xs md:text-sm text-left border-collapse min-w-[1100px]"
+          >
+            <thead class="bg-slate-100 sticky top-0 z-10 print:static">
+              <tr class="text-[#1e3a5f] font-bold print:text-black">
+                <th class="p-4 border">SL</th>
+                <th class="p-4 border">DATE</th>
+                <th class="p-4 border">ID</th>
+                <th class="p-4 border">NAME</th>
+                <th class="p-4 border">DESIGNATION</th>
+                <th class="p-4 border text-center">OT HRS</th>
+                <th class="p-4 border text-center">HOLIDAY</th>
+                <th class="p-4 border text-center">SUNDAY</th>
+                <th class="p-4 border">SITE</th>
+                <th class="p-4 border">STATUS</th>
+                <th class="p-4 border">REMARK</th>
+              </tr>
+            </thead>
+            <tbody
+              id="fullPreviewBody"
+              class="divide-y divide-slate-200 print:divide-black"
+            ></tbody>
+            <tfoot
+              id="fullPreviewFoot"
+              class="bg-slate-50 font-black print:bg-white"
+            ></tfoot>
+          </table>
+        </div>
+        <div class="p-5 border-t bg-slate-50 flex justify-end gap-3 no-print">
+          <button
+            onclick="window.print()"
+            class="bg-[#f1c40f] text-[#1e3a5f] px-8 py-2.5 rounded-lg font-bold shadow-lg active:scale-95 transition-all"
+          >
+            Print Report
+          </button>
+          <button
+            onclick="closeFullPreview()"
+            class="bg-slate-200 text-slate-800 px-8 py-2.5 rounded-lg font-bold shadow-lg active:scale-95 transition-all"
+          >
+            Close Preview
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="mainContent"
+      class="max-w-7xl mx-auto opacity-0 transition-opacity duration-700 no-print"
+    >
+      <header
+        class="bg-white border border-slate-200 py-4 mb-6 shadow-sm mx-auto mt-2 rounded-2xl max-w-[98%] md:max-w-7xl"
+      >
+        <div class="px-4">
+          <div
+            class="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8"
+          >
+            <div class="flex flex-col md:flex-row items-center gap-4 md:gap-8">
+              <img
+                src="https://lh3.googleusercontent.com/d/11bxOPboUUmQxIkT6gMYWYqxfh9jZSiLo"
+                alt="ALAMHOW Logo"
+                class="w-20 h-20 md:w-24 md:h-24 object-contain"
+              />
+              <div
+                class="text-center md:text-left md:border-l-2 md:border-slate-200 md:pl-8 py-1"
+              >
+                <h1
+                  class="text-xl md:text-2xl font-extrabold text-[#1e3a5f] tracking-tight uppercase leading-none"
+                >
+                  ALAMHOW <span class="text-[#f1c40f]">CO LTD</span>
+                </h1>
+                <p
+                  class="text-[9px] md:text-[10px] font-bold text-slate-500 tracking-[0.3em] uppercase mt-1"
+                >
+                  Daily Attendance Form
+                </p>
+              </div>
+            </div>
+
+            <div class="flex flex-col items-center md:items-end gap-2">
+              <div class="flex items-center gap-2 font-mono">
+                <div
+                  id="clockHH"
+                  class="bg-white text-[#1e3a5f] font-black text-2xl md:text-3xl px-3 py-2 rounded-xl border border-slate-200 shadow-[0_5px_0_#cbd5e1,inset_0_1px_1px_white] min-w-[55px] text-center"
+                >
+                  00
+                </div>
+
+                <div class="text-[#1e3a5f] font-bold text-2xl animate-pulse">
+                  :
+                </div>
+
+                <div
+                  id="clockMM"
+                  class="bg-white text-[#1e3a5f] font-black text-2xl md:text-3xl px-3 py-2 rounded-xl border border-slate-200 shadow-[0_5px_0_#cbd5e1,inset_0_1px_1px_white] min-w-[55px] text-center"
+                >
+                  00
+                </div>
+
+                <div class="text-[#1e3a5f] font-bold text-2xl animate-pulse">
+                  :
+                </div>
+
+                <div
+                  id="clockSS"
+                  class="bg-white text-[#1e3a5f] font-black text-2xl md:text-3xl px-3 py-2 rounded-xl border border-slate-200 shadow-[0_5px_0_#cbd5e1,inset_0_1px_1px_white] min-w-[55px] text-center"
+                >
+                  00
+                </div>
+
+                <div
+                  id="clockAP"
+                  class="ml-1 bg-[#1e3a5f] text-white font-black text-xs px-2 py-1 rounded-lg shadow-[0_3px_0_#0f172a] border border-slate-800 self-start mt-1"
+                >
+                  AM
+                </div>
+              </div>
+
+              <div
+                id="digitalDate"
+                class="text-[10px] font-extrabold text-[#1e3a5f] uppercase tracking-widest px-2"
+              >
+                LOADING...
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+      <!-- Employee Details -->
+      <div class="card p-5 mb-5 border-l-8 border-[#1e3a5f]">
+        <div class="flex justify-between items-center mb-4">
+          <h2
+            class="text-xs font-black text-[#1e3a5f] uppercase tracking-[0.2em]"
+          >
+            Employee Details
+          </h2>
+          <div class="flex gap-2">
+            <button
+              onclick="openEditModal()"
+              class="text-[10px] bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-bold"
+            >
+              Edit Server Data
+            </button>
+            <button
+              id="refreshBtn"
+              onclick="refreshAllData(true)"
+              class="text-[10px] bg-[#1e3a5f] text-white px-4 py-2 rounded-lg font-bold"
+            >
+              Refresh Database
+            </button>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="input-group relative">
+            <label>ID / Name Search</label>
+            <input
+              type="text"
+              id="empId"
+              placeholder="Search..."
+              class="input-field border-[#1e3a5f]/20 bg-[#1e3a5f]/5 font-bold"
+              autocomplete="off"
+              oninput="handleIdInput(this)"
+              onclick="handleIdInput(this)"
+            />
+            <div id="idSuggestions" class="suggestion-box"></div>
+          </div>
+          <div class="input-group">
+            <label>Employee Name</label
+            ><input
+              type="text"
+              id="empName"
+              class="input-field bg-slate-50"
+              readonly
+            />
+          </div>
+          <div class="input-group">
+            <label>Passport No</label
+            ><input
+              type="text"
+              id="passport"
+              class="input-field bg-slate-50"
+              readonly
+            />
+          </div>
+          <div class="input-group">
+            <label>Joining Date</label
+            ><input
+              type="text"
+              id="joiningDate"
+              class="input-field bg-slate-50"
+              readonly
+            />
+          </div>
+          <div class="input-group">
+            <label>Designation</label
+            ><input
+              type="text"
+              id="designation"
+              class="input-field bg-slate-50"
+              readonly
+            />
+          </div>
+          <div class="input-group">
+            <label>Period</label
+            ><input
+              type="text"
+              id="period"
+              class="input-field bg-slate-50"
+              readonly
+            />
+          </div>
+          <div class="input-group">
+            <label>Salary</label
+            ><input
+              type="text"
+              id="basicSalary"
+              class="input-field bg-slate-50 font-bold"
+              readonly
+            />
+          </div>
+          <div class="input-group">
+            <label>OT Rate (Hr)</label
+            ><input
+              type="text"
+              id="globalOtRate"
+              class="input-field bg-[#f1c40f]/10 font-black text-[#1e3a5f]"
+              readonly
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Entry Form -->
+      <div class="card p-5 mb-6 border border-slate-200">
+        <h2
+          class="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-4"
+        >
+          New Attendance Entry
+        </h2>
+        <div class="grid grid-cols-2 md:flex md:flex-wrap gap-4 items-end">
+          <div class="input-group flex-1 min-w-[140px]">
+            <label>Selection Date</label
+            ><input
+              type="text"
+              id="attDate"
+              placeholder="Select Date"
+              class="input-field"
+            />
+          </div>
+          <div class="input-group flex-1 min-w-[120px]">
+            <label>Status</label>
+            <input
+              type="text"
+              id="attStatus"
+              class="input-field font-semibold bg-slate-100"
+              value="Present"
+              readonly
+            />
+          </div>
+          <div class="input-group flex-[2] min-w-[180px]">
+            <label>Assigned Site</label
+            ><select id="sideName" class="input-field font-bold text-slate-800">
+              <option value="">Loading Sites...</option>
             </select>
           </div>
-          <div class="filter-group" id="typeValueGroup" style="display: none">
-            <label id="typeValueLabel">Value:</label>
-            <select
-              id="typeValueSelect"
-              class="form-select form-select-sm"
-              onchange="processData()"
-            ></select>
+          <div class="input-group flex-1 min-w-[80px]">
+            <label>OT Hours</label
+            ><input
+              type="number"
+              id="dailyOt"
+              placeholder="0"
+              class="input-field"
+            />
           </div>
-          <div class="filter-group">
+          <div class="input-group flex-1 min-w-[110px]">
+            <label>Holiday</label
+            ><input
+              type="text"
+              id="holidayWork"
+              placeholder="0"
+              class="input-field bg-slate-100 font-bold"
+              readonly
+            />
+          </div>
+          <div class="input-group flex-1 min-w-[110px]">
+            <label>Sunday</label
+            ><input
+              type="text"
+              id="sundayWork"
+              placeholder="0"
+              class="input-field bg-slate-100 font-bold"
+              readonly
+            />
+          </div>
+          <input type="hidden" id="attRemark" value="NORMAL WORK" />
+          <button
+            id="addBtn"
+            onclick="requestAddEntry()"
+            class="bg-[#1e3a5f] hover:bg-slate-800 text-white font-bold py-2.5 px-8 rounded-lg text-sm uppercase"
+          >
+            Add
+          </button>
+        </div>
+      </div>
+
+      <!-- Table Display -->
+      <div class="card overflow-hidden mb-10 border border-slate-200">
+        <div
+          class="p-4 bg-[#1e3a5f] text-white flex justify-between items-center"
+        >
+          <h2 class="font-bold text-sm tracking-wide uppercase">
+            Entry Preview List
+          </h2>
+          <div class="flex gap-2">
             <button
-              class="btn btn-sm btn-reset btn-action w-100"
-              onclick="resetFilters()"
+              onclick="openFullPreview()"
+              class="text-[10px] bg-[#f1c40f] text-[#1e3a5f] px-4 py-2 rounded-lg font-black uppercase"
             >
-              Clear
+              Full Preview
+            </button>
+            <button
+              id="saveBtn"
+              onclick="saveAllToSheet()"
+              class="text-[10px] bg-white text-[#1e3a5f] px-5 py-2 rounded-lg font-black uppercase"
+            >
+              Save to Server
+            </button>
+            <button
+              onclick="clearTable()"
+              class="text-[10px] bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold uppercase"
+            >
+              Clear All
             </button>
           </div>
         </div>
-
-        <div class="summary-bar" id="summaryBar">
-          <span
-            >Total Employee: <span id="statEmp" class="stat-box"></span
-          ></span>
-          <span
-            >Total Present: <span id="statPresent" class="stat-box"></span
-          ></span>
-          <span
-            id="salarySheetTitle"
-            class="ms-auto"
-            style="display: none; font-weight: 800; color: #1d3a6d"
-          ></span>
-        </div>
-
-        <div id="loader">
-          <div class="spinner-border spinner-border-sm" role="status"></div>
-          <p class="mt-2" style="font-size: 11px">Data Loading...</p>
-        </div>
-
-        <div class="table-responsive">
-          <table class="table attendance-table" id="attendanceTable">
-            <thead id="tableHead"></thead>
-            <tbody id="tableBody"></tbody>
-            <tfoot id="tableFoot"></tfoot>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-[11px]">
+            <thead class="bg-slate-50 border-b">
+              <tr>
+                <th class="p-3 font-bold text-slate-600">SL</th>
+                <th class="p-3 font-bold text-slate-600">DATE</th>
+                <th class="p-3 font-bold text-slate-600">ID</th>
+                <th class="p-3 font-bold text-slate-600">NAME</th>
+                <th class="p-3 font-bold text-slate-600 text-center">OT</th>
+                <th class="p-3 font-bold text-slate-600 text-center">HOLI</th>
+                <th class="p-3 font-bold text-slate-600 text-center">SUN</th>
+                <th class="p-3 font-bold text-slate-600">SIDE NAME</th>
+                <th class="p-3 font-bold text-slate-600">STATUS</th>
+                <th class="p-3 font-bold text-slate-600">REMARK</th>
+                <th class="p-3 font-bold text-slate-600 text-center no-print">
+                  ACTION
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              id="attendanceBody"
+              class="divide-y divide-slate-100"
+            ></tbody>
+            <tfoot class="bg-[#1e3a5f]/5 font-black">
+              <tr>
+                <td colspan="4" class="p-3 text-right uppercase">
+                  Page Totals:
+                </td>
+                <td class="p-3 text-center text-[#1e3a5f]" id="totalHrs">0</td>
+                <td class="p-3 text-center text-orange-600" id="totalHoli">
+                  0
+                </td>
+                <td class="p-3 text-center text-orange-600" id="totalSun">0</td>
+                <td colspan="4"></td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- Edit Modal -->
-    <div class="modal fade" id="editModal" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-dark text-white">
-            <h6 class="modal-title">Quick Edit Record</h6>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              data-bs-dismiss="modal"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <form id="editForm">
-              <input type="hidden" id="editRowIndex" />
-              <p class="mb-3 text-primary fw-bold" id="displayEmpName"></p>
-              <div class="row g-2">
-                <div class="col-6">
-                  <label class="form-label small fw-bold">STATUS</label>
-                  <select id="editStatus" class="form-select form-select-sm">
-                    <option value="PRESENT">PRESENT</option>
-                    <option value="ABSENT">ABSENT</option>
-                    <option value="OFF">OFF</option>
-                    <option value="LEAVE">LEAVE</option>
-                  </select>
-                </div>
-                <div class="col-6">
-                  <label class="form-label small fw-bold">OT HOURS</label>
-                  <input
-                    type="number"
-                    id="editOT"
-                    class="form-control form-control-sm"
-                    step="0.5"
-                  />
-                </div>
-                <div class="col-12">
-                  <label class="form-label small fw-bold">HOLIDAY WORK</label>
-                  <input
-                    type="number"
-                    id="editHoliday"
-                    class="form-control form-control-sm"
-                    step="0.5"
-                  />
-                </div>
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer p-2">
-            <button
-              type="button"
-              class="btn btn-light btn-sm"
-              data-bs-dismiss="modal"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary btn-sm"
-              onclick="saveEdit()"
-            >
-              Update
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-    <!-- Attendance Matrix Filter Modal -->
-    <div class="modal fade" id="matrixFilterModal" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-success text-white">
-            <h6 class="modal-title">Generate Attendance Report</h6>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              data-bs-dismiss="modal"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <div class="row g-3">
-              <div class="col-12">
-                <label class="form-label small fw-bold"
-                  >Select Month & Year</label
-                >
-                <input
-                  type="text"
-                  id="matrixMonth"
-                  class="form-control form-control-sm custom-date-input"
-                  placeholder="Select Month"
-                />
-              </div>
-
-              <div class="col-12">
-                <label class="form-label small fw-bold"
-                  >Select Employee ID (Optional)</label
-                >
-                <input
-                  list="employeeIdList"
-                  id="matrixIdFilter"
-                  class="form-control form-control-sm"
-                  placeholder="Type or click to select ID"
-                />
-                <datalist id="employeeIdList"> </datalist>
-              </div>
-
-              <div class="col-12">
-                <label class="form-label small fw-bold"
-                  >Filter by Project
-                </label>
-                <select
-                  id="matrixSideFilter"
-                  class="form-select form-select-sm"
-                >
-                  <option value="">All Project</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer p-2">
-            <button
-              type="button"
-              class="btn btn-light btn-sm"
-              data-bs-dismiss="modal"
-            >
-              Close
-            </button>
-            <button
-              type="button"
-              class="btn btn-success btn-sm"
-              onclick="generateFilteredAttendanceSheet()"
-            >
-              VIEW ATTENDANCE
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css"
+      rel="stylesheet"
+    />
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
 
     <script>
-      const WEB_APP_URL =
-        "https://script.google.com/macros/s/AKfycbxUTUqS8NS7nARLXSr_tbkoBnsmcxeGnOCSSmL4d1ZHxvg4PwlYiFpwMxGoy9XwJRuF1g/exec";
-      let rawData = [];
-      let colIndexMap = {};
-      const DAYS_IN_MONTH = 30;
-      let startPicker, endPicker, matrixPicker, bootstrapModal, matrixModal;
+                // --- কনফিগারেশন ---
+                const firebaseConfig = {
+                    apiKey: "AIzaSyB9sM7hurMnfT7wvxiuu-LJKGi6IQepwj8",
+                    authDomain: "my-web-app-397dd.firebaseapp.com",
+                    databaseURL: "https://my-web-app-397dd-default-rtdb.asia-southeast1.firebasedatabase.app",
+                    projectId: "my-web-app-397dd",
+                    storageBucket: "my-web-app-397dd.firebasestorage.app",
+                    messagingSenderId: "53100975061",
+                    appId: "1:53100975061:web:20657ef6719fe46a5ee35c"
+                };
 
-      const leftAlignCols = ["EMPLOYEE NAME", "DESIGNATION", "PROJECT NAME"];
+                // Google Apps Script Web App URL (আপনার URL টি এখানে বসান)
+                const SCRIPT_URL = "YOUR_APPS_SCRIPT_URL_HERE";
 
-      const displayHeaders = [
-        "ISSUE DATE",
-        "ISSUE TIME",
-        "ATTENDANCE DATE",
-        "EMPLOYEE ID",
-        "EMPLOYEE NAME",
-        "DESIGNATION",
-        "PASSPORT NO",
-        "JOINING DATE",
-        "BASIC SALARY",
-        "OT RATE",
-        "TOTAL OT HOURS",
-        "OT AMOUNT",
-        "SUNDAY WORK",
-        "HOLIDAY",
-        "ATTENDANCE BONUS",
-        "PERFORMANCE BONUS",
-        "GROS SALARY",
-        "ADVANCE",
-        "FINE",
-        "NPS 1%",
-        "CSG 1.5%",
-        "TOTAL DEDUCTION",
-        "NEED SALARY", // CSG 1.5% এর ডানে যোগ করা হলো
-        "STATUS",
-        "SIDE NAME",
-        "REMARK",
-      ];
-
-      window.onload = function () {
-        initCustomDatePickers();
-        bootstrapModal = new bootstrap.Modal(
-          document.getElementById("editModal"),
-        );
-        matrixModal = new bootstrap.Modal(
-          document.getElementById("matrixFilterModal"),
-        );
-        loadDataFromAPI();
-      };
-
-      function initCustomDatePickers() {
-        const config = {
-          dateFormat: "Y-m-d",
-          altInput: true,
-          altFormat: "d-m-Y",
-          onChange: () => processData(),
-        };
-        startPicker = flatpickr("#startDate", config);
-        endPicker = flatpickr("#endDate", config);
-
-        matrixPicker = flatpickr("#matrixMonth", {
-          plugins: [
-            new monthSelectPlugin({
-              shorthand: true,
-              dateFormat: "Y-m",
-              altFormat: "F Y",
-              theme: "material_blue",
-            }),
-          ],
-        });
-
-        const now = new Date();
-        matrixPicker.setDate(
-          `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, "0")}`,
-        );
-      }
-
-      async function loadDataFromAPI() {
-        try {
-          document.getElementById("loader").style.display = "block";
-          const response = await fetch(WEB_APP_URL);
-          const data = await response.json();
-          if (!data || data.length === 0) return;
-          rawData = data;
-          mapSheetColumns(data[0]);
-          populateStaticFilters(data);
-          document.getElementById("loader").style.display = "none";
-          processData();
-        } catch (error) {
-          console.error(error);
-        }
-      }
-
-      function mapSheetColumns(headers) {
-        headers.forEach((h, i) => {
-          colIndexMap[h.toString().trim().toUpperCase()] = i;
-        });
-      }
-
-      function isPresent(statusValue) {
-        if (!statusValue) return false;
-        const s = statusValue.toString().trim().toUpperCase();
-        return s === "P" || s === "PRESENT" || s === "";
-      }
-
-      // --- ২. সংশোধিত ফিল্টারিং এবং প্রসেস লজিক ---
-      function processData() {
-        const startStr = document.getElementById("startDate").value;
-        const endStr = document.getElementById("endDate").value;
-
-        let startDate = startStr ? new Date(startStr) : null;
-        if (startDate) startDate.setHours(0, 0, 0, 0);
-
-        let endDate = endStr ? new Date(endStr) : null;
-        if (endDate) endDate.setHours(23, 59, 59, 999);
-
-        const search = document
-          .getElementById("searchInput")
-          .value.toLowerCase();
-        const searchType = document.getElementById("searchType").value;
-        const fEmp = document.getElementById("empFilter").value;
-        const fSide = document.getElementById("sideFilter").value;
-        const fType = document.getElementById("columnSelector").value;
-        const fTypeVal = document
-          .getElementById("typeValueSelect")
-          .value.toLowerCase();
-
-        const titleSpan = document.getElementById("salarySheetTitle");
-        if (startStr && endStr) {
-          titleSpan.innerText = `Records: ${startStr} to ${endStr}`;
-          titleSpan.style.display = "inline";
-        } else {
-          titleSpan.style.display = "none";
-        }
-
-        const dIdx =
-          colIndexMap["ATTENDANCE DATE"] || colIndexMap["ISSUE DATE"];
-        const eIdx = colIndexMap["EMPLOYEE ID"];
-        const sIdx = colIndexMap["SIDE NAME"];
-
-        let filteredRows = rawData.slice(1).filter((row) => {
-          const rId = row[eIdx]?.toString().toUpperCase() || "";
-          const rSide = row[sIdx]?.toString().toUpperCase() || "";
-
-          const rDate = parseDate(row[dIdx]);
-          const compareDate = new Date(rDate.getTime());
-          compareDate.setHours(0, 0, 0, 0);
-
-          let match = true;
-          if (startDate && compareDate < startDate) match = false;
-          if (match && endDate && compareDate > endDate) match = false;
-
-          if (match && search) {
-            if (searchType === "ALL")
-              match = row.join(" ").toLowerCase().includes(search);
-            else
-              match = (row[colIndexMap[searchType]] || "")
-                .toString()
-                .toLowerCase()
-                .includes(search);
-          }
-          if (match && fEmp && rId !== fEmp) match = false;
-          if (match && fSide && rSide !== fSide) match = false;
-          if (match && fType && fTypeVal) {
-            const cellVal = (row[colIndexMap[fType]] || "")
-              .toString()
-              .toLowerCase();
-            if (cellVal !== fTypeVal) match = false;
-          }
-          return match;
-        });
-
-        // সর্টিং (নতুন ডেটা উপরে)
-        filteredRows.sort((a, b) => parseDate(b[dIdx]) - parseDate(a[dIdx]));
-
-        const isSummary =
-          startStr || endStr || fEmp || fSide || (fType && fTypeVal);
-        if (isSummary) renderSummaryView(filteredRows);
-        else renderDetailedView(filteredRows);
-
-        updateStats(filteredRows);
-      }
-      function renderDetailedView(rows) {
-        const thead = document.getElementById("tableHead");
-        const tbody = document.getElementById("tableBody");
-        document.getElementById("tableFoot").innerHTML = "";
-        document.getElementById("bodyRoot").classList.remove("summary-mode");
-
-        // ১. হেডার রেন্ডার
-        thead.innerHTML = `<tr>
-        <th style="width: 40px; background-color: #f8f9fa; vertical-align: middle;" class="text-center">SL</th>
-        ${displayHeaders
-          .filter((h) => h !== "JOINING DATE")
-          .map((h) => {
-            let extraStyle =
-              "vertical-align: middle; text-align: center; white-space: normal; word-wrap: break-word; min-width: 70px; max-width: 110px; line-height: 1.1; padding: 5px;";
-
-            if (h.includes("BONUS"))
-              extraStyle += "background-color: #e6fffa; color: #006655;";
-            else if (["ADVANCE", "FINE", "NPS 1%", "CSG 1.5%"].includes(h))
-              extraStyle += "background-color: #fff5f5; color: #c53030;";
-            else if (h === "TOTAL DEDUCTION")
-              extraStyle +=
-                "background-color: #ffebeb; color: #b91c1c; font-weight: bold;";
-            else if (h === "NEED SALARY")
-              extraStyle +=
-                "background-color: #1d3a6d; color: #ffffff; font-weight: bold;";
-            else if (h === "TOTAL OT HOURS")
-              extraStyle +=
-                "background-color: #fff9e6; color: #856404; font-weight: bold;";
-            else if (h === "GROS SALARY")
-              extraStyle += "background-color: #ebf8ff; color: #2b6cb0;";
-
-            let headerHtml = `<th style="${extraStyle}">${h}</th>`;
-            if (h === "BASIC SALARY") {
-              headerHtml += `<th style="background-color: #f0fdf4; color: #166534; vertical-align: middle; text-align: center; white-space: normal; min-width: 70px; line-height: 1.1;">DAILY BASIC</th>`;
-            }
-            return headerHtml;
-          })
-          .join("")}
-        <th class="no-print text-center" style="background-color: #f8f9fa; vertical-align: middle;">ACTION</th>
-    </tr>`;
-
-        // ২. ডাটা রেন্ডার
-        tbody.innerHTML = rows
-          .map((row, idx) => {
-            const originalIndex = rawData.indexOf(row);
-            const reverseSerial = rows.length - idx;
-            const empId = row[colIndexMap["EMPLOYEE ID"]];
-            const attDateRaw = parseDate(row[colIndexMap["ATTENDANCE DATE"]]);
-
-            let otHours = 0;
-            if (empId && attDateRaw && typeof globalOTMap !== "undefined") {
-              const y = attDateRaw.getFullYear(),
-                m = attDateRaw.getMonth() + 1,
-                d = attDateRaw.getDate();
-              const key1 = `${empId}_${y}-${m}-${d}`,
-                key2 = `${empId}_${y}-${m.toString().padStart(2, "0")}-${d.toString().padStart(2, "0")}`;
-              otHours =
-                parseFloat(globalOTMap[key1] || globalOTMap[key2]) ||
-                parseFloat(row[colIndexMap["TOTAL OT HOURS"]]) ||
-                0;
-            } else {
-              otHours = parseFloat(row[colIndexMap["TOTAL OT HOURS"]]) || 0;
-            }
-
-            const basicSalary =
-              parseFloat(row[colIndexMap["BASIC SALARY"]]) || 0;
-            const holidayAmt = parseFloat(row[colIndexMap["HOLIDAY"]]) || 0;
-            const sundayAmt = parseFloat(row[colIndexMap["SUNDAY WORK"]]) || 0;
-            const status = (row[colIndexMap["STATUS"]] || "")
-              .toString()
-              .toUpperCase();
-            let daysInMonth =
-              attDateRaw && attDateRaw.getTime() !== 0
-                ? new Date(
-                    attDateRaw.getFullYear(),
-                    attDateRaw.getMonth() + 1,
-                    0,
-                  ).getDate()
-                : 30;
-
-            let dailyBasicDisplay = 0;
-            if (holidayAmt > 0) dailyBasicDisplay = holidayAmt;
-            else if (sundayAmt > 0) dailyBasicDisplay = sundayAmt;
-            else if (isPresent(status))
-              dailyBasicDisplay = basicSalary / daysInMonth;
-
-            const otRate = parseFloat(row[colIndexMap["OT RATE"]]) || 0;
-            const otAmt = otHours * otRate;
-            const grossSalary =
-              dailyBasicDisplay +
-              otAmt +
-              (parseFloat(row[colIndexMap["ATTENDANCE BONUS"]]) || 0) +
-              (parseFloat(row[colIndexMap["PERFORMANCE BONUS"]]) || 0);
-            const nps = grossSalary * 0.01;
-            const csg = grossSalary * 0.015;
-            const totalDeduction =
-              nps +
-              csg +
-              (parseFloat(row[colIndexMap["ADVANCE"]]) || 0) +
-              (parseFloat(row[colIndexMap["FINE"]]) || 0);
-            const needSalary = grossSalary - totalDeduction;
-
-            return `<tr>
-            <td class="text-center" style="font-weight: bold;">${reverseSerial}</td>
-            ${displayHeaders
-              .filter((h) => h !== "JOINING DATE")
-              .map((h) => {
-                let val = row[colIndexMap[h]];
-                const isNumeric = [
-                  "BASIC SALARY",
-                  "DAILY BASIC",
-                  "OT AMOUNT",
-                  "HOLIDAY",
-                  "SUNDAY WORK",
-                  "GROS SALARY",
-                  "NEED SALARY",
-                  "TOTAL OT HOURS",
-                  "NPS 1%",
-                  "CSG 1.5%",
-                  "TOTAL DEDUCTION",
-                  "ADVANCE",
-                  "FINE",
-                ].includes(h.toUpperCase());
-                const align = isNumeric
-                  ? "text-end"
-                  : leftAlignCols.includes(h)
-                    ? "text-start"
-                    : "text-center";
-
-                if (h === "TOTAL OT HOURS") val = otHours > 0 ? otHours : "-";
-                else if (h === "OT AMOUNT")
-                  val = otAmt > 0 ? otAmt.toFixed(2) : "-";
-                else if (h === "NPS 1%") val = nps.toFixed(2);
-                else if (h === "CSG 1.5%") val = csg.toFixed(2);
-                else if (h === "TOTAL DEDUCTION")
-                  val = totalDeduction.toFixed(2);
-                else if (h === "GROS SALARY") val = grossSalary.toFixed(2);
-                else if (h === "NEED SALARY") val = needSalary.toFixed(2);
-                else if (typeof val === "number") val = val.toFixed(2);
-
-                if (val === undefined || val === null || val === "") val = "-";
-
-                // STATUS কলামের জন্য ব্যাকগ্রাউন্ড কালার কন্ডিশন
-                let cellBg = "";
-                if (h === "STATUS")
-                  cellBg = "background-color: #dcfce7; font-weight: 500;"; // হালকা সবুজ (Green-100)
-
-                let cellHtml = `<td class="${align}" style="white-space: nowrap; padding: 4px 8px; ${cellBg}">${val}</td>`;
-
-                if (h === "BASIC SALARY") {
-                  let bg =
-                    holidayAmt > 0 || sundayAmt > 0 ? "#e0f2fe" : "#f0fdf4";
-                  cellHtml += `<td class="text-end" style="background-color: ${bg}; font-weight: bold; white-space: nowrap; padding: 4px 8px;">${dailyBasicDisplay.toFixed(2)}</td>`;
+                // Firebase ইনিশিয়ালাইজেশন
+                let db = null;
+                let isFirebaseAvailable = false;
+                try {
+                    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+                        firebase.initializeApp(firebaseConfig);
+                        db = firebase.database();
+                        isFirebaseAvailable = true;
+                    } else {
+                        console.warn('Firebase not loaded or already initialized');
+                    }
+                } catch (error) {
+                    console.error('Firebase initialization failed:', error);
+                    isFirebaseAvailable = false;
                 }
-                return cellHtml;
-              })
-              .join("")}
-            <td class="no-print text-center">
-                <button class="btn btn-warning btn-sm" onclick="openEditModal(${originalIndex})">EDIT</button>
-            </td>
-        </tr>`;
-          })
-          .join("");
-      }
-      function renderSummaryView(rows) {
-        const thead = document.getElementById("tableHead");
-        const tbody = document.getElementById("tableBody");
-        const tfoot = document.getElementById("tableFoot");
-        document.getElementById("bodyRoot").classList.add("summary-mode");
 
-        const summary = {};
+                // --- গ্লোবাল ভেরিয়েবলসমূহ ---
+                let attendanceData = [], employees = [], currentSites = [], serverEditData = [], slCount = 1;
+                let isEmployeeLoaded = false, isSitesLoaded = false;
+                let datePicker, editQueryPicker;
+                let editModeId = null;
+                let currentMonthAttendance = [];
 
-        rows.forEach((row) => {
-          const id = row[colIndexMap["EMPLOYEE ID"]];
-          if (!id) return;
+               let HOLIDAY_LIST = []; // const এর বদলে let ব্যবহার করুন এবং লিস্টটি খালি রাখুন
+               window.onload = () => {
+                datePicker = flatpickr("#attDate", {
+                    dateFormat: "Y-m-d",
+                    altInput: true,
+                    altFormat: "F j, Y",
+                    onChange: (d, dateStr) => handleDateChange(dateStr),
+                    // হলিডে এবং সানডে লাল করার লজিক
+                 onDayCreate: (dObj, dStr, fp, dayElem) => {
+                const dateProp = dayElem.dateObj;
+                const year = dateProp.getFullYear();
+                const month = String(dateProp.getMonth() + 1).padStart(2, '0');
+                const day = String(dateProp.getDate()).padStart(2, '0');
+                const formattedDate = `${year}-${month}-${day}`;
 
-          if (!summary[id]) {
-            const attDateRaw = parseDate(row[colIndexMap["ATTENDANCE DATE"]]);
-            let daysInMonth = 30;
-            if (attDateRaw && attDateRaw.getTime() !== 0) {
-              daysInMonth = new Date(
-                attDateRaw.getFullYear(),
-                attDateRaw.getMonth() + 1,
-                0,
-              ).getDate();
+                const isSunday = dateProp.getDay() === 0;
+                const isPublicHoliday = HOLIDAY_LIST.includes(formattedDate);
+
+                if (isPublicHoliday) {
+                    dayElem.classList.add("holiday-date");
+
+                    // SVG লেবেল যোগ করা
+                    dayElem.innerHTML += `
+                        <svg viewBox="0 0 100 100" class="holiday-svg">
+                            <circle cx="50" cy="50" r="47" style="fill: none; stroke: #ff4d4d; stroke-width: 6;" />
+                            <path id="curve${dayElem.dateObj.getDate()}" d="M 15,55 A 35,35 0 0,1 85,55" fill="transparent" />
+                            <text style="fill: #ff4d4d; font-weight: 900; font-size: 16px;"><textPath xlink:href="#curve${dayElem.dateObj.getDate()}" startOffset="50%" text-anchor="middle">Holiday</textPath></text>
+                            <text x="50" y="62" style="fill: #ff4d4d; font-weight: bold; text-anchor: middle; font-size: 40px;">${dayElem.dateObj.getDate()}</text>
+                            <text x="50" y="88" style="fill: #ff4d4d; font-weight: bold; text-anchor: middle; font-size: 24px;">${dayElem.dateObj.toLocaleDateString('en-US', { weekday: 'short' })}</text>
+                        </svg>
+                    `;
+                } else if (isSunday) {
+                    dayElem.classList.add("sunday-date");
+                }
             }
+                });
 
-            summary[id] = {
-              id,
-              name: row[colIndexMap["EMPLOYEE NAME"]],
-              mBasic: parseFloat(row[colIndexMap["BASIC SALARY"]]) || 0,
-              daysInMonth: daysInMonth,
-              narDays: 0, // সাধারণ দিন (Normal)
-              sunDays: 0, // রবিবার (Sunday)
-              holiDays: 0, // ছুটির দিন (Holiday)
-              totalAtt: 0, // মোট হাজিরা
-              otHrs: 0,
-              otRate: parseFloat(row[colIndexMap["OT RATE"]]) || 0,
-              holAmt: 0,
-              sunAmt: 0,
-              adv: 0,
-              fine: 0,
-              attBonus: 0,
-              perfBonus: 0,
+                editQueryPicker = flatpickr("#editQueryDate", {
+                    dateFormat: "Y-m-d", altInput: true, altFormat: "F j, Y"
+                });
+
+      // লোডিং ওভারলে ৫ সেকেন্ড পর ফোর্স হাইড করা (যদি ডাটা লোড না হয়)
+          setTimeout(() => {
+              const overlay = document.getElementById('loadingOverlay');
+              const mainContent = document.getElementById('mainContent');
+              if (overlay && !overlay.classList.contains('fade-out')) {
+                  overlay.classList.add('fade-out');
+                  if (mainContent) mainContent.classList.remove('opacity-0');
+                  console.warn('Loading timeout: Forced to show main content');
+              }
+          }, 5000);
+
+                refreshAllData(false);
             };
-          }
-
-          const hAmt = parseFloat(row[colIndexMap["HOLIDAY"]]) || 0;
-          const sAmt = parseFloat(row[colIndexMap["SUNDAY WORK"]]) || 0;
-          const status = (row[colIndexMap["STATUS"]] || "")
-            .toString()
-            .toUpperCase();
-          const isP = isPresent(status);
-
-          // উপস্থিতি বিভাজন লজিক
-          if (isP || hAmt > 0 || sAmt > 0) {
-            summary[id].totalAtt += 1;
-            if (hAmt > 0) {
-              summary[id].holiDays += 1;
-              summary[id].holAmt += hAmt;
-            } else if (sAmt > 0) {
-              summary[id].sunDays += 1;
-              summary[id].sunAmt += sAmt;
-            } else {
-              summary[id].narDays += 1;
-            }
-          }
-
-          summary[id].otHrs +=
-            parseFloat(row[colIndexMap["TOTAL OT HOURS"]]) || 0;
-          summary[id].adv += parseFloat(row[colIndexMap["ADVANCE"]]) || 0;
-          summary[id].fine += parseFloat(row[colIndexMap["FINE"]]) || 0;
-          summary[id].attBonus +=
-            parseFloat(row[colIndexMap["ATTENDANCE BONUS"]]) || 0;
-          summary[id].perfBonus +=
-            parseFloat(row[colIndexMap["PERFORMANCE BONUS"]]) || 0;
-        });
-
-        // হেডার ডিজাইন: ATTENDANCE কলামকে ৪ ভাগে ভাগ করা হয়েছে
-        thead.innerHTML = `<tr>
-    <th rowspan="2" class="text-center" style="position: sticky; top: 0; z-index: 100;">SL</th>
-    <th rowspan="2" class="text-center" style="position: sticky; top: 0; z-index: 100;">ID</th>
-    <th rowspan="2" class="text-start" style="position: sticky; top: 0; z-index: 100;">NAME</th>
-    <th rowspan="2" class="text-center" style="position: sticky; top: 0; z-index: 100;">MAIN BASIC</th>
-    <th rowspan="2" class="text-center" style="position: sticky; top: 0; z-index: 100;">DAILY BASIC</th>
-    
-    <th colspan="4" class="text-center" style="background-color: #f8fafc; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #142a50;">ATTENDANCE</th>
-    
-    <th rowspan="2" class="text-center" style="position: sticky; top: 0; z-index: 100;">TOTAL BASIC</th>
-    <th rowspan="2" class="text-center" style="position: sticky; top: 0; z-index: 100;">OT AMTOUNT</th>
-    <th rowspan="2" class="text-center" style="position: sticky; top: 0; z-index: 100;">HOLIDAY</th>
-    <th rowspan="2" class="text-center" style="position: sticky; top: 0; z-index: 100;">SUNDAY</th>
-    <th rowspan="2" class="text-center" style="position: sticky; top: 0; z-index: 100;">GROS SALARY</th>
-    
-    <th colspan="5" class="text-center deduction-col" style="position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #142a50;">DEDUCTION</th>
-    
-    <th rowspan="2" class="text-center highlight-col" style="position: sticky; top: 0; z-index: 100;">NEED SALARY</th>
-    <th rowspan="2" class="text-center" style="position: sticky; top: 0; z-index: 100;">SIGNATURE</th>
-  </tr>
-  <tr>
-    <th class="text-center" style="font-size: 10px; background-color: #f1f5f9; position: sticky; top: 22px; z-index: 90;">NARMAL</th>
-    <th class="text-center" style="font-size: 10px; background-color: #f1f5f9; position: sticky; top: 22px; z-index: 90;">SUNDAY</th>
-    <th class="text-center" style="font-size: 10px; background-color: #f1f5f9; position: sticky; top: 22px; z-index: 90;">HOLIDAY</th>
-    <th class="text-center" style="font-size: 10px; background-color: #e2e8f0; font-weight: bold; position: sticky; top: 22px; z-index: 90;">TOTAL</th>
-    
-    <th class="text-center deduction-col" style="position: sticky; top: 22px; z-index: 90;">ADVANCE</th>
-    <th class="text-center deduction-col" style="position: sticky; top: 22px; z-index: 90;">FINE</th>
-    <th class="text-center deduction-col" style="position: sticky; top: 22px; z-index: 90;">NPS 1%</th>
-    <th class="text-center deduction-col" style="position: sticky; top: 22px; z-index: 90;">CSG 1.5%</th>
-    <th class="text-center deduction-col" style="position: sticky; top: 22px; z-index: 90;">TOTAL DEDUCTION.</th>
-  </tr>`;
-
-        let g_mB = 0,
-          g_dB = 0,
-          g_nar = 0,
-          g_sunD = 0,
-          g_holD = 0,
-          g_totA = 0,
-          g_actB = 0,
-          g_otA = 0,
-          g_holA = 0,
-          g_sunA = 0,
-          g_gross = 0,
-          g_adv = 0,
-          g_fine = 0,
-          g_nps = 0,
-          g_csg = 0,
-          g_tD = 0,
-          g_need = 0;
-
-        const sortedSummary = Object.values(summary).sort((a, b) =>
-          a.id
-            .toString()
-            .localeCompare(b.id.toString(), undefined, { numeric: true }),
-        );
-
-        tbody.innerHTML = sortedSummary
-          .map((emp, i) => {
-            const dailyRate = emp.mBasic / emp.daysInMonth;
-            const actB = dailyRate * emp.narDays; // শুধুমাত্র Normal দিনের বেসিক
-            const otA = emp.otHrs * emp.otRate;
-            const gross =
-              actB +
-              otA +
-              emp.holAmt +
-              emp.sunAmt +
-              emp.attBonus +
-              emp.perfBonus;
-            const nps = gross * 0.01;
-            const csg = gross * 0.015;
-            const tDed = emp.adv + emp.fine + nps + csg;
-            const need = gross - tDed;
-
-            // গ্র্যান্ড টোটাল আপডেট
-            g_mB += emp.mBasic;
-            g_dB += dailyRate;
-            g_nar += emp.narDays;
-            g_sunD += emp.sunDays;
-            g_holD += emp.holiDays;
-            g_totA += emp.totalAtt;
-            g_actB += actB;
-            g_otA += otA;
-            g_holA += emp.holAmt;
-            g_sunA += emp.sunAmt;
-            g_gross += gross;
-            g_adv += emp.adv;
-            g_fine += emp.fine;
-            g_nps += nps;
-            g_csg += csg;
-            g_tD += tDed;
-            g_need += need;
-
-            return `<tr class="text-center">
-      <td>${i + 1}</td>
-      <td>${emp.id}</td>
-      <td class="text-start">${emp.name}</td>
-      <td>${emp.mBasic.toFixed(2)}</td>
-      <td>${dailyRate.toFixed(2)}</td>
-      <td style="background-color: #fcfcfc;">${emp.narDays}</td>
-      <td style="background-color: #fcfcfc;">${emp.sunDays}</td>
-      <td style="background-color: #fcfcfc;">${emp.holiDays}</td>
-      <td style="font-weight: bold; background-color: #f1f5f9;">${emp.totalAtt}</td>
-      <td>${actB.toFixed(2)}</td>
-      <td>${otA.toFixed(2)}</td>
-      <td>${emp.holAmt.toFixed(2)}</td>
-      <td>${emp.sunAmt.toFixed(2)}</td>
-      <td style="font-weight: bold; background-color: #ebf8ff;">${gross.toFixed(2)}</td>
-      <td class="deduction-col">${emp.adv.toFixed(2)}</td>
-      <td class="deduction-col">${emp.fine.toFixed(2)}</td>
-      <td class="deduction-col">${nps.toFixed(2)}</td>
-      <td class="deduction-col">${csg.toFixed(2)}</td>
-      <td class="deduction-col" style="font-weight: bold;">${tDed.toFixed(2)}</td>
-      <td class="highlight-col">${need.toFixed(2)}</td>
-      <td></td>
-    </tr>`;
-          })
-          .join("");
-
-        tfoot.innerHTML = `<tr class="grand-total-row text-center">
-    <td colspan="3" style="font-weight: bold;">GRAND TOTAL:</td>
-    <td>${g_mB.toFixed(2)}</td>
-    <td>${g_dB.toFixed(2)}</td>
-    <td>${g_nar}</td>
-    <td>${g_sunD}</td>
-    <td>${g_holD}</td>
-    <td style="font-weight: bold;">${g_totA}</td>
-    <td>${g_actB.toFixed(2)}</td>
-    <td>${g_otA.toFixed(2)}</td>
-    <td>${g_holA.toFixed(2)}</td>
-    <td>${g_sunA.toFixed(2)}</td>
-    <td style="font-weight: bold;">${g_gross.toFixed(2)}</td>
-    <td>${g_adv.toFixed(2)}</td>
-    <td>${g_fine.toFixed(2)}</td>
-    <td>${g_nps.toFixed(2)}</td>
-    <td>${g_csg.toFixed(2)}</td>
-    <td style="font-weight: bold;">${g_tD.toFixed(2)}</td>
-    <td class="highlight-col" style="font-weight: bold;">${g_need.toFixed(2)}</td>
-    <td></td>
-  </tr>`;
-      }
-
-      function openEditModal(rowIndex) {
-        const row = rawData[rowIndex];
-        document.getElementById("editRowIndex").value = rowIndex;
-        document.getElementById("displayEmpName").innerText =
-          row[colIndexMap["EMPLOYEE NAME"]];
-        document.getElementById("editStatus").value = (
-          row[colIndexMap["STATUS"]] || "PRESENT"
-        ).toUpperCase();
-        document.getElementById("editOT").value =
-          row[colIndexMap["TOTAL OT HOURS"]] || 0;
-        document.getElementById("editHoliday").value =
-          row[colIndexMap["HOLIDAY"]] || 0;
-        bootstrapModal.show();
-      }
-
-      async function saveEdit() {
-        const idx = document.getElementById("editRowIndex").value;
-        const payload = {
-          action: "updateRow",
-          row: parseInt(idx) + 1,
-          updates: {
-            STATUS: document.getElementById("editStatus").value,
-            "TOTAL OT HOURS": document.getElementById("editOT").value,
-            HOLIDAY: document.getElementById("editHoliday").value,
-          },
-        };
-        bootstrapModal.hide();
-        document.getElementById("loader").style.display = "block";
-        try {
-          await fetch(WEB_APP_URL, {
-            method: "POST",
-            body: JSON.stringify(payload),
-          });
-          loadDataFromAPI();
-        } catch (e) {
-          console.error(e);
-        }
-      }
-
-      function handleTypeChange() {
-        const sel = document.getElementById("columnSelector"),
-          valG = document.getElementById("typeValueGroup"),
-          valS = document.getElementById("typeValueSelect");
-        if (sel.value !== "") {
-          valG.style.display = "block";
-          const vals = [
-            ...new Set(
-              rawData
-                .slice(1)
-                .map((r) =>
-                  (r[colIndexMap[sel.value]] || "").toString().trim(),
-                ),
-            ),
-          ].filter((v) => v && v !== "-");
-          valS.innerHTML =
-            '<option value="">-- All --</option>' +
-            vals
-              .sort()
-              .map((v) => `<option value="${v}">${v}</option>`)
-              .join("");
-          document.getElementById("typeValueLabel").innerText =
-            sel.options[sel.selectedIndex].text + ":";
-        } else valG.style.display = "none";
-        processData();
-      }
-
-      function updateStats(filteredRows) {
-        if (!filteredRows || filteredRows.length === 0) {
-          document.getElementById("statEmp").innerText = "0";
-          document.getElementById("statPresent").innerText = "0";
-          return;
-        }
-        const eIdx = colIndexMap["EMPLOYEE ID"];
-        const sIdx = colIndexMap["STATUS"];
-        const isSum = document
-          .getElementById("bodyRoot")
-          .classList.contains("summary-mode");
-        let uniqueEmpIds = new Set();
-        filteredRows.forEach((row) => {
-          const id = row[eIdx]?.toString().trim();
-          if (id && id !== "-" && id !== "") uniqueEmpIds.add(id);
-        });
-        let totalAttendance = 0;
-        if (isSum) {
-          const tbody = document.getElementById("tableBody");
-          for (let r of tbody.rows)
-            if (!r.classList.contains("grand-total-row"))
-              totalAttendance += parseInt(r.cells[5]?.innerText) || 0;
-        } else {
-          filteredRows.forEach((row) => {
-            if (isPresent(row[sIdx])) totalAttendance++;
-          });
-        }
-        document.getElementById("statEmp").innerText = uniqueEmpIds.size;
-        document.getElementById("statPresent").innerText = totalAttendance;
-      }
-
-      function populateStaticFilters(data) {
-        const eSel = document.getElementById("empFilter"),
-          sSel = document.getElementById("sideFilter"),
-          mSide = document.getElementById("matrixSideFilter");
-        const emps = new Map(),
-          sides = new Set();
-        data.slice(1).forEach((r) => {
-          if (r[colIndexMap["EMPLOYEE ID"]])
-            emps.set(
-              r[colIndexMap["EMPLOYEE ID"]].toString().toUpperCase(),
-              r[colIndexMap["EMPLOYEE NAME"]],
-            );
-          if (r[colIndexMap["SIDE NAME"]])
-            sides.add(r[colIndexMap["SIDE NAME"]].toString().toUpperCase());
-        });
-        const sideOptions = [...sides]
-          .sort()
-          .map((s) => `<option value="${s}">${s}</option>`)
-          .join("");
-        eSel.innerHTML =
-          '<option value="">All Employees</option>' +
-          [...emps.entries()]
-            .sort((a, b) =>
-              a[0].localeCompare(b[0], undefined, { numeric: true }),
-            )
-            .map(
-              ([id, name]) => `<option value="${id}">${id} | ${name}</option>`,
-            )
-            .join("");
-        sSel.innerHTML = '<option value="">All Projects</option>' + sideOptions;
-        mSide.innerHTML =
-          '<option value="">All Projects</option>' + sideOptions;
-      }
-
-      function parseDate(s) {
-        if (!s || s.toString().trim() === "" || s === "-") return new Date(0);
-        if (s instanceof Date) return s;
-
-        let dateString = s.toString().trim().replace(/\//g, "-");
-        const parts = dateString.split("-");
-
-        if (parts.length === 3) {
-          if (parts[0].length === 4)
-            return new Date(parts[0], parts[1] - 1, parts[2]); // YYYY-MM-DD
-          if (parts[2].length === 4)
-            return new Date(parts[2], parts[1] - 1, parts[0]); // DD-MM-YYYY
-        }
-        const finalDate = new Date(dateString);
-        return isNaN(finalDate.getTime()) ? new Date(0) : finalDate;
-      }
-
-      function refreshData() {
-        loadDataFromAPI();
-      }
-      function resetFilters() {
-        document.getElementById("searchInput").value = "";
-        if (startPicker) startPicker.clear();
-        if (endPicker) endPicker.clear();
-        document.getElementById("empFilter").value = "";
-        document.getElementById("sideFilter").value = "";
-        document.getElementById("columnSelector").value = "";
-        document.getElementById("typeValueGroup").style.display = "none";
-        processData();
-      }
-
-      function openPreview() {
-        const start = document.getElementById("startDate").value || "N/A";
-        const end = document.getElementById("endDate").value || "N/A";
-        const emp =
-          document.getElementById("empFilter").options[
-            document.getElementById("empFilter").selectedIndex
-          ].text;
-        const side =
-          document.getElementById("sideFilter").options[
-            document.getElementById("sideFilter").selectedIndex
-          ].text;
-        const filterType =
-          document.getElementById("columnSelector").options[
-            document.getElementById("columnSelector").selectedIndex
-          ].text;
-        const filterVal =
-          document.getElementById("typeValueSelect")?.options[
-            document.getElementById("typeValueSelect")?.selectedIndex
-          ]?.text || "None";
-
-        const tableHeader = document.getElementById("tableHead").innerHTML;
-        const tableBody = document.getElementById("tableBody").innerHTML;
-        const tableFoot = document.getElementById("tableFoot").innerHTML;
-
-        const previewWindow = window.open("", "_blank");
-        previewWindow.document.write(`
-      <html>
-        <head>
-          <title>Salary Report Preview</title>
-          <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-          <style>
-            @page { size: landscape; margin: 10mm; }
-            body { 
-                padding: 15px; 
-                font-family: 'Segoe UI', Tahoma, sans-serif; 
-                font-size: 11px; 
-                color: #000; 
-                background: #fff;
-            }
-            /* Preview Only Section */
-            .preview-meta-info {
-                background: #fdfdfd;
-                border: 2px solid #1d3a6d;
-                padding: 10px 15px;
-                margin-bottom: 20px;
-                border-radius: 8px;
-                display: flex;
-                flex-wrap: wrap;
-                gap: 20px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            }
-            .meta-item { display: flex; flex-direction: column; }
-            .meta-label { font-size: 10px; text-transform: uppercase; color: #1d3a6d; font-weight: 800; margin-bottom: 2px; }
-            .meta-value { font-size: 12px; font-weight: 600; color: #333; }
-            
-            .report-header { text-align: center; margin-bottom: 15px; }
-            .report-header h2 { font-size: 26px; margin: 0; font-weight: 800; letter-spacing: 1px; color: #1d3a6d; }
-            .report-header .statement-title { font-size: 14px; margin: 5px 0 2px 0; font-weight: bold; text-transform: uppercase; border-bottom: 1.5px solid #1d3a6d; display: inline-block; padding: 0 15px 3px 15px; }
-            .report-header .print-date-range { font-size: 13px; font-weight: 800; color: #000; margin-top: 8px; }
-
-            table { width: 100%; border-collapse: collapse; margin-top: 5px; table-layout: auto; border: 2px solid #000; }
-            th, td { 
-                border: 1px solid #000 !important; 
-                text-align: center; 
-                padding: 6px 4px !important; 
-                background: #fff !important;
-                color: #000 !important;
-                font-size: 10px;
-                white-space: nowrap;
-            }
-            th { 
-                font-weight: 900; 
-                text-transform: uppercase; 
-                background: #f2f2f2 !important;
-                vertical-align: middle;
-            }
-
-            .text-start { text-align: left !important; padding-left: 8px !important; }
-            
-            .total-attendance-col { font-weight: bold; background: #fff9e6 !important; }
-            .highlight-col { font-weight: bold; background: #e6fffa !important; }
-
-            /* Ensure Foot appears only on the last page and stays at the end of the table content */
-            tfoot { 
-                display: table-footer-group; 
-            }
-            
-            .grand-total-row td { 
-                font-weight: 900 !important; 
-                border-top: 2.5px double #000 !important; 
-                background: #f8f8f8 !important;
-                font-size: 11px;
-                padding: 8px 4px !important;
-            }
-
-            .signature-section {
-                margin-top: 40px;
-                display: flex;
-                justify-content: space-between;
-                padding: 0 40px;
-                page-break-inside: avoid;
-            }
-
-            .no-print-btn { position: fixed; top: 15px; right: 15px; z-index: 1000; padding: 10px 20px; font-weight: bold; border-radius: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: none; background-color: #1d3a6d; color: #fff; }
-
-            @media print {
-                .no-print, .no-print-btn, .preview-meta-info { display: none !important; }
-                body { padding: 0; margin: 0; }
-                .report-header { margin-top: 0; }
-                table { border-width: 1.5pt; }
-                
-                /* This wrapper ensures the total row and signatures appear together at the end */
-                .print-footer-container {
-                    page-break-inside: avoid;
+                    dayElem.classList.add("sunday-date");
                 }
             }
-          </style>
-        </head>
-        <body>
-          <button class="no-print-btn" onclick="window.print()">PRINT REPORT</button>
-          
-          <!-- Detailed Meta Info - Preview Only -->
-          <div class="preview-meta-info">
-             <div class="meta-item">
-                <span class="meta-label">Period / Range</span>
-                <span class="meta-value">${start} — ${end}</span>
-             </div>
-             <div class="meta-item">
-                <span class="meta-label">Employee Selection</span>
-                <span class="meta-value">${emp}</span>
-             </div>
-             <div class="meta-item">
-                <span class="meta-label">Side / Department</span>
-                <span class="meta-value">${side}</span>
-             </div>
-             <div class="meta-item">
-                <span class="meta-label">Active Filter</span>
-                <span class="meta-value">${filterType !== "None" ? filterType + ": " + filterVal : "No Filter"}</span>
-             </div>
-          </div>
+                });
 
-          <div class="report-header">
-            <h2>ALAMHOW CO LTD</h2>
-            <div class="statement-title">MONTHLY SALARY STATEMENT</div>
-            <div class="print-date-range">DATE: ${start} TO ${end}</div>
-          </div>
+                editQueryPicker = flatpickr("#editQueryDate", {
+                    dateFormat: "Y-m-d", altInput: true, altFormat: "F j, Y"
+                });
 
-          <table>
-            <thead>${tableHeader}</thead>
-            <tbody>${tableBody}</tbody>
-            <!-- The tfoot automatically repeats or stays at the end of the data based on browser -->
-            <tfoot>${tableFoot}</tfoot>
-          </table>
+                refreshAllData(false);
+            };
 
-          <div style="margin-top: 40px; display: flex; justify-content: space-between; padding: 0 40px;">
-            <div style="border-top: 1px solid #000; width: 140px; text-align: center; font-size: 10px; font-weight: bold;">Prepared By</div>
-            <div style="border-top: 1px solid #000; width: 140px; text-align: center; font-size: 10px; font-weight: bold;">Authorized Signature</div>
-          </div>
-        </body>
-      </html>
-    `);
-        previewWindow.document.close();
-      }
+               // --- ডাটা রিফ্রেশ লজিক ---
+            async function refreshAllData(isManual) {
+                const btn = document.getElementById('refreshBtn');
+                const mainContent = document.getElementById('mainContent');
+                const overlay = document.getElementById('loadingOverlay');
 
-      function showAttendanceFilter() {
-        matrixModal.show();
-      }
-      function generateFilteredAttendanceSheet() {
-        const monthInput = document.getElementById("matrixMonth").value;
-        const sideFilter = document.getElementById("matrixSideFilter").value;
-        if (!monthInput) {
-          alert("Please select a month.");
-          return;
-        }
+                try {
+                    if (isManual && btn) {
+                        btn.innerHTML = `<span class="spinner"></span> Updating...`;
+                        btn.disabled = true;
+                        if(mainContent) mainContent.classList.add('screen-lock-blur');
+                    }
 
-        const [year, month0] = monthInput.split("-").map(Number);
-        const month = month0 - 1;
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        const dateRange = [];
-        for (
-          let d = new Date(firstDay);
-          d <= lastDay;
-          d.setDate(d.getDate() + 1)
-        )
-          dateRange.push(new Date(d));
+                    const now = new Date();
+                    const currentMonthName = now.toLocaleString('en-US', { month: 'long' }) + "-" + now.getFullYear();
 
-        const publicHolidayDates = new Set();
-        rawData.slice(1).forEach((row) => {
-          const dRaw = parseDate(row[colIndexMap["ATTENDANCE DATE"]]);
-          const rem = (row[colIndexMap["REMARK"]] || "")
-            .toString()
-            .toUpperCase();
-          if (
-            dRaw &&
-            (rem.includes("HOLIDAY") || rem.includes("PUBLIC HOLIDAY"))
-          ) {
-            publicHolidayDates.add(dRaw.toISOString().split("T")[0]);
-          }
-        });
+                    if (!isFirebaseAvailable || !db) {
+                        // Firebase unavailable, use default/empty data
+                        console.warn('Firebase not available, using offline mode');
+                        HOLIDAY_LIST = [];
+                        employees = [];
+                        currentMonthAttendance = [];
+                        currentSites = ['Site A', 'Site B', 'Site C']; // Default sites
 
-        const now = new Date();
-        const printDateTime = now.toLocaleString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        });
+                        // সাইট ড্রপডাউন আপডেট
+                        const siteSelect = document.getElementById('sideName');
+                        if(siteSelect) {
+                            siteSelect.innerHTML = '<option value="" selected disabled>Select Site</option>' +
+                                currentSites.map(s => `<option value="${s}">${s}</option>`).join('');
+                        }
 
-        const attendanceMap = {},
-          employees = {};
-        rawData.slice(1).forEach((row) => {
-          const id = row[colIndexMap["EMPLOYEE ID"]],
-            dRaw = parseDate(row[colIndexMap["ATTENDANCE DATE"]]);
-          const rSide = (row[colIndexMap["SIDE NAME"]] || "")
-            .toString()
-            .toUpperCase();
-          if (!id || !dRaw) return;
-          if (dRaw.getFullYear() === year && dRaw.getMonth() === month) {
-            if (sideFilter && rSide !== sideFilter.toUpperCase()) return;
-            const dateStr = dRaw.toISOString().split("T")[0];
-            if (!employees[id])
-              employees[id] = row[colIndexMap["EMPLOYEE NAME"]];
-            if (!attendanceMap[id]) attendanceMap[id] = {};
-            let st = (row[colIndexMap["STATUS"]] || "")
-              .toString()
-              .trim()
-              .toUpperCase();
+                        // লোডিং স্টেট ফিনিশ করা
+                        isEmployeeLoaded = true; isSitesLoaded = true;
+                        if (overlay) overlay.classList.add('fade-out');
+                        if (mainContent) mainContent.classList.remove('opacity-0', 'screen-lock-blur');
 
-            let shortStat = "-";
-            if (isPresent(st)) shortStat = "P";
-            else if (st.startsWith("A")) shortStat = "A";
-            else if (st.startsWith("L")) shortStat = "L";
-            else if (st.startsWith("H")) shortStat = "H";
-            attendanceMap[id][dateStr] = shortStat;
-          }
-        });
+                        if (isManual && btn) {
+                            btn.innerHTML = `Refresh Database`; btn.disabled = false;
+                            Swal.fire({ title: 'Offline Mode', text: 'Firebase not available. Using default data.', icon: 'warning', width: '300px', timer: 2000, showConfirmButton: false });
+                        }
+                        return;
+                    }
 
-        const monthName = firstDay.toLocaleString("default", { month: "long" });
-        const sortedIds = Object.keys(employees).sort((a, b) =>
-          a.localeCompare(b, undefined, { numeric: true }),
-        );
+                    // ১. ডাটাবেস থেকে ৪টি ডাটা ফেচ করা হচ্ছে
+                    const [empSnap, siteSnap, attSnap, holSnap] = await Promise.all([
+                        db.ref('EMPLOYEE_LIST').once('value'),
+                        db.ref('SIDE_NAME').once('value'),
+                        db.ref('ATTENDANCE/' + currentMonthName).once('value'),
+                        db.ref('HOLIDAY_').once('value') // আপনার স্ক্রিনশট অনুযায়ী আন্ডারস্কোরসহ পাথ
+                    ]);
 
-        let dayTotalsP = Array(dateRange.length).fill(0);
-        let dayTotalsSun = Array(dateRange.length).fill(0);
-        let dayTotalsHol = Array(dateRange.length).fill(0);
-        let dayTotalsA = Array(dateRange.length).fill(0);
-        let grandTotalP = 0,
-          grandTotalA = 0,
-          grandTotalSun = 0,
-          grandTotalHol = 0;
+                    // ২. হলিডে লিস্ট প্রসেসিং (আপনার স্পেসিফিক ফরম্যাট অনুযায়ী)
+                    const holRawData = holSnap.val() || {};
+                    HOLIDAY_LIST = Object.keys(holRawData).map(key => {
+                        // key থেকে "Fri-Dec-25-2026..." ফরম্যাটকে "2026-12-25" এ রূপান্তর
+                        const parts = key.split('-');
+                        if (parts.length >= 4) {
+                            const monthName = parts[1];
+                            const day = parts[2];
+                            const year = parts[3];
+                            const monthMap = {
+                                'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06',
+                                'Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'
+                            };
+                            return `${year}-${monthMap[monthName] || '01'}-${day.padStart(2, '0')}`;
+                        }
+                        return null;
+                    }).filter(d => d);
 
-        // টেবিল হেডার জেনারেশন
-        const tableHeader = `<thead>
-      <tr style="height: 22px;">
-        <th rowspan="2" style="width:20px; padding: 1px;">SL</th>
-        <th rowspan="2" style="width:160px; padding: 1px;">EMPLOYEE ID & Name</th>
-        <th colspan="${dateRange.length}" style="padding: 0 10px; font-size: 11px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <div style="flex: 2; text-align: center; font-weight: bold;">
-                    Attendance Summary: ${monthName} ${year}${sideFilter ? ` - ${sideFilter.toUpperCase()}` : " - ALL PROJECT"}
-                </div>
-                <div style="flex: 1; text-align: right; font-size: 9px; font-weight: normal;">
-                    Printed on: ${printDateTime}
-                </div>
-            </div>
-        </th>
-        <th colspan="4" style="background:#0d685b; padding: 1px; font-size: 10px;">SUMMARY</th>
-      </tr>
-      <tr style="height: 35px;">
-        ${dateRange
-          .map((d) => {
-            const dayName = d
-              .toLocaleDateString("en-US", { weekday: "short" })
-              .substring(0, 2);
-            const isSun = d.getDay() === 0;
-            const isPubHol = publicHolidayDates.has(
-              d.toISOString().split("T")[0],
-            );
+                    // ৩. বাকি ডাটা প্রসেসিং (এমপ্লয়ি ও সাইট)
+                    const empRawData = empSnap.val() || {};
+                    employees = Object.keys(empRawData).map(key => {
+                        const emp = empRawData[key];
+                        return {
+                            id: String(emp.ID || "").padStart(4, '0'),
+                            name: emp.EMPLOYEE_NAME || "",
+                            salary: emp.BASIC_SALARY || "0",
+                            designation: emp.DESIGNATION || "",
+                            passport: emp.PASSPORT_NO || "",
+                            joining: emp.JOINING_DATE || "",
+                            period: emp.PERIOD || "",
+                            otRate: emp.OT_RATE__PER_HOUR_ || "0",
+                            workingAs: emp.WARKING_AS || emp.DESIGNATION || ""
+                        };
+                    });
 
-            // হেডার ব্যাকগ্রাউন্ড সাধারণ দিনের মতোই নীল থাকবে, শুধু টেক্সট লাল হবে
-            let headerStyle =
-              isSun || isPubHol ? "color: #ff4d4d !important;" : "";
+                    currentMonthAttendance = attSnap.val() ? Object.values(attSnap.val()) : [];
+                    const siteRawData = siteSnap.val() || {};
+                    currentSites = Object.keys(siteRawData).map(key => siteRawData[key].NAME || siteRawData[key]).filter(name => name);
 
-            let headerContent = `<div style="line-height: 1;">${d.getDate()}<br><span style="font-size:7px">${dayName}</span></div>`;
+                    // সাইট ড্রপডাউন আপডেট
+                    const siteSelect = document.getElementById('sideName');
+                    if(siteSelect) {
+                        siteSelect.innerHTML = '<option value="" selected disabled>Select Site</option>' +
+                            currentSites.map(s => `<option value="${s}">${s}</option>`).join('');
+                    }
 
-            if (isPubHol) {
-              headerContent = `
-                <div class="holiday-box" style="width: 25px; height: 25px;">
-                    <svg viewBox="0 0 100 100" class="holiday-svg">
-                        <circle cx="50" cy="50" r="47" style="fill: none; stroke: #ff4d4d; stroke-width: 6;" />
-                        <path id="curve${d.getDate()}" d="M 15,55 A 35,35 0 0,1 85,55" fill="transparent" />
-                        <text style="fill: #ff4d4d; font-weight: 900; font-size: 16px;"><textPath xlink:href="#curve${d.getDate()}" startOffset="50%" text-anchor="middle">Holiday</textPath></text>
-                        <text x="50" y="62" style="fill: #ff4d4d; font-weight: bold; text-anchor: middle; font-size: 40px;">${d.getDate()}</text>
-                        <text x="50" y="88" style="fill: #ff4d4d; font-weight: bold; text-anchor: middle; font-size: 24px;">${dayName}</text>
-                    </svg>
-                </div>`;
+                    // লোডিং স্টেট ফিনিশ করা
+                    isEmployeeLoaded = true; isSitesLoaded = true;
+                    if (overlay) overlay.classList.add('fade-out');
+                    if (mainContent) mainContent.classList.remove('opacity-0', 'screen-lock-blur');
+
+                    if (isManual && btn) {
+                        btn.innerHTML = `Refresh Database`; btn.disabled = false;
+                        Swal.fire({ title: 'Synced!', text: 'Firebase Database Updated', icon: 'success', width: '300px', timer: 1500, showConfirmButton: false });
+                    }
+                } catch (err) {
+                    console.error("Critical Sync Error:", err);
+                    if(btn) { btn.innerHTML = `Refresh Database`; btn.disabled = false; }
+                    if(overlay) overlay.classList.add('fade-out');
+                    Swal.fire({ title: 'Sync Failed', text: err.message, icon: 'error', width: '350px' });
+                }
             }
-            return `<th style="width:25px; padding: 1px 0; vertical-align: middle; ${headerStyle}">${headerContent}</th>`;
-          })
-          .join("")}
-        <th style="width:25px; background:#198754; padding: 1px;">P</th>
-        <th style="width:25px; background:#dc3545; padding: 1px;">A</th>
-        <th style="width:25px; background:#ffc107; color:#000; padding: 1px;">SUN</th>
-        <th style="width:25px; background:#6c757d; padding: 1px;">HOL</th>
-      </tr>
-    </thead>`;
+                // ডিজিটাল ঘড়ি
+                function updateClock() {
+                    const now = new Date();
+                    let hours = now.getHours();
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const seconds = String(now.getSeconds()).padStart(2, '0');
+                    const ampm = hours >= 12 ? 'PM' : 'AM';
+                    hours = hours % 12 || 12;
 
-        // টেবিল বডি জেনারেশন
-        const tableBody = sortedIds
-          .map((id, idx) => {
-            let countP = 0,
-              countA = 0,
-              countSun = 0,
-              countHol = 0;
-            const daysHtml = dateRange
-              .map((d, dIdx) => {
-                const ds = d.toISOString().split("T")[0];
-                const isSunday = d.getDay() === 0;
-                const isPubHol = publicHolidayDates.has(ds);
-                let stat =
-                  attendanceMap[id] && attendanceMap[id][ds]
-                    ? attendanceMap[id][ds]
-                    : "-";
-
-                if (stat === "P") {
-                  if (isSunday) {
-                    dayTotalsSun[dIdx]++;
-                    countSun++;
-                  } else if (isPubHol) {
-                    dayTotalsHol[dIdx]++;
-                    countHol++;
-                  } else {
-                    dayTotalsP[dIdx]++;
-                    countP++;
-                  }
+                    const ids = { 'clockHH': String(hours).padStart(2, '0'), 'clockMM': minutes, 'clockSS': seconds, 'clockAP': ampm };
+                    for (let id in ids) {
+                        let el = document.getElementById(id);
+                        if(el) el.innerText = ids[id];
+                    }
+                    if(document.getElementById('digitalDate')) document.getElementById('digitalDate').innerText = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
                 }
-                if (stat === "A") {
-                  dayTotalsA[dIdx]++;
-                  countA++;
+                setInterval(updateClock, 1000);
+                updateClock();
+            // --- এডিট ও ডাটা ফেচিং ---
+            async function fetchDataForEdit() {
+                const date = document.getElementById('editQueryDate').value;
+                if (!date) return Swal.fire({ title: "Error", text: "Select a date!", icon: "warning", width: "300px" });
+
+                const btn = document.getElementById('fetchDataBtn');
+                const tbody = document.getElementById('editSheetBody');
+
+                btn.innerHTML = `<span class="spinner"></span> Loading...`;
+                btn.disabled = true;
+                tbody.innerHTML = `<tr><td colspan="8" class="p-10 text-center"><span class="loader-circle inline-block"></span><p class="mt-2 text-slate-500 font-bold">Fetching from Firebase...</p></td></tr>`;
+
+                try {
+                    const dateObj = new Date(date);
+                    const monthName = dateObj.toLocaleString('en-US', { month: 'long' }) + "-" + dateObj.getFullYear();
+                    const snapshot = await db.ref('ATTENDANCE/' + monthName).once('value');
+                    const allData = snapshot.val() || {};
+
+                    serverEditData = Object.keys(allData)
+                        .map(key => ({ ...allData[key], firebaseKey: key }))
+                        .filter(item => item.DATE === date);
+
+                    if (serverEditData.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="8" class="p-10 text-center text-red-500 font-bold">No records found.</td></tr>`;
+                    } else {
+                        renderEditTable();
+                    }
+                } catch (err) {
+                    Swal.fire({ title: "Error", text: "Fetch failed", icon: "error", width: "300px" });
+                } finally {
+                    btn.innerHTML = `Load Data`; btn.disabled = false;
+                }
+            }
+
+                function renderEditTable() {
+                    const tbody = document.getElementById('editSheetBody');
+                    tbody.innerHTML = serverEditData.map((item, idx) => {
+                        const siteOptions = currentSites.map(s => `<option value="${s}" ${item.SITE_NAME === s ? 'selected' : ''}>${s}</option>`).join('');
+                        return `
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="p-3 border font-bold text-slate-700">${item.ID}</td>
+                                <td class="p-3 border uppercase font-medium text-slate-600">${item.EMPLOYEE_NAME}</td>
+                                <td class="p-3 border text-slate-50">${item.DATE}</td>
+                                <td class="p-3 border">
+                                    <select onchange="updateLocalServerData(${idx}, 'SITE_NAME', this.value)" class="w-full bg-orange-50 border-orange-200 text-[#1e3a5f] p-1.5 rounded font-bold text-xs outline-none">
+                                        ${siteOptions}
+                                    </select>
+                                </td>
+                                <td class="p-3 border">
+                                    <input type="number" step="0.5" value="${item.DAILY_OT}" onchange="updateLocalServerData(${idx}, 'DAILY_OT', parseFloat(this.value))" class="w-full bg-orange-50 border-orange-200 p-1.5 rounded text-center font-bold text-xs outline-none">
+                                </td>
+                                <td class="p-3 border text-center text-slate-500 font-bold">${item.HOLIDAY_WORK || 0}</td>
+                                <td class="p-3 border text-center text-slate-500 font-bold">${item.SUNDAY_WORK || 0}</td>
+                                <td class="p-3 italic text-slate-400">${item.REMARK || ''}</td>
+                            </tr>`;
+                    }).join('');
                 }
 
-                // বডি কলাম স্টাইল: হালকা লাল ব্যাকগ্রাউন্ড এবং গাঢ় লাল টেক্সট
-                if (isSunday || isPubHol) {
-                  return `<td style="background-color: #fff0f0; color: #cc0000; font-weight:bold; border: 1px solid #000;">${stat !== "-" ? stat : ""}</td>`;
+                function updateLocalServerData(idx, field, val) {
+                    serverEditData[idx][field] = val;
                 }
 
-                if (stat === "P") return `<td>P</td>`;
-                if (stat === "A") return `<td style="color:red">A</td>`;
-                if (stat === "H" || stat === "L")
-                  return `<td style="color:green">${stat}</td>`;
-                return `<td></td>`;
-              })
-              .join("");
+                async function updateServerRecords() {
+                    if (serverEditData.length === 0) return;
+                    const btn = document.getElementById('updateRecordsBtn');
+                    const overlay = document.getElementById('loadingOverlay');
 
-            grandTotalP += countP;
-            grandTotalA += countA;
-            grandTotalSun += countSun;
-            grandTotalHol += countHol;
-            return `<tr><td>${idx + 1}</td><td class="text-start">${id} - ${employees[id]}</td>${daysHtml}
-                <td style="font-weight:bold; background:#e6fffa">${countP}</td>
-                <td style="font-weight:bold; background:#fff0f0">${countA}</td>
-                <td style="font-weight:bold; background:#fff9e6">${countSun}</td>
-                <td style="font-weight:bold; background:#f8f9fa">${countHol}</td></tr>`;
-          })
-          .join("");
+                    btn.innerHTML = `<span class="spinner"></span> Updating...`;
+                    btn.disabled = true;
+                    overlay.classList.remove('fade-out');
 
-        const tableFooter = `<tr>
-            <td colspan="2" style="text-align:left; padding: 4px 8px; font-weight: bold; background: #f3f4f6;">DAILY TOTAL</td>
-            ${dayTotalsP
-              .map((p, idx) => {
-                const pVal = dayTotalsP[idx];
-                const sunVal = dayTotalsSun[idx];
-                const holVal = dayTotalsHol[idx];
-                const allP = pVal + sunVal + holVal;
-                return `<td style="text-align:center; font-weight: bold; background: #f8f9fa; font-size:9px;">${allP}</td>`;
-              })
-              .join("")}
-            <td style="font-weight: bold; background: #e6fffa;">${grandTotalP}</td>
-            <td style="font-weight: bold; background: #fff0f0;">${grandTotalA}</td>
-            <td style="font-weight: bold; background: #fff9e6;">${grandTotalSun}</td>
-            <td style="font-weight: bold; background: #f8f9fa;">${grandTotalHol}</td>
-          </tr>`;
+                    try {
+                        const dateObj = new Date(serverEditData[0].DATE);
+                        const monthName = dateObj.toLocaleString('en-US', { month: 'long' }) + "-" + dateObj.getFullYear();
+                        const updates = {};
+                        serverEditData.forEach(item => {
+                            const key = item.firebaseKey;
+                            const record = { ...item };
+                            delete record.firebaseKey;
+                            updates[`/ATTENDANCE/${monthName}/${key}`] = record;
+                        });
 
-        // ... (বাকি ক্যালকুলেশন আগের মতোই)
+                        await db.ref().update(updates);
+                        showTransparentAlert("Success", "Firebase updated!", "success");
+                        if(typeof closeEditModal === 'function') closeEditModal();
+                        refreshAllData(false);
+                    } catch (err) {
+                        console.error("Update Error:", err);
+                        showCustomAlert("Update Failed", "Error saving to Firebase.", "error");
+                    } finally {
+                        btn.innerHTML = `Update Records`; btn.disabled = false;
+                        overlay.classList.add('fade-out');
+                    }
+                }
 
-        const preview = window.open("", "_blank");
-        preview.document.write(`
-      <html>
-        <head>
-          <title>Attendance Summary</title>
-          <style>
-            @page { size: A4 landscape; margin: 5mm; }
-            body { font-family: sans-serif; padding: 10px; margin: 0; zoom: 1.4; }
-            .company-name { text-align: center; color: #1d3a6d; margin: 0; font-size: 24px; font-weight: bold; }
-            table { width: 100%; border-collapse: collapse; table-layout: fixed; border: 1.2px solid #000; margin-top: 10px; }
-            th, td { border: 1px solid #000; text-align: center; font-size: 10px; padding: 1px 0; }
-            th { background: #1d3a6d; color: #fff; }
-            .holiday-box { margin: 0 auto; display: flex; align-items: center; justify-content: center; }
-            .holiday-svg { width: 100%; height: 100%; }
-            .outer-circle { fill: white; stroke: #1d3a6d; stroke-width: 4; }
-            .curve-text { fill: black; font-weight: 900; }
-            .date-text { fill: red; font-weight: bold; text-anchor: middle; }
-            .day-text { fill: red; font-weight: bold; text-anchor: middle; }
-            .text-start { text-align: left; padding-left: 5px; white-space: nowrap; overflow: hidden; }
-            .signature-section { display: flex; justify-content: space-between; margin-top: 30px; gap: 10px; flex-wrap: wrap; }
-            .signature-card { flex: 1 1 130px; min-width: 140px; max-width: 180px; padding-top: 22px; border-top: 1px solid #000; text-align: center; font-weight: bold; font-size: 12px; }
-            .summary-small-table { margin-top: 18px; border-collapse: collapse; }
-            .summary-small-table th, .summary-small-table td { border: 1px solid #000; padding: 6px 10px; font-size: 11px; }
-            .summary-small-table th { background: #f2f2f2; }
-            .no-print { position: fixed; top: 10px; right: 10px; padding: 10px; background: #000; color: #fff; border-radius: 5px; cursor: pointer; z-index: 1000; }
-            @media print { body { zoom: 1.0; } th, td { font-size: 8.5px; } .no-print { display: none; } }
-          </style>
-        </head>
-        <body>
-          <button class="no-print" onclick="window.print()">Print Report</button>
-          <h1 class="company-name">ALAMHOW CO LTD</h1>
-          <table>${tableHeader}<tbody>${tableBody}</tbody><tfoot>${tableFooter}</tfoot></table>
-          <div style="margin-top: 15px; display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;">
-            <table style="width: auto; min-width: 220px;">
-              <thead><tr><th colspan="2" style="padding: 2px; height: 18px;">PRESENT SUMMARY</th></tr></thead>
-              <tbody>
-                <tr><td style="text-align:left; padding:2px 10px; font-weight:bold;">Total Normal Working Days</td><td style="font-weight:bold; width:60px;">${grandTotalP}</td></tr>
-                <tr><td style="text-align:left; padding:2px 10px; font-weight:bold; color:#b58900;">Total Sunday Working Days</td><td style="font-weight:bold; color:#b58900;">${grandTotalSun}</td></tr>
-                <tr><td style="text-align:left; padding:2px 10px; font-weight:bold;">Total Holiday Working Days</td><td style="font-weight:bold;">${grandTotalHol}</td></tr>
-                <tr><td style="text-align:left; padding:2px 10px; font-weight:bold; color:red;">Total Absent </td><td style="font-weight:bold; color:red;">${grandTotalA}</td></tr>
-              </tbody>
-            </table>
-          </div>
-           <div style="margin-top: 40px; display: flex; justify-content: space-between; padding: 0 40px;">
-            <div style="border-top: 1px solid #000; width: 140px; text-align: center; font-size: 10px; font-weight: bold;">Prepared By</div>
-            <div style="border-top: 1px solid #000; width: 140px; text-align: center; font-size: 10px; font-weight: bold;">Authorized Signature</div>
-          </div>
-        </body>
-      </html>
-    `);
-        preview.document.close();
-      }
+                // --- কোর লজিক ---
+                function handleDateChange(dateStr) {
+                    if (!dateStr) return;
+                    const dateObj = new Date(dateStr);
+                    const remarkEl = document.getElementById('attRemark'), sunEl = document.getElementById('sundayWork'), holEl = document.getElementById('holidayWork');
+                    const salary = parseFloat(document.getElementById('basicSalary').value) || 0;
+                    const isSunday = dateObj.getDay() === 0, isInHoli = HOLIDAY_LIST.includes(dateStr);
+
+                    if(sunEl) sunEl.value = 0;
+                    if(holEl) holEl.value = 0;
+
+                    if (isSunday) {
+                        if(remarkEl) remarkEl.value = "Sunday";
+                        if (salary > 0 && sunEl) sunEl.value = ((salary / 26) * 1.5).toFixed(2);
+                    } else if (isInHoli) {
+                        if(remarkEl) remarkEl.value = "Public Holiday";
+                        if (salary > 0 && holEl) holEl.value = ((salary / 26) * 1.5).toFixed(2);
+                    } else {
+                        if(remarkEl) remarkEl.value = "NORMAL WORK";
+                    }
+                }
+
+                function handleIdInput(input) {
+                const val = input.value.trim().toLowerCase();
+                const box = document.getElementById('idSuggestions');
+
+                if (!box || employees.length === 0) return;
+
+                // বক্সটি ক্লিয়ার করা
+                box.innerHTML = '';
+
+                // লজিক: যদি ইনপুট খালি থাকে তবে সব এমপ্লয়ি দেখাবে (বা প্রথম ১০-১৫ জন),
+                // আর কিছু লিখলে সেই অনুযায়ী ফিল্টার হবে।
+                const filtered = val === ''
+                    ? employees.slice(0, 20) // ইনপুট খালি থাকলে প্রথম ২০ জনকে দেখাবে
+                    : employees.filter(e => e.id.includes(val) || e.name.toLowerCase().includes(val));
+
+                if (filtered.length > 0) {
+                    filtered.forEach(emp => {
+                        const div = document.createElement('div');
+                        div.className = 'suggestion-item flex justify-between p-2 cursor-pointer hover:bg-gray-100 border-b border-gray-50';
+                        div.innerHTML = `
+                            <div>
+                                <span class="text-[#1e3a5f] font-bold">ID: ${emp.id}</span><br>
+                                <span class="text-xs text-gray-600">${emp.name}</span>
+                            </div>
+                        `;
+                        // মাউস দিয়ে সিলেক্ট করার জন্য
+                        div.onmousedown = (e) => {
+                            e.preventDefault(); // ইনপুট থেকে ফোকাস হারিয়ে যাওয়া রোধ করতে
+                            selectEmployee(emp);
+                        };
+                        box.appendChild(div);
+                    });
+                    box.style.display = 'block';
+                } else {
+                    box.style.display = 'none';
+                }
+            }
+
+                function selectEmployee(emp) {
+                    document.getElementById('empId').value = emp.id;
+                    document.getElementById('empName').value = emp.name;
+                    document.getElementById('passport').value = emp.passport || '';
+                    const desig = (emp.designation || '').trim();
+                    document.getElementById('designation').value = desig;
+
+                    const siteSelect = document.getElementById('sideName');
+                    if (desig.toLowerCase() === 'cook') {
+                        siteSelect.value = 'KITCHEN';
+                        siteSelect.disabled = true;
+                        siteSelect.classList.add('bg-gray-100', 'cursor-not-allowed');
+                    } else {
+                        siteSelect.disabled = false;
+                        siteSelect.classList.remove('bg-gray-100', 'cursor-not-allowed');
+                    }
+
+                    window.currentWorkingAs = emp.workingAs || '';
+                    document.getElementById('joiningDate').value = emp.joining || '';
+                    document.getElementById('period').value = emp.period || '';
+                    document.getElementById('basicSalary').value = emp.salary || '0';
+                    document.getElementById('globalOtRate').value = emp.otRate || '0';
+                    document.getElementById('idSuggestions').style.display = 'none';
+
+                    if(document.getElementById('attDate').value) handleDateChange(document.getElementById('attDate').value);
+                }
+
+               function requestAddEntry() {
+                let rawEmpId = document.getElementById('empId').value.trim();
+                const attDate = document.getElementById('attDate').value;
+                const site = document.getElementById('sideName').value;
+
+                // ১. ভ্যালিডেশন (এগুলো প্রয়োজন যাতে ভুল ডাটা এন্ট্রি না হয়)
+                if (!rawEmpId) return showCustomAlert("Missing ID", "Please select an employee!", "warning");
+                if (!attDate || !site) return showCustomAlert("Input Error", "Date and Site are required!", "error");
+
+                let formattedId = isNaN(rawEmpId) ? rawEmpId : rawEmpId.padStart(4, '0');
+
+                // ২. ডুপ্লিকেট চেক (লোকাল ও সার্ভার)
+                const isLocalDuplicate = attendanceData.some(e => e.empId === formattedId && e.date === attDate);
+                if (isLocalDuplicate) return showCustomAlert("Duplicate Found", "Already in your current list!", "warning");
+
+                const isServerDuplicate = currentMonthAttendance.some(s => String(s.ID || s.empId).padStart(4, '0') === formattedId && s.DATE === attDate);
+                if (isServerDuplicate) return showCustomAlert("Already Exists", `ID: ${formattedId} is already in database!`, "error");
+
+                // ৩. নতুন অবজেক্ট তৈরি
+                const newEntry = {
+                    id: Date.now(),
+                    slNo: slCount++,
+                    date: attDate,
+                    empId: formattedId,
+                    empName: document.getElementById('empName').value,
+                    period: document.getElementById('period').value || '',
+                    designation: document.getElementById('designation').value,
+                    workingAs: window.currentWorkingAs || document.getElementById('designation').value,
+                    joiningDate: document.getElementById('joiningDate').value || '',
+                    passport: document.getElementById('passport').value || '',
+                    salary: document.getElementById('basicSalary').value || 0,
+                    otRate: document.getElementById('globalOtRate').value || 0,
+                    ot: parseFloat(document.getElementById('dailyOt').value) || 0,
+                    site: site,
+                    status: "Present",
+                    holidayWork: parseFloat(document.getElementById('holidayWork').value) || 0,
+                    sundayWork: parseFloat(document.getElementById('sundayWork').value) || 0,
+                    remark: document.getElementById('attRemark').value
+                };
+
+                // ৪. লিস্টে ডাটা যোগ করা
+                attendanceData.push(newEntry);
+
+                // ৫. এডিট মোড থেকে আসলে বাটন আগের অবস্থায় ফিরিয়ে নেওয়া
+                const addBtn = document.getElementById('addBtn');
+                if(addBtn) {
+                    addBtn.innerText = "Add";
+                    addBtn.classList.remove('bg-orange-600');
+                    addBtn.classList.add('bg-[#1e3a5f]');
+                }
+
+                // ৬. সাকসেস মেসেজ লাইনটি সরিয়ে দেওয়া হয়েছে (আপনার চাহিদা অনুযায়ী)
+
+                // ৭. টেবিল রি-রেন্ডার এবং ইনপুট ক্লিয়ার
+                renderTable();
+                resetAllInputs();
+            }
+                function resetAllInputs() {
+                    const ids = ['dailyOt', 'holidayWork', 'sundayWork', 'empId', 'empName', 'passport', 'designation', 'joiningDate', 'period', 'basicSalary', 'globalOtRate'];
+                    ids.forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ""; });
+                    const site = document.getElementById('sideName');
+                    if(site) { site.disabled = false; site.classList.remove('bg-gray-100'); site.value = ""; }
+                    if(datePicker) datePicker.clear();
+                    if(document.getElementById('attRemark')) document.getElementById('attRemark').value = "NORMAL WORK";
+                }
+
+                function renderTable() {
+                const tbody = document.getElementById('attendanceBody');
+                if(!tbody) return;
+                tbody.innerHTML = '';
+                let tOt = 0, tHol = 0, tSun = 0;
+
+                attendanceData.forEach((item, index) => {
+                    // যদি item.id না থাকে তবে ইনডেক্সকে আইডি হিসেবে ব্যবহার করবে (ব্যাকআপ হিসেবে)
+                    const rowId = item.id || index;
+
+                    tOt += parseFloat(item.ot || 0);
+                    tHol += parseFloat(item.holidayWork || 0);
+                    tSun += parseFloat(item.sundayWork || 0);
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 border-b">
+                            <td class="p-3">${item.slNo}</td>
+                            <td class="p-3 font-bold">${item.date}</td>
+                            <td class="p-3 font-black text-[#1e3a5f]">${item.empId}</td>
+                            <td class="p-3 uppercase font-medium">${item.empName}</td>
+                            <td class="p-3 text-center">${item.ot}</td>
+                            <td class="p-3 text-center text-orange-600 font-bold">${item.holidayWork.toFixed(2)}</td>
+                            <td class="p-3 text-center text-orange-600 font-bold">${item.sundayWork.toFixed(2)}</td>
+                            <td class="p-3 text-[10px] uppercase">${item.site}</td>
+                            <td class="p-3">
+                                <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[9px] font-black">${item.status}</span>
+                            </td>
+                            <td class="p-3 italic text-slate-500 font-bold">${item.remark}</td>
+                            <td class="p-3 text-center no-print flex gap-2 justify-center">
+
+            <button onclick="editEntry('${rowId}')" class="text-blue-600 font-bold px-2 py-1 hover:bg-blue-50 rounded">Edit</button>
+            <button onclick="confirmDelete('${rowId}')" class="text-red-500 font-bold px-2 py-1 hover:bg-red-50 rounded">Del</button>
+                            </td>
+                        </tr>`;
+                });
+
+                if(document.getElementById('totalHrs')) document.getElementById('totalHrs').innerText = tOt.toFixed(1);
+                if(document.getElementById('totalHoli')) document.getElementById('totalHoli').innerText = tHol.toFixed(2);
+                if(document.getElementById('totalSun')) document.getElementById('totalSun').innerText = tSun.toFixed(2);
+            }
+
+            function editEntry(id) {
+                const item = attendanceData.find(i => String(i.id) === String(id));
+                if (!item) return;
+
+                // ডাটা গুলো উপরে ইনপুটে পাঠানো হচ্ছে (নিরাপদভাবে)
+                const setVal = (id, val) => {
+                    const el = document.getElementById(id);
+                    if(el) el.value = val || '';
+                };
+
+                setVal('empId', item.empId);
+                setVal('empName', item.empName);
+                setVal('sideName', item.site);
+                setVal('dailyOt', item.ot);
+                setVal('holidayWork', item.holidayWork);
+                setVal('sundayWork', item.sundayWork);
+                setVal('attRemark', item.remark);
+
+                // পাসপোর্টে ডাটা পাঠানোর জন্য (যদি ফিল্ড থাকে)
+                setVal('passport', item.passport);
+                setVal('designation', item.designation);
+                setVal('basicSalary', item.salary);
+                setVal('globalOtRate', item.otRate);
+
+                // তারিখ সেট করা
+                if(datePicker) {
+                    datePicker.setDate(item.date);
+                } else if(document.getElementById('attDate')) {
+                    document.getElementById('attDate').value = item.date;
+                }
+
+                // নিচে টেবিল থেকে ডাটা সরিয়ে ফেলা (যাতে ডুপ্লিকেট না হয়)
+                attendanceData = attendanceData.filter(i => String(i.id) !== String(id));
+
+                // সিরিয়াল নাম্বার ঠিক করা
+                attendanceData.forEach((item, index) => { item.slNo = index + 1; });
+                slCount = attendanceData.length + 1;
+                renderTable();
+
+                // অ্যাড বাটনকে 'Update' বাটনে রূপান্তর করা
+                const addBtn = document.getElementById('addBtn');
+                if(addBtn) {
+                    addBtn.innerText = "Update Now";
+                    addBtn.classList.replace('bg-[#1e3a5f]', 'bg-orange-600');
+                }
+
+                // পেজের একদম উপরে নিয়ে যাওয়া যাতে ইউজার এডিট করতে পারে
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                // ছোট একটি মেসেজ দেখানো
+                Swal.fire({
+                    title: 'Editing...',
+                    text: 'The data was sent above; please modify and re-Update it.',
+                    icon: 'info',
+                    width: '320px',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+            // --- এডিট ফাংশন ---
+            function requestAddEntry() {
+                let rawEmpId = document.getElementById('empId').value.trim();
+                const attDate = document.getElementById('attDate').value;
+                const site = document.getElementById('sideName').value;
+
+                // ১. ভ্যালিডেশন (ছোট স্টাইলের সুইট অ্যালার্ট)
+                if (!rawEmpId) {
+                    return Swal.fire({
+                        title: "Missing ID",
+                        text: "Please select an employee!",
+                        icon: "warning",
+                        width: '320px',
+                        confirmButtonColor: '#3b82f6'
+                    });
+                }
+
+                if (!attDate || !site) {
+                    return Swal.fire({
+                        title: "Input Error",
+                        text: "Date and Site are required!",
+                        icon: "error",
+                        width: '320px',
+                        confirmButtonColor: '#ef4444'
+                    });
+                }
+
+                let formattedId = isNaN(rawEmpId) ? rawEmpId : rawEmpId.padStart(4, '0');
+
+                // ২. ডুপ্লিকেট চেক (লোকাল ও সার্ভার)
+                const isLocalDuplicate = attendanceData.some(e => e.empId === formattedId && e.date === attDate);
+                if (isLocalDuplicate) {
+                    return Swal.fire({
+                        title: "Duplicate Found",
+                        text: "Already in your current list!",
+                        icon: "warning",
+                        width: '320px',
+                        confirmButtonColor: '#f59e0b'
+                    });
+                }
+
+                const isServerDuplicate = currentMonthAttendance.some(s => String(s.ID || s.empId).padStart(4, '0') === formattedId && s.DATE === attDate);
+                if (isServerDuplicate) {
+                    return Swal.fire({
+                        title: "Already Exists",
+                        text: `ID: ${formattedId} is already in database!`,
+                        icon: "error",
+                        width: '320px',
+                        confirmButtonColor: '#ef4444'
+                    });
+                }
+
+                // ৩. নতুন অবজেক্ট তৈরি
+                const newEntry = {
+                    id: Date.now(),
+                    slNo: slCount++,
+                    date: attDate,
+                    empId: formattedId,
+                    empName: document.getElementById('empName').value,
+                    period: document.getElementById('period').value || '',
+                    designation: document.getElementById('designation').value,
+                    workingAs: window.currentWorkingAs || document.getElementById('designation').value,
+                    joiningDate: document.getElementById('joiningDate').value || '',
+                    passport: document.getElementById('passport').value || '',
+                    salary: document.getElementById('basicSalary').value || 0,
+                    otRate: document.getElementById('globalOtRate').value || 0,
+                    ot: parseFloat(document.getElementById('dailyOt').value) || 0,
+                    site: site,
+                    status: "Present",
+                    holidayWork: parseFloat(document.getElementById('holidayWork').value) || 0,
+                    sundayWork: parseFloat(document.getElementById('sundayWork').value) || 0,
+                    remark: document.getElementById('attRemark').value
+                };
+
+                // ৪. লিস্টে ডাটা যোগ করা
+                attendanceData.push(newEntry);
+
+                // ৫. বাটন রিসেট
+                const addBtn = document.getElementById('addBtn');
+                if(addBtn) {
+                    addBtn.innerText = "Add";
+                    addBtn.classList.remove('bg-orange-600');
+                    addBtn.classList.add('bg-[#1e3a5f]');
+                }
+
+                // ৬. সাকসেস মেসেজ (আপনি চাইলে এটি বন্ধ রাখতে পারেন, বা ছোট করে দেখাতে পারেন)
+                // Swal.fire({ icon: 'success', title: 'Added', width: '200px', timer: 800, showConfirmButton: false });
+
+                // ৭. টেবিল রি-রেন্ডার এবং ইনপুট ক্লিয়ার
+                renderTable();
+                resetAllInputs();
+            }
+
+            // --- ডিলিট ফাংশন ---
+            let deleteTargetId = null; // কোন আইডি ডিলিট হবে তা মনে রাখার জন্য
+
+            function confirmDelete(id) {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You want to delete this record?",
+                    icon: 'warning',
+                    width: '320px',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#3b82f6',
+                    confirmButtonText: 'Yes, Delete',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        attendanceData = attendanceData.filter(i => String(i.id) !== String(id));
+                        attendanceData.forEach((item, index) => { item.slNo = index + 1; });
+                        slCount = attendanceData.length + 1;
+                        renderTable();
+                        Swal.fire({ title: 'Deleted!', icon: 'success', width: '300px', timer: 1000, showConfirmButton: false });
+                    }
+                });
+            }
+
+            function executeDelete() {
+                if (deleteTargetId !== null) {
+                    // ডাটা ফিল্টার করে রিমুভ করা
+                    attendanceData = attendanceData.filter(i => String(i.id) !== String(deleteTargetId));
+
+                    // সিরিয়াল ঠিক করা
+                    attendanceData.forEach((item, index) => { item.slNo = index + 1; });
+                    slCount = attendanceData.length + 1;
+
+                    renderTable(); // টেবিল রিফ্রেশ
+
+                    // বাটন আগের অবস্থায় ফিরিয়ে নেওয়া
+                    resetAlertButtons();
+
+                    // সাকসেস মেসেজ দেখানো
+                    showTransparentAlert("Deleted!", "Record has been removed.", "success");
+                }
+            }
+
+            // অ্যালার্ট বাটনগুলো আগের ডিফল্ট অবস্থায় নেওয়ার ফাংশন
+            function resetAlertButtons() {
+                closeAlert();
+                const cancelBtn = document.getElementById('alertCancelBtn');
+                const okBtn = document.getElementById('alertOkBtn');
+
+                if(cancelBtn && okBtn) {
+                    setTimeout(() => {
+                        cancelBtn.classList.add('hidden');
+                        okBtn.innerText = "OK";
+                        okBtn.classList.replace('bg-red-600', 'bg-[#1e3a5f]');
+                        okBtn.onclick = closeAlert; // বাটনকে আবার সাধারণ মোডে নেওয়া
+                    }, 500);
+                }
+            }
+              function openFullPreview() {
+                        const body = document.getElementById('fullPreviewBody'), foot = document.getElementById('fullPreviewFoot');
+                        let tOt = 0, tHol = 0, tSun = 0;
+                        body.innerHTML = attendanceData.map(item => {
+                            tOt += item.ot; tHol += item.holidayWork; tSun += item.sundayWork;
+                            return `<tr><td class="p-4 border">${item.slNo}</td><td class="p-4 border font-bold">${item.date}</td><td class="p-4 border font-black">${item.empId}</td>
+                                    <td class="p-4 border uppercase">${item.empName}</td><td class="p-4 border">${item.workingAs}</td><td class="p-4 border text-center font-bold">${item.ot}</td>
+                                    <td class="p-4 border text-center text-orange-600 font-bold print:text-black">${item.holidayWork}</td>
+                                    <td class="p-4 border text-center text-orange-600 font-bold print:text-black">${item.sundayWork}</td>
+                                    <td class="p-4 border uppercase text-[10px]">${item.site}</td><td class="p-4 border text-center font-bold">${item.status}</td>
+                                    <td class="p-4 border italic font-bold text-slate-500 print:text-black">${item.remark}</td></tr>`;
+                        }).join('');
+                        foot.innerHTML = `<tr class="bg-slate-50 font-black"><td colspan="5" class="p-4 border text-right uppercase">Total:</td><td class="p-4 border text-center">${tOt.toFixed(1)}</td>
+                            <td class="p-4 border text-center">${tHol.toFixed(2)}</td><td class="p-4 border text-center">${tSun.toFixed(2)}</td><td colspan="3" class="border"></td></tr>`;
+                        document.getElementById('printReportDate').innerText = "Reported: " + new Date().toLocaleString();
+                        document.getElementById('fullPreviewModal').style.display = 'flex';
+                    }
+
+                    function closeFullPreview() { document.getElementById('fullPreviewModal').style.display = 'none'; }
+
+             // Firebase CDN লিঙ্কগুলো
+            import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+            import { getFirestore, collection, doc, getDoc, writeBatch } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+            import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+            import Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js';
+
+            /**
+             * Firestore-এ ডাটা সেভ করার মেইন ফাংশন
+             */
+            async function saveAllToFirestore() {
+                try {
+                    // ১. ফায়ারবেস কনফিগারেশন চেক
+                    if (typeof __firebase_config === 'undefined') {
+                        throw new Error("Firebase configuration (__firebase_config) is missing!");
+                    }
+
+                    const firebaseConfig = JSON.parse(__firebase_config);
+
+                    // ২. ফায়ারবেস অ্যাপ ইনিশিয়ালাইজেশন (যদি আগে না হয়ে থাকে)
+                    let app;
+                    if (getApps().length === 0) {
+                        app = initializeApp(firebaseConfig);
+                    } else {
+                        app = getApp();
+                    }
+
+                    const auth = getAuth(app);
+                    const db = getFirestore(app);
+
+                    // ৩. লগইন চেক
+                    if (!auth.currentUser) {
+                        Swal.fire({ title: 'Connecting...', text: 'Establishing secure connection...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                        await signInAnonymously(auth);
+                        Swal.close();
+                    }
+
+                    // ৪. ডাটা চেক
+                    if (typeof window.attendanceData === 'undefined' || window.attendanceData.length === 0) {
+                        return Swal.fire({
+                            title: "Empty List",
+                            text: "সেভ করার মতো কোনো ডাটা লিস্টে নেই!",
+                            icon: "warning",
+                            width: '300px'
+                        });
+                    }
+
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                    const collPath = `artifacts/${appId}/public/data/FINAL_ATTENDANCE`;
+
+                    let uniqueEntries = [];
+                    let duplicateEntries = [];
+
+                    // ডুপ্লিকেট চেকিং শুরু
+                    Swal.fire({
+                        title: 'Processing...',
+                        text: 'Checking for duplicate entries in Firestore',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    for (const entry of window.attendanceData) {
+                        const customKey = `${entry.empId}_${entry.date}`;
+                        const docRef = doc(db, collPath, customKey);
+                        const docSnap = await getDoc(docRef);
+
+                        if (docSnap.exists()) {
+                            duplicateEntries.push(entry);
+                        } else {
+                            uniqueEntries.push(entry);
+                        }
+                    }
+
+                    // ৫. নতুন ডাটা না থাকলে এরর
+                    if (uniqueEntries.length === 0) {
+                        return Swal.fire({
+                            title: "Duplicate Alert!",
+                            text: "সব তথ্য ইতিমধ্যে ডাটাবেসে সেভ করা আছে।",
+                            icon: "error"
+                        });
+                    }
+
+                    // ৬. ব্যাচ সেভ
+                    const batch = writeBatch(db);
+                    const now = new Date();
+                    const issueDate = now.toLocaleDateString('en-GB');
+                    const issueTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+
+                    uniqueEntries.forEach(entry => {
+                        const customKey = `${entry.empId}_${entry.date}`;
+                        const docRef = doc(db, collPath, customKey);
+
+                        batch.set(docRef, {
+                            "EMPLOYEE_ID": entry.empId,
+                            "EMPLOYEE_NAME": entry.empName,
+                            "ATTENDANCE_DATE": entry.date,
+                            "STATUS": entry.status || "Present",
+                            "BASIC_SALARY": Number(entry.salary) || 0,
+                            "DESIGNATION": entry.designation || "",
+                            "JOINING_DATE": entry.joiningDate || "",
+                            "PASSPORT_NO": entry.passport || "",
+                            "SIDE_NAME": entry.site || "",
+                            "OVER_TIME_SIDE": entry.site || "",
+                            "TOTAL_OT_HOURS": Number(entry.ot) || 0,
+                            "OT_RATE__PER_HOUR_": Number(entry.otRate) || 0,
+                            "PERIOD": entry.period || "",
+                            "REMARK": entry.remark || "",
+                            "ISSUE_DATE": issueDate,
+                            "ISSUE_TIME": issueTime,
+                            "ADVANCE": 0,
+                            "ATTENDANCE_BONUS": 0,
+                            "CSG_1_5_": 0,
+                            "NPS_1_": 0,
+                            "PERFORMANCE_BONUS": 0,
+                            "HOLIDAY": entry.holidayWork || 0,
+                            "SUNDAY_WORK": entry.sundayWork || 0
+                        });
+                    });
+
+                    await batch.commit();
+
+                    // ৭. গ্লোবাল ডাটা আপডেট ও টেবিল রিফ্রেশ
+                    window.attendanceData = [...duplicateEntries];
+                    if (typeof window.renderTable === 'function') {
+                        window.renderTable();
+                    }
+
+                    Swal.close();
+                    Swal.fire({
+                        title: "Saved Successfully!",
+                        html: `<b style="color:green;">${uniqueEntries.length}</b> টি নতুন রেকর্ড Firestore-এ সেভ হয়েছে।`,
+                        icon: "success",
+                        timer: 3000
+                    });
+
+                } catch (error) {
+                    console.error("Firestore Error:", error);
+                    Swal.close();
+                    Swal.fire({
+                        title: "Error!",
+                        text: "ডাটাবেস কানেকশন ফেইল হয়েছে। ইন্টারনেট বা কনফিগ চেক করুন। এরর: " + error.message,
+                        icon: "error"
+                    });
+                }
+            }
+
+            // বাটন থেকে কল করার জন্য গ্লোবাল এক্সপোজার
+            window.saveAllToFirestore = saveAllToFirestore;
+                // --- অ্যালার্ট ফাংশনসমূহ ---
+             function showCustomAlert(title, msg, type = 'error') {
+                const overlay = document.getElementById('customAlert');
+                const box = overlay.querySelector('div.bg-white'); // আপনার সাদা বক্সটি
+
+                if(!overlay || !box) return;
+
+                // ডাটা সেট করা
+                document.getElementById('alertTitle').innerText = title;
+                document.getElementById('alertMessage').innerText = msg;
+
+                // আইকন সেট করা
+                const container = document.getElementById('alertIconContainer');
+                container.innerHTML = type === 'success' ? '✅' : type === 'warning' ? '🔔' : '⚠️';
+
+                // আইকনের ব্যাকগ্রাউন্ড কালার
+                container.className = `flex items-center justify-center w-16 h-16 mx-auto rounded-full mb-6 text-2xl ${
+                    type === 'success' ? 'bg-green-100' : type === 'warning' ? 'bg-amber-100' : 'bg-red-100'
+                }`;
+
+                // ১. ওভারলে প্রদর্শন (স্থির)
+                overlay.style.display = 'flex';
+
+                // ২. বক্সের ওপর মডার্ন স্টাইল ও এনিমেশন ক্লাস যোগ করা
+                box.classList.add('glass-effect', 'modern-alert');
+
+                // ছোট ডিলে দিয়ে 'show' ক্লাস যোগ করা যাতে এনিমেশনটি ট্রিগার হয়
+                setTimeout(() => {
+                    box.classList.add('show');
+                }, 10);
+            }
+
+            function closeAlert() {
+                const overlay = document.getElementById('customAlert');
+                const box = overlay.querySelector('div.bg-white');
+
+                if(!overlay || !box) return;
+
+                // এনিমেশন সরিয়ে নেওয়া
+                box.classList.remove('show');
+
+                // এনিমেশন শেষ হওয়ার পর পুরোপুরি হাইড করা
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    box.classList.remove('glass-effect', 'modern-alert');
+                },150); // CSS transition 0.4s এর সাথে মিল রেখে
+            }
+
+            // অটো ক্লোজ অ্যালার্ট (সাকসেস বা শর্ট মেসেজের জন্য)
+            function showTransparentAlert(title, msg, type) {
+                showCustomAlert(title, msg, type);
+                if(type === 'success' || type === 'warning') {
+                    setTimeout(closeAlert, 2500); // ২.৫ সেকেন্ড পর অটো চলে যাবে
+                }
+            }
     </script>
   </body>
 </html>
