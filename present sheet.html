@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Attendance Sheet </title>
+  <link rel="icon"type="image/png"href="https://drive.google.com/thumbnail?id=11bxOPboUUmQxIkT6gMYWYqxfh9jZSiLo&sz=w500"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+  <style>
+    :root {
+      --brand-blue: #002147;
+      --brand-gold: #ffd700;
+      --brand-blue-pale: #e8edf4;
+      --brand-gold-soft: #fff4b2;
+      --border: #b0bdd4;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Source Sans 3", sans-serif; background: var(--brand-blue); color: #1a1a2e; font-size: 12px; }
+
+    .page-header {
+      background: var(--brand-blue); padding: 18px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 4px solid var(--brand-gold);
+    }
+    .page-header h2 {
+      font-family: "Playfair Display", serif; color: var(--brand-gold);
+      font-size: 22px; letter-spacing: 1.5px; text-transform: uppercase;
+    }
+    .header-badge {
+      background: var(--brand-gold); color: var(--brand-blue);
+      font-weight: 700; font-size: 10px; letter-spacing: 1px;
+      padding: 4px 12px; border-radius: 20px; text-transform: uppercase;
+    }
+
+    /* Controls */
+    .matrix-controls {
+      background: var(--brand-blue); padding: 14px 32px;
+      border-bottom: 3px solid var(--brand-gold);
+    }
+    .matrix-filter-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .matrix-controls label {
+      color: var(--brand-gold); font-size: 11px; font-weight: 600;
+      letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap;
+    }
+    .matrix-controls select,
+    .matrix-controls input[type="text"] {
+      padding: 8px 12px; font-size: 12px; font-family: "Source Sans 3", sans-serif;
+      border: 1.5px solid #3a5a8a; border-radius: 6px;
+      background: #001530; color: #e0e8f4; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .matrix-controls select:focus, .matrix-controls input:focus {
+      border-color: var(--brand-gold); box-shadow: 0 0 0 2px rgba(255,215,0,0.18);
+    }
+    .matrix-controls input::placeholder { color: #6a88aa; }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 18px; font-size: 12px; font-family: "Source Sans 3", sans-serif;
+      font-weight: 700; border: 2px solid transparent; border-radius: 6px;
+      cursor: pointer; letter-spacing: 0.4px;
+      transition: transform 0.15s, box-shadow 0.2s, background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.3); }
+    .btn:active { transform: translateY(0); }
+    .btn-att { background: #0d9488; color: white; border-color: #0d9488; }
+    .btn-att:hover { background: transparent; color: #0d9488; border-color: #0d9488; }
+    .btn-print { background: transparent; color: var(--brand-gold); border: 2px solid var(--brand-gold); }
+    .btn-print:hover { background: var(--brand-gold); color: var(--brand-blue); }
+    .btn-clear { background: transparent; color: #ff6b6b; border: 2px solid #ff6b6b; }
+    .btn-clear:hover { background: #ff6b6b; color: white; }
+
+    /* Flatpickr dark theme */
+    .flatpickr-calendar { background: #001d3d !important; border: 1px solid var(--brand-gold) !important; }
+    .flatpickr-day { color: #cce !important; }
+    .flatpickr-day.selected, .flatpickr-day.today { background: var(--brand-gold) !important; color: var(--brand-blue) !important; border-color: var(--brand-gold) !important; }
+    .flatpickr-day:hover { background: var(--brand-gold) !important; color: black !important; border-color: var(--brand-gold) !important; }
+    .flatpickr-months .flatpickr-month, .flatpickr-weekdays, span.flatpickr-weekday { background: var(--brand-blue) !important; color: var(--brand-gold) !important; }
+    .flatpickr-day.prevMonthDay, .flatpickr-day.nextMonthDay { visibility: hidden; }
+
+    /* Content area */
+    .content { padding: 24px 32px; }
+
+    /* Custom Message Box */
+    .msgbox-overlay { display:none; position:fixed; inset:0; background:rgba(0,21,48,0.82); z-index:99999; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+    .msgbox-overlay.active { display:flex; }
+    .msgbox-card { background:#fff; border-radius:14px; min-width:320px; max-width:420px; box-shadow:0 30px 70px rgba(0,0,0,0.5); overflow:hidden; animation:msgPop .22s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes msgPop { from{transform:scale(.85);opacity:0} to{transform:scale(1);opacity:1} }
+    .msgbox-header { display:flex; align-items:center; gap:10px; padding:16px 20px 12px; border-bottom:2px solid #f0f0f0; }
+    .msgbox-icon { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+    .msgbox-icon.warn { background:#fff8e1; }
+    .msgbox-icon.err  { background:#ffeaea; }
+    .msgbox-icon.ok   { background:#e8f5e9; }
+    .msgbox-title { font-family:"Playfair Display",serif; font-size:15px; font-weight:700; color:var(--brand-blue); }
+    .msgbox-body { padding:14px 20px 18px; font-size:13px; color:#374151; line-height:1.6; }
+    .msgbox-footer { padding:10px 20px 16px; display:flex; justify-content:flex-end; gap:8px; }
+    .msgbox-btn { padding:8px 22px; border:2px solid transparent; border-radius:7px; font-size:12px; font-weight:700; cursor:pointer; transition:all .15s; font-family:"Source Sans 3",sans-serif; }
+    .msgbox-btn.primary { background:var(--brand-gold); color:var(--brand-blue); border-color:var(--brand-gold); }
+    .msgbox-btn.primary:hover { background:transparent; color:var(--brand-blue); border-color:var(--brand-blue); }
+
+    @media print {
+      body { background: #fff; }
+      .matrix-controls, .page-header, .btn { display: none !important; }
+      .content { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <h2>ALOMHOW CO LTD</h2>
+    <span class="header-badge">📅 Attendance Sheet </span>
+  </div>
+
+  <!-- Controls -->
+  <div class="matrix-controls">
+    <div class="matrix-filter-row">
+      <label>From:</label>
+      <input type="text" id="matrixDateFrom" placeholder="Start Date" style="width:130px" />
+      <label>To:</label>
+      <input type="text" id="matrixDateTo" placeholder="End Date" style="width:130px" />
+      <label>Project / Site:</label>
+      <select id="matrixSideFilter" style="min-width:180px;">
+        <option value="">All Projects</option>
+      </select>
+      <label>Employee:</label>
+      <select id="matrixEmpFilter" style="min-width:180px;">
+        <option value="">All Employees</option>
+      </select>
+      <button class="btn btn-att" onclick="generateMatrix()">📅 ATTENDANCE SHEET</button>
+      <button class="btn btn-clear" onclick="clearMatrix()">🗑️ Clear</button>
+    </div>
+
+    <!-- Legend -->
+   
+  </div>
+
+  <div class="content">
+    <div id="matrixOutput"></div>
+  </div>
+
+  <!-- Message Box -->
+  <div class="msgbox-overlay" id="msgboxOverlay">
+    <div class="msgbox-card">
+      <div class="msgbox-header">
+        <div class="msgbox-icon warn" id="msgboxIcon">⚠️</div>
+        <div class="msgbox-title" id="msgboxTitle">Notice</div>
+      </div>
+      <div class="msgbox-body" id="msgboxBody"></div>
+      <div class="msgbox-footer">
+        <button class="msgbox-btn primary" onclick="closeMsgBox()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyA3uvPJTI3XXKQ2tbbmlKhEHYjh5Sz_r_k",
+      authDomain: "munna-acl-fda7c.firebaseapp.com",
+      databaseURL: "https://munna-acl-fda7c-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "munna-acl-fda7c",
+      storageBucket: "munna-acl-fda7c.firebasestorage.app",
+      messagingSenderId: "371130316468",
+      appId: "1:371130316468:web:61b4cba0dbbd5f027589e1",
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+
+    // Flatpickr
+    flatpickr("#matrixDateFrom", { dateFormat: "Y-m-d" });
+    flatpickr("#matrixDateTo",   { dateFormat: "Y-m-d" });
+
+    let _matrixLoaded = false;
+
+    // ── Load filter dropdowns on page load ──
+    window.addEventListener("load", loadMatrixFilterOptions);
+
+    async function loadMatrixFilterOptions() {
+      if (_matrixLoaded) return;
+      try {
+        const db = firebase.firestore();
+
+        // Employees
+        const empSnap = await db.collection("EMPLOYEE_LIST").get();
+        const empSel = document.getElementById("matrixEmpFilter");
+        empSel.innerHTML = '<option value="">All Employees</option>';
+        const empList = [];
+        empSnap.forEach(d => {
+          const e = d.data();
+          empList.push({ id: e.id || d.id, name: e.name || "" });
+        });
+        empList.sort((a, b) => a.id.localeCompare(b.id));
+        empList.forEach(e => {
+          const opt = document.createElement("option");
+          opt.value = e.id;
+          opt.textContent = `${e.id} — ${e.name}`;
+          empSel.appendChild(opt);
+        });
+
+        // Project/Side names
+        const attSnap = await db.collectionGroup("Present_Absent").get();
+        const sides = new Set();
+        attSnap.forEach(doc => {
+          const d = doc.data();
+          if (d.SIDE_NAME && d.SIDE_NAME.trim()) sides.add(d.SIDE_NAME.trim());
+        });
+        const sideSel = document.getElementById("matrixSideFilter");
+        sideSel.innerHTML = '<option value="">All Projects</option>';
+        [...sides].sort().forEach(s => {
+          const opt = document.createElement("option");
+          opt.value = s; opt.textContent = s;
+          sideSel.appendChild(opt);
+        });
+
+        _matrixLoaded = true;
+      } catch(e) { console.error("Matrix filter load error:", e); }
+    }
+
+    // ── Generate Matrix (opens in new tab) ──
+    async function generateMatrix() {
+      const matOut = document.getElementById("matrixOutput");
+      const dFromVal    = document.getElementById("matrixDateFrom").value;
+      const dToVal      = document.getElementById("matrixDateTo").value;
+      const sideFilter  = document.getElementById("matrixSideFilter").value.trim();
+      const empFilter   = document.getElementById("matrixEmpFilter").value.trim();
+
+      if (!dFromVal || !dToVal) {
+        showMsg("Please select a date range.", { title: "Date Range Required", type: "warn" });
+        return;
+      }
+
+      matOut.innerHTML = '<p style="padding:30px;text-align:center;color:#ffd700;font-size:14px;font-style:italic">⏳ Loading attendance sheet...</p>';
+
+      try {
+        const inputStart = new Date(dFromVal); inputStart.setHours(0, 0, 0, 0);
+        const inputEnd   = new Date(dToVal);   inputEnd.setHours(23, 59, 59, 999);
+        const firstDay   = new Date(inputStart.getFullYear(), inputStart.getMonth(), 1);
+        const lastDay    = new Date(inputStart.getFullYear(), inputStart.getMonth() + 1, 0);
+
+        const dateRange = [];
+        for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+          dateRange.push(new Date(d));
+        }
+
+        const toLocalDateStr = (d) => {
+          const y   = d.getFullYear();
+          const m   = String(d.getMonth() + 1).padStart(2, "0");
+          const day = String(d.getDate()).padStart(2, "0");
+          return `${y}-${m}-${day}`;
+        };
+
+        const db = firebase.firestore();
+
+        // Public holidays
+        const publicHolidayDates = new Set();
+        const holidaySnap = await db.collection("HOLIDAY_LIST").get();
+        holidaySnap.forEach(doc => publicHolidayDates.add(doc.id));
+
+        // Attendance records
+        const snap = await db.collectionGroup("Present_Absent").get();
+        const attendanceMap = {}, employees = {};
+
+        snap.forEach(doc => {
+          const d = doc.data();
+          if (!d.ID || !d.DATE) return;
+          if (sideFilter && (d.SIDE_NAME || "").trim() !== sideFilter) return;
+          if (empFilter  && String(d.ID).trim() !== empFilter) return;
+
+          const empId = String(d.ID).trim();
+          if (!employees[empId]) employees[empId] = {
+            name: d.EMPLOYEE_NAME || empId,
+            isCook: (d.DESIGNATION || "").trim() === "Cook"
+          };
+          if (!attendanceMap[empId]) attendanceMap[empId] = {};
+
+          const st = (d.STATUS || "").trim().toUpperCase();
+          let shortStat = "-";
+          if      (st.startsWith("P")) shortStat = "P";
+          else if (st.startsWith("A")) shortStat = "A";
+          else if (st.startsWith("L")) shortStat = "L";
+          else if (st.startsWith("H")) shortStat = "H";
+          attendanceMap[empId][d.DATE] = shortStat;
+        });
+
+        const sortedIds = Object.keys(employees).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+        const monthName = firstDay.toLocaleString("default", { month: "long" });
+        const year = firstDay.getFullYear();
+
+        const now = new Date();
+        const printDateTime = now.toLocaleString("en-GB", {
+          day: "2-digit", month: "short", year: "numeric",
+          hour: "2-digit", minute: "2-digit", hour12: true
+        });
+
+        let dayTotalsP   = Array(dateRange.length).fill(0);
+        let dayTotalsSun = Array(dateRange.length).fill(0);
+        let dayTotalsHol = Array(dateRange.length).fill(0);
+        let dayTotalsA   = Array(dateRange.length).fill(0);
+        let grandTotalP = 0, grandTotalA = 0, grandTotalSun = 0, grandTotalHol = 0;
+
+        // TABLE HEADER
+        const tableHeader = `<thead>
+<tr style="height:22px;">
+  <th rowspan="2" style="width:20px; padding:1px;">SL</th>
+  <th rowspan="2" style="width:160px; padding:1px;">EMPLOYEE ID &amp; Name</th>
+  <th colspan="${dateRange.length}" style="padding:0 10px; font-size:11px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+      <div style="flex:2; text-align:center; font-weight:bold;">
+        Attendance Summary: ${monthName} ${year}${sideFilter ? ` — ${sideFilter.toUpperCase()}` : " — ALL PROJECT"}
+      </div>
+      <div style="flex:1; text-align:right; font-size:9px; font-weight:normal;">
+        Printed on: ${printDateTime}
+      </div>
+    </div>
+  </th>
+  <th colspan="4" style="background:#0d685b; padding:1px; font-size:10px;">SUMMARY</th>
+</tr>
+<tr style="height:35px;">
+  ${dateRange.map((d) => {
+    const dayName  = d.toLocaleDateString("en-US", { weekday: "short" }).substring(0, 2);
+    const isSun    = d.getDay() === 0;
+    const ds       = toLocalDateStr(d);
+    const isPubHol = publicHolidayDates.has(ds);
+    const isOut    = d < inputStart || d > inputEnd;
+    const redStyle = isSun || isPubHol ? "color:#ff4d4d !important;" : "";
+
+    if (isPubHol && !isOut) {
+      return `<th style="width:25px; padding:1px 0; vertical-align:middle; ${redStyle}">
+        <div class="holiday-box" style="width:25px; height:25px; margin:0 auto;">
+          <svg viewBox="0 0 100 100" class="holiday-svg" style="width:100%;height:100%;">
+            <circle cx="50" cy="50" r="47" style="fill:none;stroke:#ff4d4d;stroke-width:6;"/>
+            <path id="hcurve${d.getDate()}" d="M 15,55 A 35,35 0 0,1 85,55" fill="transparent"/>
+            <text style="fill:#ff4d4d;font-weight:900;font-size:16px;">
+              <textPath xlink:href="#hcurve${d.getDate()}" startOffset="50%" text-anchor="middle">Holiday</textPath>
+            </text>
+            <text x="50" y="62" style="fill:#ff4d4d;font-weight:bold;text-anchor:middle;font-size:40px;">${d.getDate()}</text>
+            <text x="50" y="88" style="fill:#ff4d4d;font-weight:bold;text-anchor:middle;font-size:24px;">${dayName}</text>
+          </svg>
+        </div>
+      </th>`;
+    }
+
+    return `<th style="width:25px; padding:1px 0; vertical-align:middle; ${redStyle}">
+      <div style="line-height:1;">${d.getDate()}<br><span style="font-size:7px">${dayName}</span></div>
+    </th>`;
+  }).join("")}
+  <th style="width:25px; background:#198754; padding:1px;">P</th>
+  <th style="width:25px; background:#dc3545; padding:1px;">A</th>
+  <th style="width:25px; background:#ffc107; color:#000; padding:1px;">SUN</th>
+  <th style="width:25px; background:#6c757d; padding:1px;">HOL</th>
+</tr>
+</thead>`;
+
+        // TABLE BODY
+        const tableBody = sortedIds.map((id, idx) => {
+          const isCook = employees[id]?.isCook || false;
+          let countP = 0, countA = 0, countSun = 0, countHol = 0;
+
+          const daysHtml = dateRange.map((d, dIdx) => {
+            const ds       = toLocalDateStr(d);
+            const isSunday = d.getDay() === 0;
+            const isPubHol = publicHolidayDates.has(ds);
+
+            if (d < inputStart || d > inputEnd) return `<td></td>`;
+
+            let stat = attendanceMap[id] ? (attendanceMap[id][ds] || "-") : "-";
+
+            if (stat === "P") {
+              if (!isCook && isSunday)      { dayTotalsSun[dIdx]++; countSun++; }
+              else if (!isCook && isPubHol) { dayTotalsHol[dIdx]++; countHol++; }
+              else                          { dayTotalsP[dIdx]++;   countP++;   }
+            }
+            if (stat === "A") { dayTotalsA[dIdx]++; countA++; }
+
+            if (isSunday || isPubHol) {
+              const bg = "background-color:#fff0f0; border:1px solid #000;";
+              if (stat === "A") return `<td style="${bg} background-color:#ffe066 !important; color:red; font-weight:bold;">A</td>`;
+              if (stat === "P") return `<td style="${bg} color:green; font-weight:bold;">P</td>`;
+              if (stat === "L" || stat === "H") return `<td style="${bg} color:green;">${stat}</td>`;
+              return `<td style="${bg}"></td>`;
+            }
+
+            if (stat === "P") return `<td style="color:green; font-weight:bold;">P</td>`;
+            if (stat === "A") return `<td style="background-color:#ffe066; color:red; font-weight:bold;">A</td>`;
+            if (stat === "L" || stat === "H") return `<td style="color:green;">${stat}</td>`;
+            return `<td></td>`;
+          }).join("");
+
+          grandTotalP   += countP;
+          grandTotalA   += countA;
+          grandTotalSun += countSun;
+          grandTotalHol += countHol;
+
+          return `<tr>
+  <td>${idx + 1}</td>
+  <td class="text-start">${id} — ${employees[id].name}</td>
+  ${daysHtml}
+  <td style="font-weight:bold; background:#e6fffa; color:#065f46;">${countP}</td>
+  <td style="font-weight:bold; background:#fff0f0; color:#991b1b;">${countA}</td>
+  <td style="font-weight:bold; background:#fff9e6; color:#92400e;">${countSun}</td>
+  <td style="font-weight:bold; background:#f3f0ff; color:#5b21b6;">${countHol}</td>
+</tr>`;
+        }).join("");
+
+        // TABLE FOOTER
+        const tableFooter = `<tr>
+  <td colspan="2" style="text-align:left; padding:4px 8px; font-weight:bold; background:#1d3a6d; color:#ffd700;">DAILY TOTAL</td>
+  ${dayTotalsP.map((_, idx) => {
+    if (dateRange[idx] < inputStart || dateRange[idx] > inputEnd) return `<td style="background:#1d3a6d;"></td>`;
+    const allP = dayTotalsP[idx] + dayTotalsSun[idx] + dayTotalsHol[idx];
+    return `<td style="text-align:center; font-weight:bold; background:#1d3a6d; color:#ffd700; font-size:9px;">${allP || ""}</td>`;
+  }).join("")}
+  <td style="font-weight:bold; background:#1d3a6d; color:#ffd700;">${grandTotalP}</td>
+  <td style="font-weight:bold; background:#1d3a6d; color:#ffd700;">${grandTotalA}</td>
+  <td style="font-weight:bold; background:#1d3a6d; color:#ffd700;">${grandTotalSun}</td>
+  <td style="font-weight:bold; background:#1d3a6d; color:#ffd700;">${grandTotalHol}</td>
+</tr>`;
+
+        // Open in new tab
+        matOut.innerHTML = '<p style="padding:20px; text-align:center; color:#4ade80; font-size:13px;">✅ Generating Attendance Sheet in new tab...</p>';
+
+        const preview = window.open("", "_blank");
+        if (!preview) {
+          showMsg("Popup blocked! Browser-এ popup allow করুন।", { title: "Popup Blocked", type: "warn" });
+          matOut.innerHTML = '<p style="color:orange; padding:20px;">⚠️ Popup blocked। Browser-এ popup allow করে আবার চেষ্টা করুন।</p>';
+          return;
+        }
+
+        preview.document.write(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance Summary — ${monthName} ${year}</title>
+  <style>
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+    @page { size: A4 landscape; margin: 5mm 5mm 0mm 5mm; }
+    body { font-family: sans-serif; padding: 10px; margin: 0; zoom: 1.4; }
+    .company-name {
+      text-align: center; margin: 0; font-size: 26px; font-weight: bold;
+      background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      filter: drop-shadow(1px 1px 1.5px rgba(0,0,0,0.15));
+    }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; border: 1.2px solid #000; margin-top: 10px; }
+    th, td { border: 1px solid #000; text-align: center; font-size: 10px; padding: 1px 0; }
+    th { background: #1d3a6d; color: #fff; }
+    .holiday-box { margin: 0 auto; display: flex; align-items: center; justify-content: center; }
+    .holiday-svg { width: 100%; height: 100%; }
+    .text-start { text-align: left !important; padding-left: 5px !important; white-space: nowrap; overflow: hidden; }
+    .no-print { position: fixed; top: 10px; right: 10px; padding: 10px 20px; background: #1d3a6d; color: #ffd700; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: bold; z-index: 1000; }
+    .no-print:hover { background: #2a4f9a; }
+    @media print { body { zoom: 1.0; } th, td { font-size: 8.5px; } .no-print { display: none; } }
+  </style>
+</head>
+<body>
+  <button class="no-print" onclick="window.print()">🖨️ Print Report</button>
+  <h1 class="company-name">ALAMHOW CO LTD</h1>
+  <table>
+    ${tableHeader}
+    <tbody>${tableBody}</tbody>
+    <tfoot>${tableFooter}</tfoot>
+  </table>
+
+  <div style="margin-top:15px; display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
+    <table style="width:auto; min-width:240px; border-collapse:collapse; border:1px solid #000;">
+      <thead>
+        <tr><th colspan="2" style="background:#1d3a6d; color:#ffd700; padding:4px 10px; font-size:11px;">PRESENT SUMMARY</th></tr>
+      </thead>
+      <tbody>
+        <tr><td style="text-align:left; padding:3px 10px; font-weight:bold; border:1px solid #ccc;">Total Normal Working Days</td><td style="font-weight:bold; width:60px; border:1px solid #ccc; text-align:center;">${grandTotalP}</td></tr>
+        <tr><td style="text-align:left; padding:3px 10px; font-weight:bold; color:#b58900; border:1px solid #ccc;">Total Sunday Working Days</td><td style="font-weight:bold; color:#b58900; border:1px solid #ccc; text-align:center;">${grandTotalSun}</td></tr>
+        <tr><td style="text-align:left; padding:3px 10px; font-weight:bold; border:1px solid #ccc;">Total Holiday Working Days</td><td style="font-weight:bold; border:1px solid #ccc; text-align:center;">${grandTotalHol}</td></tr>
+        <tr><td style="text-align:left; padding:3px 10px; font-weight:bold; color:red; border:1px solid #ccc;">Total Absent</td><td style="font-weight:bold; color:red; border:1px solid #ccc; text-align:center;">${grandTotalA}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:40px; display:flex; justify-content:space-between; padding:0 40px;">
+    <div style="border-top:1px solid #000; width:140px; text-align:center; font-size:10px; font-weight:bold; padding-top:4px;">Prepared By</div>
+    <div style="border-top:1px solid #000; width:140px; text-align:center; font-size:10px; font-weight:bold; padding-top:4px;">Checked By</div>
+    <div style="border-top:1px solid #000; width:140px; text-align:center; font-size:10px; font-weight:bold; padding-top:4px;">Authorized Signature</div>
+  </div>
+</body>
+</html>`);
+        preview.document.close();
+
+      } catch(e) {
+        document.getElementById("matrixOutput").innerHTML = `<p style="color:red; padding:20px;">Error: ${e.message}</p>`;
+      }
+    }
+
+    function clearMatrix() {
+      document.getElementById("matrixOutput").innerHTML = "";
+      try { document.getElementById("matrixDateFrom")._flatpickr.clear(); } catch(e) {}
+      try { document.getElementById("matrixDateTo")._flatpickr.clear(); } catch(e) {}
+      document.getElementById("matrixSideFilter").value = "";
+      document.getElementById("matrixEmpFilter").value = "";
+    }
+
+    // Message box helpers
+    function showMsg(msg, { title = "Notice", type = "warn" } = {}) {
+      const icons = { warn: "⚠️", err: "❌", ok: "✅", info: "ℹ️" };
+      document.getElementById("msgboxIcon").textContent = icons[type] || "ℹ️";
+      document.getElementById("msgboxIcon").className = "msgbox-icon " + type;
+      document.getElementById("msgboxTitle").textContent = title;
+      document.getElementById("msgboxBody").innerHTML = msg;
+      document.getElementById("msgboxOverlay").classList.add("active");
+    }
+    function closeMsgBox() {
+      document.getElementById("msgboxOverlay").classList.remove("active");
+    }
+  </script>
+</body>
+</html>
