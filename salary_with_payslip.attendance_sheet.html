@@ -739,32 +739,42 @@
         };
       }
 
-      // ══════════════════════════════════════════
-      //  TAB SWITCHING
-      // ══════════════════════════════════════════
-      function switchTab(tab) {
-        _currentTab = tab;
-        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-        document.getElementById("tab-" + tab).classList.add("active");
-        document.getElementById("monthly-controls").style.display = tab === "monthly" ? "" : "none";
-        document.getElementById("attendance-controls").classList.toggle("active", tab === "attendance");
-        document.getElementById("matrix-controls").classList.toggle("active", tab === "matrix");
-        document.getElementById("overtime-controls").classList.toggle("active", tab === "overtime");
-        document.getElementById("advance-controls").classList.toggle("active", tab === "advance");
-        document.getElementById("reportOutput").style.display  = tab === "monthly"    ? "" : "none";
-        document.getElementById("attOutput").style.display     = tab === "attendance"  ? "" : "none";
-        document.getElementById("matrixOutput").style.display  = tab === "matrix"      ? "" : "none";
-        document.getElementById("otOutput").style.display      = tab === "overtime"    ? "" : "none";
-        document.getElementById("advOutput").style.display     = tab === "advance"     ? "" : "none";
-        if (tab === "attendance") loadAttFilterOptions();
-        if (tab === "matrix")     loadMatrixFilterOptions();
-        if (tab === "overtime")   loadOtFilterOptions();
-      }
+     // ══════════════════════════════════════════
+//  TAB SWITCHING
+// ══════════════════════════════════════════
+function switchTab(tab) {
+  _currentTab = tab;
+  const tabTitles = {
+    monthly: "Monthly Salary Summary",
+    attendance: "Daily Attendance",
+    matrix: "Present Sheet",
+    overtime: "Overtime Report",
+    advance: "Advance Report"
+  };
+  document.title = "ALOMHOW — " + (tabTitles[tab] || tab);
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-" + tab).classList.add("active");
+  document.getElementById("monthly-controls").style.display = tab === "monthly" ? "" : "none";
+  document.getElementById("attendance-controls").classList.toggle("active", tab === "attendance");
+  document.getElementById("matrix-controls").classList.toggle("active", tab === "matrix");
+  document.getElementById("overtime-controls").classList.toggle("active", tab === "overtime");
+  document.getElementById("advance-controls").classList.toggle("active", tab === "advance");
+  document.getElementById("reportOutput").style.display  = tab === "monthly"    ? "" : "none";
+  document.getElementById("attOutput").style.display     = tab === "attendance"  ? "" : "none";
+  document.getElementById("matrixOutput").style.display  = tab === "matrix"      ? "" : "none";
+  document.getElementById("otOutput").style.display      = tab === "overtime"    ? "" : "none";
+  document.getElementById("advOutput").style.display     = tab === "advance"     ? "" : "none";
+  if (tab === "attendance") loadAttFilterOptions();
+  if (tab === "matrix")     loadMatrixFilterOptions();
+  if (tab === "overtime")   loadOtFilterOptions();
+}
 
-      // ══════════════════════════════════════════
-      //  ATTENDANCE FILTER
-      // ══════════════════════════════════════════
-      let _attEmpLoaded = false;
+// ══════════════════════════════════════════
+//  ATTENDANCE FILTER
+// ══════════════════════════════════════════
+let _attEmpLoaded = false;
+
+
 
       function onFilterTypeChange() {
         const type = document.getElementById("attFilterType").value;
@@ -1111,7 +1121,8 @@
           preview.document.write(`<!DOCTYPE html>
 <html lang="en"><head>
   <meta charset="UTF-8">
-  <title>Attendance Summary — ${monthName} ${year}</title>
+  <title>ALOMHOW — Present Sheet | ${monthName} ${year}</title>
+  
   <style>
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     @page { size: A4 landscape; margin: 5mm 5mm 0mm 5mm; }
@@ -1624,8 +1635,12 @@
         const dToVal   = document.getElementById("dateTo").value;
         const dFrom    = new Date(dFromVal), dTo = new Date(dToVal);
         const filterId = document.getElementById("filterId").value.trim();
-        window._reportFrom = dFromVal; window._reportTo = dToVal;
-        output.innerHTML = '<p style="padding:30px;text-align:center;color:#ffd700;font-size:14px;font-style:italic">⏳ Processing data…</p>';
+       window._reportFrom = dFromVal; window._reportTo = dToVal;
+if (!dFromVal || !dToVal) {
+  showMsg("FROM & TO BOTH ARE REQUIRED", {title:"Date Required", type:"warn"});
+  return;
+}
+output.innerHTML = '<p style="padding:30px;text-align:center;color:#ffd700;font-size:14px;font-style:italic">⏳ Processing data…</p>';
 
         function getDaysInMonthLocal(dateStr) {
           if (!dateStr) return 26;
@@ -1860,30 +1875,38 @@
       // ══════════════════════════════════════════
       //  CLEAR / RESET
       // ══════════════════════════════════════════
-      function clearAll() {
-        showMsg("ALL DATA WILL BE CLEARED.<br><br>ARE YOU SURE?", {
-          title: "Reset Page", type: "warn", confirm: true,
-          onOk: () => {
-            document.getElementById("reportOutput").innerHTML = "";
-            document.getElementById("filterId").value = "";
-            document.getElementById("searchTable").value = "";
-            try { document.getElementById("dateFrom")._flatpickr.clear(); } catch(e) {}
-            try { document.getElementById("dateTo")._flatpickr.clear(); } catch(e) {}
-            closeEmpPanel(); closeMsgBox();
-            window._reportFrom=""; window._reportTo="";
-            const ctrl = document.querySelector(".controls");
-            ctrl.style.transition="background 0.15s";
-            ctrl.style.background="rgba(255,107,107,0.15)";
-            setTimeout(() => { ctrl.style.background=""; setTimeout(()=>ctrl.style.transition="",400); },300);
-          }
-        });
-      }
+     function clearAll() {
+  showMsg("ALL DATA WILL BE CLEARED.<br><br>ARE YOU SURE?", {
+    title: "Reset Page", type: "warn", confirm: true,
+    onOk: () => {
+      document.getElementById("reportOutput").innerHTML = "";
+      document.getElementById("filterId").value = "";
+      document.getElementById("searchTable").value = "";
+      try { document.getElementById("dateFrom")._flatpickr.clear(); } catch(e) {}
+      try { document.getElementById("dateTo")._flatpickr.clear(); } catch(e) {}
+      closeEmpPanel(); closeMsgBox();
+      window._reportFrom=""; window._reportTo="";
+      _attRangeCache = {};
+      _cache.loaded = false;
+      _cache.loading = false;
+      _otCache = null;
+      _otEmpLoaded = false;
+      _attEmpLoaded = false;
+      setStatus("loading", "⏳ Data not loaded yet");
+      const ctrl = document.querySelector(".controls");
+      ctrl.style.transition="background 0.15s";
+      ctrl.style.background="rgba(255,107,107,0.15)";
+      setTimeout(() => { ctrl.style.background=""; setTimeout(()=>ctrl.style.transition="",400); },300);
+    }
+  });
+}
 
-      // ══════════════════════════════════════════
-      //  OVERTIME TAB — Employee-wise Grouped View
-      // ══════════════════════════════════════════
-      let _otEmpLoaded = false;
-      let _otCache     = null;
+// ══════════════════════════════════════════
+//  OVERTIME TAB — Employee-wise Grouped View
+// ══════════════════════════════════════════
+
+let _otEmpLoaded = false;
+let _otCache     = null;
 
       function onOtFilterChange() {
         const type = document.getElementById("otFilterType").value;
