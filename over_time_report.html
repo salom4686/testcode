@@ -269,17 +269,113 @@
         .print-only { display:none; }
 
         @media print {
-            @page { size:A4 landscape; margin:0.5cm 1cm; }
-            body { background:white !important; color:black !important; padding:0 !important; margin:0 !important; }
-            #initial-overlay, .no-print { display:none !important; }
-            #app-container { border:none !important; box-shadow:none !important; max-width:100% !important; margin:0 !important; }
-            .print-only { display:block !important; }
-            .table-container { overflow:visible !important; border:1px solid #ccc !important; }
-            table { border:1px solid black !important; width:100% !important; }
-            th, td { border:1px solid #aaa !important; color:black !important; background:white !important; padding:4px 2px !important; font-size:10px !important; }
-            thead th { background:#e8edf8 !important; color:black !important; }
-            .sticky-sl, .sticky-id, .sticky-name, .total-col { position:static !important; background:white !important; }
-            .app-header, .filter-section { display:none !important; }
+            /* ১. পেজ সেটআপ: ল্যান্ডস্কেপ এবং মার্জিন মিনিমাম */
+            @page { 
+                size: A4 landscape; 
+                margin: 0.2cm 0.3cm; 
+            }
+            
+            /* ২. ব্যাকগ্রাউন্ড কালার সাদা ও টেক্সট কালো করা */
+            body { 
+                background: white !important; 
+                color: black !important; 
+                padding: 0 !important; 
+                margin: 0 !important; 
+            }
+            
+            /* ৩. গোল্ডেন বা অন্য কোনো দাগের উৎস এবং বাটন পুরোপুরি গায়েব করা */
+            #initial-overlay, 
+            .no-print, 
+            .app-header, 
+            .filter-section, 
+            #idSuggestions, 
+            .custom-calendar,
+            .suggestion-box,
+            .btn-print { 
+                display: none !important; 
+                visibility: hidden !important;
+                opacity: 0 !important;
+                height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+            }
+            
+            /* ৪. কন্টেইনারকে ফুল উইডথ দেওয়া */
+            #app-container, #mainContent, .table-container { 
+                border: none !important; 
+                box-shadow: none !important; 
+                outline: none !important;
+                width: 100% !important; 
+                max-width: 100% !important; 
+                margin: 0 !important; 
+                padding: 0 !important;
+                overflow: visible !important;
+            }
+            
+            .print-only { 
+                display: block !important; 
+            }
+
+            /* ৫. ১-৩১ তারিখ এক পেজে ফিট করার জন্য ফিক্সড টেবিল লেআউট */
+            table { 
+                border: 1px solid #000000 !important; 
+                width: 100% !important; 
+                table-layout: fixed !important; /* স্ক্রিনের বাইরে টেবিল যেতে দেবে না */
+                border-collapse: collapse !important;
+                page-break-inside: avoid;
+            }
+            
+            /* ৬. হেডারের ফন্ট ও হালকা গ্রে ব্যাকগ্রাউন্ড (সাদাকালোতে স্পষ্ট রিডিবিলিটি) */
+            thead th { 
+                background: #f0f0f0 !important; 
+                color: black !important; 
+                font-weight: bold !important;
+                font-size: 8px !important; 
+                padding: 5px 1px !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* ৭. ডাটা রো এবং টেক্সট সাইজ ৮ পিক্সেল করা যেন ১-৩১ তারিখ ধরে */
+            th, td { 
+                border: 1px solid #000000 !important; 
+                color: black !important; 
+                background: white !important; 
+                padding: 4px 1px !important; 
+                font-size: 8px !important; 
+                text-align: center !important;
+                word-wrap: break-word !important;
+                white-space: normal !important;
+            }
+
+            /* ৮. প্রথম কলামগুলোর পার্সেন্টেজ নির্দিষ্ট করা (বাকিটা ১-৩১ তারিখ ভাগ করে নেবে) */
+            th.sticky-sl, td.sticky-sl { width: 3% !important; }
+            th.sticky-id, td.sticky-id { width: 6% !important; }
+            th.sticky-name, td.sticky-name { 
+                width: 14% !important; 
+                text-align: left !important; 
+                padding-left: 3px !important;
+                font-weight: bold !important;
+            }
+            th.total-col, td.total-col { 
+                width: 5% !important; 
+                font-weight: bold !important;
+                background: #e6e6e6 !important; 
+            }
+
+            /* ৯. সাদাকালো প্রিন্টারে রবিবার কলাম চেনার জন্য দুই পাশে ড্যাশড (---) বর্ডার */
+            .sun-col {
+                background: #fafafa !important; 
+                border-left: 1.5px dashed black !important; 
+                border-right: 1.5px dashed black !important; 
+            }
+            
+            /* টোটাল বা ফুটার রো */
+            #attendanceFoot td {
+                font-weight: bold !important;
+                background: #e6e6e6 !important;
+            }
         }
     </style>
 </head>
