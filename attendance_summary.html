@@ -200,9 +200,9 @@
 
           <!-- ══ Working Days Control (নতুন ২) ══ -->
           <div class="wd-badge hide-on-print">
-            <label>⚙️ Working Days:</label>
-            <input type="number" id="manualWDInput" placeholder="Auto" min="1" max="31"
-              title="মাসের কার্যদিবস ম্যানুয়ালি সেট করুন (না দিলে auto)" />
+            <label>⚙️ Working Days Input:</label>
+            <input type="number" id="manualWDInput" placeholder="Type" min="1" max="31"
+              title="Warking Day Manual Input Then Hit The Ok Button" />
             <button onclick="applyManualWD()">✔ OK</button>
             <span class="wd-status" id="wdStatus">⏳ Loading...</span>
           </div>
@@ -385,7 +385,7 @@
         }
         const wd = calcWorkingDays(dateStr);
         _autoWorkingDays = wd;
-        document.getElementById("wdStatus").textContent = "⚡ Auto: " + wd + " days";
+        document.getElementById("wdStatus").textContent = "⚡ " + wd + " days";
       }
 
       // Manual working days apply বাটন
@@ -399,7 +399,7 @@
           document.getElementById("manualWDInput").value = "";
           const startStr = document.getElementById("startDate").value;
           if (startStr) refreshWdStatus(startStr);
-          else document.getElementById("wdStatus").textContent = "⚡ Auto: " + _autoWorkingDays + " days";
+          else document.getElementById("wdStatus").textContent = "⚡" + _autoWorkingDays + " days";
         }
         processData();
       };
@@ -490,7 +490,7 @@
             document.querySelectorAll(".flatpickr-input").forEach(inp => {
               if (inp._flatpickr) inp._flatpickr.redraw();
             });
-            document.getElementById("wdStatus").textContent = "⚡ Auto: ready";
+            document.getElementById("wdStatus").textContent = "⚡ready";
           } catch(e) {
             console.warn("Holiday list load failed:", e.message);
           }
@@ -1216,7 +1216,7 @@
         // ম্যানুয়াল ওয়ার্কিং ডেজ রিসেট
         _manualWD = null;
         document.getElementById("manualWDInput").value = "";
-        document.getElementById("wdStatus").textContent = "⚡ Auto: " + _autoWorkingDays + " days";
+        document.getElementById("wdStatus").textContent = "⚡ " + _autoWorkingDays + " days";
         processData();
       }
 
