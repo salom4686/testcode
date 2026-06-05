@@ -9,124 +9,280 @@
     <link rel="icon" type="image/png" href="https://drive.google.com/thumbnail?id=11bxOPboUUmQxIkT6gMYWYqxfh9jZSiLo&sz=w500" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-      :root {
-        --brand-blue: #1d3a6d;
-        --header-text: #ffffff;
-        --bg-light: #f4f6f9;
-        --accent-yellow: #fff9e6;
-        --btn-reset: #dc3545;
-        --highlight-green: #e6fffa;
-      }
-      body {
-        background-color: var(--bg-light);
-        padding: 10px;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      }
-      .main-card {
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-        margin: 0 auto;
-        border: 1px solid #e0e0e0;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        max-height: 96vh;
-      }
-      .btn-reset.btn-action {
-        background-color: #ffc107; color: #000; border: 1px solid #000; transition: all 0.3s ease;
-      }
-      .btn-reset.btn-action:hover {
-        background-color: #ff2802 !important; color: #000000 !important;
-        border-color: #f8f7f7 !important; box-shadow: 0 2px 5px rgba(228,221,221,0.2);
-      }
-      .btn-reset.btn-action:active { background-color: #d39e00 !important; transform: translateY(5px); }
-      .page-header {
-        background-color: #ffffff; padding: 10px 20px;
-        border-bottom: 4px solid var(--brand-blue);
-        display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
-      }
-      .brand-title h2 {
-        background: linear-gradient(135deg,#bf953f 0%,#fcf6ba 25%,#b38728 50%,#fbf5b7 75%,#aa771c 100%);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        font-weight: 800; margin: 0; font-size: 1.5rem;
-        filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.15));
-      }
-      .brand-title span {
-        background: linear-gradient(135deg,#b38728 0%,#fcf6ba 50%,#aa771c 100%);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        font-weight: 700; font-size: 0.85rem !important; display: inline-block;
-      }
-      .filter-section {
-        padding: 12px; background: #f8f9fc; border-bottom: 1px solid #eee;
-        display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr));
-        gap: 8px; align-items: end; flex-shrink: 0;
-      }
-      .filter-group label {
-        font-size: 9px; font-weight: 700; color: var(--brand-blue);
-        margin-bottom: 2px; display: block; text-transform: uppercase;
-      }
-      .custom-date-input { background-color: #ffffff !important; cursor: pointer !important; font-weight: 600; font-size: 11px; }
-      .btn-action { font-size: 10px; padding: 4px 10px; font-weight: 600; }
-      .btn-reset  { background-color: var(--btn-reset); color: white; border: none; }
-      .summary-bar {
-        padding: 8px 20px; background: #eef2f7; border-bottom: 1px solid #ddd;
-        display: flex; gap: 16px; font-weight: bold; color: var(--brand-blue);
-        font-size: 13px; align-items: center; flex-wrap: wrap;
-      }
-      .stat-box { background: #fff; padding: 2px 10px; border-radius: 4px; border: 1px solid #cbd5e0; }
+  :root {
+    --brand-blue: #001d3d;
+    --brand-gold: #ffd700;
+    --header-text: #ffffff;
+    --bg-light: #001d3d;
+    --accent-yellow: #fff9e6;
+    --btn-reset: #dc3545;
+    --highlight-green: #e6fffa;
+  }
+  body {
+    background-color: var(--brand-blue);
+    padding: 10px;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+  .main-card {
+    background: #001d3d;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+    margin: 0 auto;
+    border: 2px solid var(--brand-gold);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 96vh;
+  }
+  .page-header {
+    background: linear-gradient(135deg, #001d3d 0%, #003580 60%, #001530 100%);
+    padding: 10px 20px;
+    border-bottom: 4px solid var(--brand-gold);
+    display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+  }
+  .brand-title h2 {
+    background: linear-gradient(135deg,#bf953f 0%,#fcf6ba 25%,#b38728 50%,#fbf5b7 75%,#aa771c 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-weight: 800; margin: 0; font-size: 1.5rem;
+    filter: drop-shadow(1px 1px 3px rgba(255,215,0,0.3));
+  }
+  .brand-title span {
+    background: linear-gradient(135deg,#b38728 0%,#fcf6ba 50%,#aa771c 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-weight: 700; font-size: 0.85rem !important; display: inline-block;
+  }
 
-      /* ══ Working Days Badge (নতুন ১) ══ */
-      .wd-badge {
-        display: flex; align-items: center; gap: 6px;
-        background: rgba(29,58,109,0.06); border: 1.5px solid var(--brand-blue);
-        border-radius: 6px; padding: 3px 10px; font-size: 10px;
-      }
-      .wd-badge label { font-size: 9px; font-weight: 700; color: var(--brand-blue); margin: 0; white-space: nowrap; }
-      .wd-badge input[type="number"] {
-        width: 52px; padding: 2px 5px; font-size: 11px; font-weight: 700;
-        border: 1.5px solid var(--brand-blue); border-radius: 4px;
-        text-align: center; color: var(--brand-blue);
-      }
-      .wd-badge .wd-status { font-size: 10px; font-weight: 700; color: #0d685b; white-space: nowrap; }
-      .wd-badge button {
-        background: #0d9488; color: white; border: none;
-        padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer;
-      }
-      .wd-badge button:hover { background: #065f46; }
+  /* ── Buttons ── */
+  .btn-action { font-size: 10px; padding: 4px 10px; font-weight: 600; }
+  .btn-reset  { background-color: var(--btn-reset); color: white; border: none; }
+  .btn-reset.btn-action {
+    background-color: #ffc107; color: #000; border: 1px solid #000; transition: all 0.3s ease;
+  }
+  .btn-reset.btn-action:hover {
+    background-color: #ff2802 !important; color: #fff !important;
+    border-color: #fff !important;
+  }
+  .btn-reset.btn-action:active { background-color: #d39e00 !important; transform: translateY(2px); }
+  .btn-outline-success { color: var(--brand-gold) !important; border-color: var(--brand-gold) !important; }
+  .btn-outline-success:hover { background: var(--brand-gold) !important; color: #001d3d !important; }
+  .btn-outline-primary { color: #90caf9 !important; border-color: #90caf9 !important; }
+  .btn-outline-primary:hover { background: #90caf9 !important; color: #001d3d !important; }
+  .btn-primary { background: var(--brand-gold) !important; color: #001d3d !important; border-color: var(--brand-gold) !important; font-weight: 700; }
+  .btn-primary:hover { background: #ffe840 !important; }
 
-      .table-responsive { overflow: auto; flex-grow: 1; position: relative; }
-      .attendance-table { width: 100%; border-collapse: separate; border-spacing: 0; }
-      .attendance-table thead th {
-        background-color: var(--brand-blue) !important; color: var(--header-text) !important;
-        padding: 6px 4px; text-align: center; font-size: 9px;
-        position: sticky; top: 0; z-index: 20;
-        border: 1px solid #142a50; text-transform: uppercase; white-space: nowrap;
-      }
-      .attendance-table tbody td {
-        padding: 4px 3px; text-align: center; font-size: 10px;
-        border: 1px solid #e0e0e0; white-space: nowrap;
-      }
-      .total-attendance-col { background-color: var(--accent-yellow); font-weight: 700; color: var(--brand-blue); }
-      .highlight-col { background-color: var(--highlight-green); font-weight: 700; color: #0d685b; }
-      .deduction-col { background-color: #fff0f0; }
-      #loader { padding: 40px; text-align: center; color: var(--brand-blue); display: none; }
-      .search-input-group { display: flex; }
-      .search-input-group select { border-top-right-radius: 0; border-bottom-right-radius: 0; width: 80px; font-size: 10px; }
-      .search-input-group input  { border-top-left-radius: 0; border-bottom-left-radius: 0; font-size: 10px; }
-      .grand-total-row td { background-color: #f0f4f8 !important; font-weight: 900 !important; color: var(--brand-blue); }
+  /* ── Filter Section ── */
+  .filter-section {
+    padding: 12px;
+    background: #002147;
+    border-bottom: 2px solid var(--brand-gold);
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr));
+    gap: 8px; align-items: end; flex-shrink: 0;
+  }
+  .filter-group label {
+    font-size: 9px; font-weight: 700; color: var(--brand-gold);
+    margin-bottom: 2px; display: block; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .form-control, .form-select {
+    background-color: #001530 !important;
+    color: #e0e8f4 !important;
+    border: 1.5px solid #3a5a8a !important;
+    font-size: 11px;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: var(--brand-gold) !important;
+    box-shadow: 0 0 0 2px rgba(255,215,0,0.2) !important;
+  }
+  .form-control::placeholder { color: #6a88aa !important; }
+  .custom-date-input { cursor: pointer !important; font-weight: 600; }
 
-      /* ══ Flatpickr — Holiday/Sunday লাল (নতুন ৩) ══ */
-      .flatpickr-day.is-holiday { color: #ff4d4d !important; font-weight: 700 !important; }
+  /* ── Summary Bar ── */
+  .summary-bar {
+    padding: 8px 20px;
+    background: #002147;
+    border-bottom: 2px solid var(--brand-gold);
+    display: flex; gap: 16px; font-weight: bold;
+    color: var(--brand-gold);
+    font-size: 12px; align-items: center; flex-wrap: wrap;
+  }
+  .stat-box {
+    background: #001530;
+    color: var(--brand-gold);
+    padding: 2px 10px; border-radius: 4px;
+    border: 1px solid var(--brand-gold);
+  }
 
-      @media print { .hide-on-print { display: none !important; } }
-    </style>
+  /* ── Working Days Badge ── */
+  .wd-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(255,215,0,0.08);
+    border: 1.5px solid var(--brand-gold);
+    border-radius: 6px; padding: 3px 10px; font-size: 10px;
+  }
+  .wd-badge label { font-size: 9px; font-weight: 700; color: var(--brand-gold); margin: 0; white-space: nowrap; }
+  .wd-badge input[type="number"] {
+    width: 52px; padding: 2px 5px; font-size: 11px; font-weight: 700;
+    border: 1.5px solid var(--brand-gold); border-radius: 4px;
+    text-align: center; color: var(--brand-gold);
+    background: #001530;
+  }
+  .wd-badge .wd-status { font-size: 10px; font-weight: 700; color: #4ade80; white-space: nowrap; }
+  .wd-badge button {
+    background: #0d9488; color: white; border: none;
+    padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer;
+  }
+  .wd-badge button:hover { background: #065f46; }
+
+  /* ── Table ── */
+  .table-responsive { overflow: auto; flex-grow: 1; position: relative; background: #fff; }
+  .attendance-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+  .attendance-table thead th {
+    background-color: #001d3d !important;
+    color: #ffffff !important;
+    padding: 6px 4px; text-align: center; font-size: 9px;
+    position: sticky; top: 0; z-index: 20;
+    border: 1px solid #335185 !important;
+    text-transform: uppercase; white-space: nowrap;
+  }
+  .attendance-table tbody td {
+    padding: 4px 3px; text-align: center; font-size: 10px;
+    border: 1px solid #e0e0e0; white-space: nowrap;
+    background: #fff;
+  }
+  .attendance-table tbody tr:nth-child(even) td { background: #f0f4f8; }
+  .attendance-table tbody tr:hover td { background: #fff9e6 !important; }
+  .total-attendance-col { background-color: var(--accent-yellow); font-weight: 700; color: #001d3d; }
+  .highlight-col { background-color: var(--highlight-green); font-weight: 700; color: #0d685b; }
+  .grand-total-row td {
+    background-color: #001d3d !important;
+    color: var(--brand-gold) !important;
+    font-weight: 900 !important;
+    border: 1px solid #335185 !important;
+  }
+
+  /* ── Loader ── */
+  #loader {
+    padding: 40px; text-align: center;
+    color: var(--brand-gold); display: none;
+    background: #001d3d;
+  }
+  #loader p { color: var(--brand-gold); }
+
+  /* ── Search Input ── */
+  .search-input-group { display: flex; }
+  .search-input-group select { border-top-right-radius: 0; border-bottom-right-radius: 0; width: 80px; font-size: 10px; }
+  .search-input-group input  { border-top-left-radius: 0; border-bottom-left-radius: 0; font-size: 10px; }
+
+  /* ── Modals ── */
+  .modal-content {
+    background: #001d3d !important;
+    border: 2px solid var(--brand-gold) !important;
+    color: #e0e8f4;
+  }
+  .modal-header { border-bottom: 2px solid var(--brand-gold) !important; }
+  .modal-footer { border-top: 2px solid var(--brand-gold) !important; }
+  .modal-title { color: var(--brand-gold) !important; font-weight: 700; }
+  .form-label { color: var(--brand-gold) !important; }
+  .modal .form-control, .modal .form-select {
+    background: #001530 !important; color: #e0e8f4 !important;
+    border-color: #3a5a8a !important;
+  }
+  .modal .btn-light {
+    background: transparent !important; color: var(--brand-gold) !important;
+    border: 1px solid var(--brand-gold) !important;
+  }
+  .modal .btn-light:hover { background: var(--brand-gold) !important; color: #001d3d !important; }
+  .text-primary { color: var(--brand-gold) !important; }
+/* ══ Flatpickr — Navy Blue & Golden Theme ══ */
+/* ══ Flatpickr — Navy Blue & Golden Theme ══ */
+.flatpickr-calendar { 
+  background: #001d3d !important; 
+  border: 2px solid var(--brand-gold) !important;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.5) !important;
+}
+.flatpickr-day { 
+  color: #a0c4ff !important; 
+  border-radius: 4px !important;
+}
+.flatpickr-day.selected, 
+.flatpickr-day.today { 
+  background: var(--brand-gold) !important; 
+  color: #001d3d !important; 
+  border-color: var(--brand-gold) !important; 
+  font-weight: 700 !important;
+}
+.flatpickr-day:hover { 
+  background: rgba(255,215,0,0.25) !important; 
+  color: var(--brand-gold) !important; 
+  border-color: var(--brand-gold) !important; 
+}
+.flatpickr-months .flatpickr-month, 
+.flatpickr-weekdays, 
+span.flatpickr-weekday { 
+  background: #001d3d !important; 
+  color: var(--brand-gold) !important; 
+  font-weight: 700 !important;
+}
+.flatpickr-day.prevMonthDay, 
+.flatpickr-day.nextMonthDay { 
+  visibility: hidden !important; 
+}
+.flatpickr-prev-month, 
+.flatpickr-next-month { 
+  color: var(--brand-gold) !important; 
+  fill: var(--brand-gold) !important;
+  padding: 5px !important;
+}
+.flatpickr-prev-month svg, 
+.flatpickr-next-month svg { 
+  fill: var(--brand-gold) !important; 
+  stroke: var(--brand-gold) !important; 
+}
+.flatpickr-prev-month:hover, 
+.flatpickr-next-month:hover { 
+  background: rgba(255,215,0,0.15) !important; 
+  border-radius: 4px !important;
+}
+.flatpickr-months .flatpickr-month select.flatpickr-monthDropdown-months { 
+  background: #001d3d !important; 
+  color: var(--brand-gold) !important; 
+  border: none !important; 
+}
+.flatpickr-months .flatpickr-month select.flatpickr-monthDropdown-months option { 
+  background: #001d3d !important; 
+  color: var(--brand-gold) !important; 
+}
+/* রবিবার লাল */
+.flatpickr-day:nth-child(7n+1) { 
+  color: #ff4d4d !important; 
+  font-weight: 700 !important; 
+}
+/* হলিডে লাল */
+.flatpickr-day.is-holiday { 
+  color: #ff4d4d !important; 
+  font-weight: 700 !important; 
+}
+/* রবিবার লাল */
+.flatpickr-day:nth-child(7n+1) { color: #ff4d4d !important; font-weight: 700 !important; }
+/* হলিডে লাল */
+.flatpickr-day.is-holiday { color: #ff4d4d !important; font-weight: 700 !important; }
+
+  /* ── Print ── */
+  @media print {
+    .hide-on-print { display: none !important; }
+    body { background: #fff !important; }
+    .main-card { border: none !important; box-shadow: none !important; }
+    .filter-section, .summary-bar, .page-header { display: none !important; }
+    .table-responsive { overflow: visible !important; }
+    .attendance-table thead th { background: #f2f2f2 !important; color: #000 !important; border: 1px solid #000 !important; }
+    .grand-total-row td { background: #eee !important; color: #000 !important; border: 1px solid #000 !important; }
+    tbody tr:last-child td { page-break-inside: avoid !important; }
+  }
+</style>
   </head>
   <body id="bodyRoot">
     <div class="container-fluid">
@@ -674,50 +830,61 @@
 
       // ══════════════════════════════════════════════════════
       // নতুন ৩ — Flatpickr: রবিবার + পাবলিক হলিডে লাল
-      // ══════════════════════════════════════════════════════
-      function initCustomDatePickers() {
-        const redDayConfig = {
-          dateFormat: "Y-m-d",
-          altInput: true,
-          altFormat: "d-m-Y",
-          onDayCreate: function(dObj, dStr, fp, dayElem) {
-            const d = dayElem.dateObj;
-            if (!d) return;
-            // রবিবার লাল
-            if (d.getDay() === 0) {
-              dayElem.style.color = "#ff4d4d";
-              dayElem.style.fontWeight = "700";
-            }
-            // পাবলিক হলিডে লাল
-            const y   = d.getFullYear();
-            const m   = String(d.getMonth() + 1).padStart(2,"0");
-            const day = String(d.getDate()).padStart(2,"0");
-            if (_holidaySet.has(`${y}-${m}-${day}`)) {
-              dayElem.classList.add("is-holiday");
-              dayElem.style.color = "#ff4d4d";
-              dayElem.style.fontWeight = "700";
-            }
-          },
-          onChange: function(selectedDates, dateStr) {
-            processData();
-            // Working days auto update on date change (নতুন)
-            if (dateStr && !_manualWD) refreshWdStatus(dateStr);
-          },
-        };
+     function initCustomDatePickers() {
+  const redDayConfig = {
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "d-m-Y",
+    disableMobile: true,
+    onReady: function(dObj, dStr, fp) {
+      fp.calendarContainer.style.fontFamily = "Segoe UI, sans-serif";
+    },
+    onDayCreate: function(dObj, dStr, fp, dayElem) {
+      const d = dayElem.dateObj;
+      if (!d) return;
 
-        startPicker = flatpickr("#startDate", redDayConfig);
-        endPicker   = flatpickr("#endDate",   redDayConfig);
-
-        matrixPicker = flatpickr("#matrixMonth", {
-          plugins: [
-            new monthSelectPlugin({
-              shorthand: true, dateFormat: "Y-m", altFormat: "F Y", theme: "material_blue",
-            }),
-          ],
-        });
-        const now = new Date();
-        matrixPicker.setDate(`${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,"0")}`);
+      // আগের ও পরের মাস hide
+      if (dayElem.classList.contains("prevMonthDay") ||
+          dayElem.classList.contains("nextMonthDay")) {
+        dayElem.style.visibility = "hidden";
+        return;
       }
+
+      // রবিবার লাল
+      if (d.getDay() === 0) {
+        dayElem.style.color = "#ff4d4d";
+        dayElem.style.fontWeight = "700";
+      }
+
+      // পাবলিক হলিডে লাল
+      const y   = d.getFullYear();
+      const m   = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      if (_holidaySet.has(`${y}-${m}-${day}`)) {
+        dayElem.classList.add("is-holiday");
+        dayElem.style.color = "#ff4d4d";
+        dayElem.style.fontWeight = "700";
+      }
+    },
+    onChange: function(selectedDates, dateStr) {
+      processData();
+      if (dateStr && !_manualWD) refreshWdStatus(dateStr);
+    },
+  };
+
+  startPicker = flatpickr("#startDate", redDayConfig);
+  endPicker   = flatpickr("#endDate",   redDayConfig);
+
+  matrixPicker = flatpickr("#matrixMonth", {
+    plugins: [
+      new monthSelectPlugin({
+        shorthand: true, dateFormat: "Y-m", altFormat: "F Y", theme: "material_blue",
+      }),
+    ],
+  });
+  const now = new Date();
+  matrixPicker.setDate(`${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,"0")}`);
+}
 
       function mapSheetColumns(headers) {
         colIndexMap = {};
@@ -1055,7 +1222,7 @@
           g.hA+=emp.holAmt; g.sA+=emp.sunAmt; g.attB+=emp.attBonus; g.perfB+=emp.perfBonus;
           g.gross+=gross; g.adv+=emp.adv; g.fine+=emp.fine; g.nps+=nps; g.csg+=csg; g.need+=need;
         });
-        document.getElementById("tableFoot").innerHTML = `<tr class="grand-total-row text-center" style="font-weight:bold;background-color:#f1f5f9;">
+        document.getElementById("tableFoot").innerHTML = `<tr class="grand-total-row text-center" style="font-weight:bold;background-color:#f1f5f9;page-break-before:always;">
           <td colspan="2">GRAND TOTAL:</td>
           <td class="hide-on-print">${g.mB.toFixed(0)}</td>
           <td class="hide-on-print">${g.nar}</td><td class="hide-on-print">${g.sunD}</td><td class="hide-on-print">${g.holD}</td>
@@ -1152,26 +1319,35 @@
         processData();
       }
 
-      function updateStats(filteredRows) {
-        if (!filteredRows?.length) {
-          document.getElementById("statEmp").innerText = "0";
-          document.getElementById("statPresent").innerText = "0";
-          return;
-        }
-        const eIdx = colIndexMap["EMPLOYEE ID"], sIdx = colIndexMap["STATUS"];
-        const isSum = document.getElementById("bodyRoot").classList.contains("summary-mode");
-        let uniqueIds = new Set();
-        filteredRows.forEach(r => { const id = r[eIdx]?.toString().trim(); if (id && id !== "-" && id !== "") uniqueIds.add(id); });
-        let totalAtt = 0;
-        if (isSum) {
-          for (let r of document.getElementById("tableBody").rows)
-            if (!r.classList.contains("grand-total-row")) totalAtt += parseInt(r.cells[5]?.innerText) || 0;
-        } else {
-          filteredRows.forEach(r => { if (isPresent(r[sIdx])) totalAtt++; });
-        }
-        document.getElementById("statEmp").innerText = uniqueIds.size;
-        document.getElementById("statPresent").innerText = totalAtt;
-      }
+    function updateStats(filteredRows) {
+  if (!filteredRows?.length) {
+    document.getElementById("statEmp").innerText = "0";
+    document.getElementById("statPresent").innerText = "0";
+    return;
+  }
+
+  const eIdx = colIndexMap["EMPLOYEE ID"], sIdx = colIndexMap["STATUS"];
+  const isSum = document.getElementById("bodyRoot").classList.contains("summary-mode");
+
+  let uniqueIds = new Set();
+  filteredRows.forEach(r => {
+    const id = r[eIdx]?.toString().trim();
+    if (id && id !== "-" && id !== "") uniqueIds.add(id);
+  });
+
+  let totalAtt = 0;
+  if (isSum) {
+    // globalSummary থেকে সরাসরি totalAtt যোগ করুন
+    Object.values(globalSummary).forEach(emp => {
+      totalAtt += emp.totalAtt || 0;
+    });
+  } else {
+    filteredRows.forEach(r => { if (isPresent(r[sIdx])) totalAtt++; });
+  }
+
+  document.getElementById("statEmp").innerText = uniqueIds.size;
+  document.getElementById("statPresent").innerText = totalAtt;
+}
 
       function populateStaticFilters(data) {
         const eSel = document.getElementById("empFilter");
@@ -1205,21 +1381,29 @@
 
       function refreshData() { window.handleViewReport(); }
 
-      function resetFilters() {
-        document.getElementById("searchInput").value = "";
-        if (startPicker) startPicker.clear();
-        if (endPicker)   endPicker.clear();
-        document.getElementById("empFilter").value = "";
-        document.getElementById("sideFilter").value = "";
-        document.getElementById("columnSelector").value = "";
-        document.getElementById("typeValueGroup").style.display = "none";
-        // ম্যানুয়াল ওয়ার্কিং ডেজ রিসেট
-        _manualWD = null;
-        document.getElementById("manualWDInput").value = "";
-        document.getElementById("wdStatus").textContent = "⚡ " + _autoWorkingDays + " days";
-        processData();
-      }
-
+     function resetFilters() {
+  document.getElementById("searchInput").value = "";
+  if (startPicker) startPicker.clear();
+  if (endPicker)   endPicker.clear();
+  document.getElementById("empFilter").value = "";
+  document.getElementById("sideFilter").value = "";
+  document.getElementById("columnSelector").value = "";
+  document.getElementById("typeValueGroup").style.display = "none";
+  _manualWD = null;
+  document.getElementById("manualWDInput").value = "";
+  document.getElementById("wdStatus").textContent = "⚡ " + _autoWorkingDays + " days";
+  
+  // ── এই অংশ যোগ করুন ──
+  rawData = [];
+  globalSummary = {};
+  document.getElementById("tableHead").innerHTML = "";
+  document.getElementById("tableBody").innerHTML = "";
+  document.getElementById("tableFoot").innerHTML = "";
+  document.getElementById("statEmp").innerText = "0";
+  document.getElementById("statPresent").innerText = "0";
+  document.getElementById("salarySheetTitle").style.display = "none";
+  // ── processData() কল সরিয়ে দিন ──
+}
       function openPreview() {
         const start  = document.getElementById("startDate").value || "NO DATE";
         const end    = document.getElementById("endDate").value   || "NO DATE";
