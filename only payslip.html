@@ -8,32 +8,22 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Source+Sans+3:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
   <style>
-    :root {
-      --brand-blue: #002147;
-      --brand-gold: #ffd700;
-      --border: #b0bdd4;
-    }
+    :root { --brand-blue: #002147; --brand-gold: #ffd700; --border: #b0bdd4; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: "Source Sans 3", sans-serif; background: var(--brand-blue); color: #1a1a2e; font-size: 12px; }
-
     .page-header { background: var(--brand-blue); padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid var(--brand-gold); }
     .page-header h2 { font-family: "Playfair Display", serif; color: var(--brand-gold); font-size: 22px; letter-spacing: 1.5px; text-transform: uppercase; }
     .header-badge { background: var(--brand-gold); color: var(--brand-blue); font-weight: 700; font-size: 10px; letter-spacing: 1px; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; }
-
     .controls { background: var(--brand-blue); padding: 14px 32px; border-bottom: 3px solid var(--brand-gold); }
     .row-container { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .controls label { color: var(--brand-gold); font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
     .controls input[type="text"] { padding: 8px 12px; font-size: 12px; font-family: "Source Sans 3", sans-serif; border: 1.5px solid #3a5a8a; border-radius: 6px; background: #001530; color: #e0e8f4; outline: none; transition: border-color 0.2s; }
     .controls input[type="text"]::placeholder { color: #6a88aa; }
     .controls input[type="text"]:focus { border-color: var(--brand-gold); box-shadow: 0 0 0 2px rgba(255,215,0,0.18); }
-
     .btn { padding: 8px 18px; font-size: 12px; font-family: "Source Sans 3", sans-serif; font-weight: 700; border: 2px solid transparent; border-radius: 6px; cursor: pointer; letter-spacing: 0.4px; transition: all 0.2s; }
     .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.3); }
     .btn-gold { background: var(--brand-gold); color: var(--brand-blue); border-color: var(--brand-gold); }
     .btn-gold:hover { background: transparent; color: var(--brand-gold); }
-    .btn-clear { background: transparent; color: #ff6b6b; border: 2px solid #ff6b6b; }
-    .btn-clear:hover { background: #ff6b6b; color: white; }
-
     .flatpickr-calendar { background: #001d3d !important; border: 1px solid var(--brand-gold) !important; }
     .flatpickr-day { color: #cce !important; }
     .flatpickr-day.selected, .flatpickr-day.today { background: var(--brand-gold) !important; color: var(--brand-blue) !important; border-color: var(--brand-gold) !important; }
@@ -42,13 +32,10 @@
     .flatpickr-day.prevMonthDay, .flatpickr-day.nextMonthDay { visibility: hidden; }
     .flatpickr-prev-month, .flatpickr-next-month { color: var(--brand-gold) !important; fill: var(--brand-gold) !important; }
     .flatpickr-prev-month svg, .flatpickr-next-month svg { fill: var(--brand-gold) !important; stroke: var(--brand-gold) !important; }
-    .flatpickr-prev-month:hover, .flatpickr-next-month:hover { background: rgba(255,215,0,0.15) !important; }
     .flatpickr-months .flatpickr-month select.flatpickr-monthDropdown-months { background: var(--brand-blue) !important; color: var(--brand-gold) !important; border: none !important; }
     .flatpickr-months .flatpickr-month select.flatpickr-monthDropdown-months option { background: var(--brand-blue) !important; color: var(--brand-gold) !important; }
-    .flatpickr-day:nth-child(7n+1) { color: #ff4d4d !important; font-weight: 700 !important; }
+    .flatpickr-day.is-sunday { color: #ff4d4d !important; font-weight: 700 !important; }
     .flatpickr-day.is-holiday { color: #ff4d4d !important; font-weight: 700 !important; }
-
-    /* Employee Panel */
     .emp-panel-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 8000; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
     .emp-panel-overlay.active { display: flex; }
     .emp-panel-box { background: white; border-radius: 12px; width: 700px; max-width: 95vw; max-height: 88vh; display: flex; flex-direction: column; box-shadow: 0 25px 60px rgba(0,0,0,0.5); }
@@ -70,8 +57,6 @@
     .btn-gen-selected { background: var(--brand-gold); color: var(--brand-blue); border: 2px solid var(--brand-gold); padding: 8px 20px; border-radius: 7px; font-size: 12px; font-weight: 700; font-family: "Source Sans 3", sans-serif; cursor: pointer; transition: all 0.2s; }
     .btn-gen-selected:hover { background: transparent; color: var(--brand-gold); }
     .btn-gen-selected:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    /* Generation Loader */
     .gen-loader { display: none; position: fixed; inset: 0; background: var(--brand-blue); z-index: 99990; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
     .gen-loader.active { display: flex; }
     .gen-loader-title { font-family: "Playfair Display", serif; color: var(--brand-gold); font-size: 24px; letter-spacing: 1.5px; }
@@ -87,14 +72,10 @@
     .gen-emp-badge { background: #001530; border: 1.5px solid #335185; border-radius: 8px; padding: 6px 16px; color: #a0b8d8; font-size: 11px; font-weight: 600; min-height: 32px; }
     .gen-emp-badge span { color: var(--brand-gold); font-weight: 700; }
     .gen-loader-sub { color: #a0b8d8; font-size: 13px; font-weight: 600; }
-
-    /* Status badge */
     .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
     .status-ok { background: #10b981; }
     .status-loading { background: #ffd700; animation: pulse 1s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-    /* Message Box */
     .msgbox-overlay { display:none; position:fixed; inset:0; background:rgba(0,21,48,0.82); z-index:99999; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
     .msgbox-overlay.active { display:flex; }
     .msgbox-card { background:#fff; border-radius:14px; min-width:320px; max-width:420px; box-shadow:0 30px 70px rgba(0,0,0,0.5); overflow:hidden; animation:msgPop .22s cubic-bezier(.34,1.56,.64,1); }
@@ -108,7 +89,6 @@
     .msgbox-footer { padding:10px 20px 16px; display:flex; justify-content:flex-end; }
     .msgbox-btn { padding:8px 22px; border:2px solid transparent; border-radius:7px; font-size:12px; font-weight:700; cursor:pointer; font-family:"Source Sans 3",sans-serif; }
     .msgbox-btn.primary { background:var(--brand-gold); color:var(--brand-blue); border-color:var(--brand-gold); }
-
     .content { padding: 24px 32px; color: #a0b8d8; font-size: 13px; text-align: center; }
   </style>
 </head>
@@ -216,25 +196,26 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 // ── Holiday Set ──
 let _holidaySet = new Set();
 
+// ── onDayCreate: রবিবার ও Holiday লাল ──
+function redDayCreate(dayElem) {
+  const d = dayElem.dateObj;
+  if (!d) return;
+  if (d.getDay() === 0) {
+    dayElem.classList.add("is-sunday");
+  }
+  const y   = d.getFullYear();
+  const m   = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+  const ds  = `${y}-${m}-${day}`;
+  if (_holidaySet.has(ds)) {
+    dayElem.classList.add("is-holiday");
+    dayElem.title = "Holiday";
+  }
+}
+
 const redDayConfig = {
   dateFormat: "Y-m-d",
-  onDayCreate: function(dObj, dStr, fp, dayElem) {
-    const d = dayElem.dateObj;
-    if (!d) return;
-    const y = d.getFullYear();
-    const m = String(d.getMonth()+1).padStart(2,"0");
-    const day = String(d.getDate()).padStart(2,"0");
-    const dateStr = `${y}-${m}-${day}`;
-    if (d.getDay() === 0) {
-      dayElem.style.color = "#ff4d4d";
-      dayElem.style.fontWeight = "700";
-    }
-    if (_holidaySet.has(dateStr)) {
-      dayElem.classList.add("is-holiday");
-      dayElem.style.color = "#ff4d4d";
-      dayElem.style.fontWeight = "700";
-    }
-  }
+  onDayCreate: function(dObj, dStr, fp, dayElem) { redDayCreate(dayElem); }
 };
 
 flatpickr("#dateFrom",      { ...redDayConfig, onChange: syncPanelDates });
@@ -242,12 +223,14 @@ flatpickr("#dateTo",        { ...redDayConfig, onChange: syncPanelDates });
 flatpickr("#panelDateFrom", { ...redDayConfig });
 flatpickr("#panelDateTo",   { ...redDayConfig });
 
-// Holiday load
+// Holiday load from Firestore
 firebase.firestore().collection("HOLIDAY_LIST").get()
   .then(snap => {
     snap.forEach(doc => _holidaySet.add(doc.id));
-    document.querySelectorAll(".flatpickr-input").forEach(input => {
-      if (input._flatpickr) input._flatpickr.redraw();
+    // Redraw all datepickers after holidays loaded
+    ["dateFrom","dateTo","panelDateFrom","panelDateTo"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el._flatpickr) el._flatpickr.redraw();
     });
   })
   .catch(e => console.error("Holiday load error:", e));
@@ -284,11 +267,8 @@ function syncPanelDates() {
 //  GLOBAL CACHE
 // ══════════════════════════════════════════
 let _cache = {
-  loaded: false,
-  loading: false,
-  empList: [],
-  empMap: {},
-  advMap: {},
+  loaded: false, loading: false,
+  empList: [], empMap: {}, advMap: {}, fineMap: {},
 };
 
 async function preloadStaticData() {
@@ -296,31 +276,24 @@ async function preloadStaticData() {
   _cache.loading = true;
   setStatus("loading", "⏳ Loading data...");
   try {
-    const db = firebase.firestore();
+    const db   = firebase.firestore();
     const rtdb = firebase.database();
 
-    // Employee list
     const empSnap = await db.collection("EMPLOYEE_LIST").get();
-    _cache.empList = [];
-    _cache.empMap = {};
+    _cache.empList = []; _cache.empMap = {};
     empSnap.forEach(d => {
       const e = d.data();
       const emp = {
-        id: e.id || d.id,
-        name: e.name || "",
-        passport: e.passport || "",
-        desig: e.designation || "",
-        salary: parseInt(e.salary) || 0,
-        joining: e.joining || "",
-        wpNo: e.wpNo || "",
-        rpUidNo: e.rpUidNo || "",
+        id: e.id || d.id, name: e.name || "",
+        passport: e.passport || "", desig: e.designation || "",
+        salary: parseInt(e.salary) || 0, joining: e.joining || "",
+        wpNo: e.wpNo || "", rpUidNo: e.rpUidNo || "",
       };
       _cache.empList.push(emp);
       _cache.empMap[emp.id] = emp;
     });
     _cache.empList.sort((a,b) => a.id.localeCompare(b.id));
 
-    // Advance data
     const advSnap = await rtdb.ref("ADVANCE_ADJUSTMENT_SUMMARY/USERS").once("value");
     const advData = advSnap.val() || {};
     _cache.advMap = {};
@@ -328,8 +301,15 @@ async function preloadStaticData() {
       _cache.advMap[id] = parseInt(advData[id].pending) || 0;
     }
 
-    _cache.loaded = true;
-    _cache.loading = false;
+    // ── Fine pending — FINE_SUMMARY/USERS (same pattern as advance) ──
+    const fineSnap = await rtdb.ref("FINE_SUMMARY/USERS").once("value");
+    const fineData = fineSnap.val() || {};
+    _cache.fineMap = {};
+    for (const id in fineData) {
+      _cache.fineMap[id] = parseInt(fineData[id].pending) || 0;
+    }
+
+    _cache.loaded = true; _cache.loading = false;
     setStatus("ok", `✅ ${_cache.empList.length} employees loaded`);
   } catch(e) {
     _cache.loading = false;
@@ -343,7 +323,6 @@ function setStatus(type, msg) {
   el.innerHTML = `<span class="status-dot ${dotClass}"></span>${msg}`;
 }
 
-// ── Fetch attendance + OT for date range (cached) ──
 let _attCache = {};
 
 async function fetchRangeData(dFromVal, dToVal) {
@@ -351,9 +330,10 @@ async function fetchRangeData(dFromVal, dToVal) {
   if (_attCache[key]) return _attCache[key];
 
   setStatus("loading", "⏳ Fetching attendance & OT...");
-  const db = firebase.firestore();
+  const db   = firebase.firestore();
   const rtdb = firebase.database();
 
+  // ── Attendance ──
   const snap = await db.collectionGroup("Present_Absent")
     .where("DATE", ">=", dFromVal)
     .where("DATE", "<=", dToVal)
@@ -364,17 +344,18 @@ async function fetchRangeData(dFromVal, dToVal) {
     const d = doc.data();
     if (!d.ID || !d.DATE) return;
     const id = String(d.ID).trim();
-    if (!attendance[id]) attendance[id] = { norm: 0, hol: 0, sun: 0, abs: 0, fine: 0, others: 0 };
+    if (!attendance[id]) attendance[id] = { norm:0, hol:0, sun:0, abs:0, fine:0, others:0 };
     const rec = attendance[id];
     if (d.STATUS === "ABSENT") rec.abs++;
-    if (d.REMARK === "NORMAL WORK") rec.norm++;
+    if (d.REMARK  === "NORMAL WORK") rec.norm++;
     rec.hol    += parseFloat(d.HOLIDAY_WORK) || 0;
     rec.sun    += parseFloat(d.SUNDAY_WORK)  || 0;
     rec.fine   += parseFloat(d.FINE)         || 0;
     rec.others += parseFloat(d.OTHERS)       || 0;
   });
 
-  const otMap = {};
+  // ── Overtime ──
+  const otMap  = {};
   const otSnap = await rtdb.ref("OVER_TIME").once("value");
   const otData = otSnap.val() || {};
   for (const monthKey in otData) {
@@ -387,10 +368,9 @@ async function fetchRangeData(dFromVal, dToVal) {
         const row = dateObj[recKey];
         if (!row || !row.ID) continue;
         const otDateStr = String(row.OT_Date || "").trim();
-        if (!otDateStr) continue;
-        if (otDateStr < dFromVal || otDateStr > dToVal) continue;
+        if (!otDateStr || otDateStr < dFromVal || otDateStr > dToVal) continue;
         const id = String(row.ID).trim();
-        otMap[id] = (otMap[id] || 0) + (parseFloat(row.Total_Mur) || 0);
+        otMap[id] = (otMap[id] || 0) + (parseFloat(row.Total_MUR) || 0);
       }
     }
   }
@@ -411,22 +391,26 @@ function getDaysInMonth(dateStr) {
 }
 
 async function buildPayslipData(empId, dFromVal, dToVal, rangeData, workingDays) {
-  const emp = _cache.empMap[empId] || { id: empId, name: "", desig: "", passport: "", joining: "", salary: 0, wpNo: "", rpUidNo: "" };
+  const emp = _cache.empMap[empId] || { id:empId, name:"", desig:"", passport:"", joining:"", salary:0, wpNo:"", rpUidNo:"" };
   const salary    = emp.salary;
   const isCook    = (emp.desig || "").trim().toUpperCase() === "COOK";
   const monthDays = getDaysInMonth(dFromVal);
   const dailyRate = isCook
     ? parseFloat((salary / monthDays).toFixed(2))
     : parseFloat((salary / workingDays).toFixed(2));
-  const att = rangeData.attendance[empId] || { norm: 0, hol: 0, sun: 0, abs: 0, fine: 0, others: 0 };
-  const totalOT      = rangeData.otMap[empId]   || 0;
-  const totalAdvance = _cache.advMap[empId]      || 0;
+
+  const att          = rangeData.attendance[empId] || { norm:0, hol:0, sun:0, abs:0, others:0 };
+  const totalOT      = rangeData.otMap[empId]  || 0;
+  const totalAdvance = _cache.advMap[empId]    || 0;
+  const totalFine    = _cache.fineMap[empId]   || 0;
+
   const normalAmt = dailyRate * att.norm;
   const gross     = normalAmt + att.hol + att.sun + totalOT + (att.others || 0);
   const csgEmp    = Math.round(gross * 0.015 * 100) / 100;
   const npsEmp    = Math.round(gross * 0.01  * 100) / 100;
-  const totalDed  = csgEmp + npsEmp + totalAdvance + (att.fine || 0);
+  const totalDed  = csgEmp + npsEmp + totalAdvance + totalFine;
   const netPay    = gross - totalDed;
+
   const now = new Date();
   let serviceLength = "";
   if (emp.joining) {
@@ -445,17 +429,19 @@ async function buildPayslipData(empId, dFromVal, dToVal, rangeData, workingDays)
       serviceLength = { total: months, formatted };
     }
   }
+
   return {
     empId: emp.id, name: emp.name, desig: emp.desig, passport: emp.passport,
-    joining: emp.joining, wpNo: emp.wpNo || "", rpUidNo: emp.rpUidNo || "",
+    joining: emp.joining, wpNo: emp.wpNo||"", rpUidNo: emp.rpUidNo||"",
     entryDate: now.toLocaleDateString("en-GB"),
-    time: now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+    time: now.toLocaleTimeString("en-GB", { hour:"2-digit", minute:"2-digit" }),
     serviceLength,
     normalWork: normalAmt.toFixed(2), holidayWork: att.hol.toFixed(2),
     sundayWork: att.sun.toFixed(2), overtime: totalOT.toFixed(2),
     others: (att.others||0).toFixed(2), gross: gross.toFixed(2),
     csgEmp: csgEmp.toFixed(2), npsEmp: npsEmp.toFixed(2),
-    advanceRefund: totalAdvance.toFixed(2), fine: (att.fine||0).toFixed(2),
+    advanceRefund: totalAdvance.toFixed(2),
+    fine: totalFine.toFixed(2),
     absentDays: att.abs, totalDed: totalDed.toFixed(2),
     netPay: netPay.toFixed(2), netPayWords: numToWords(netPay),
   };
@@ -545,10 +531,7 @@ async function generateFromPanel() {
   if (!selected.length) return;
   const dFromVal = document.getElementById("panelDateFrom").value;
   const dToVal   = document.getElementById("panelDateTo").value;
-  if (!dFromVal || !dToVal) {
-    showMsg("Date range required", { title: "Date Range Required", type: "warn" });
-    return;
-  }
+  if (!dFromVal || !dToVal) { showMsg("Date range required", { title:"Date Range Required", type:"warn" }); return; }
   const period = `${fmtDate(new Date(dFromVal))} TO ${fmtDate(new Date(dToVal))}`;
   const genBtn = document.getElementById("panelGenBtn");
   genBtn.disabled = true; genBtn.textContent = "⏳ Generating...";
@@ -558,7 +541,7 @@ async function generateFromPanel() {
 
   const win = window.open("", "_blank");
   if (!win) {
-    showMsg("Popup blocked! Browser-এ popup allow করুন।", { title: "Popup Blocked", type: "warn" });
+    showMsg("Popup blocked! Browser-এ popup allow করুন।", { title:"Popup Blocked", type:"warn" });
     document.getElementById("genLoader").classList.remove("active");
     genBtn.disabled = false; genBtn.textContent = "⚡ Generate Payslip";
     return;
@@ -567,8 +550,8 @@ async function generateFromPanel() {
 
   try {
     if (!_cache.loaded) await preloadStaticData();
-    const rangeData    = await fetchRangeData(dFromVal, dToVal);
-    const workingDays  = await getWorkingDays(dFromVal);
+    const rangeData   = await fetchRangeData(dFromVal, dToVal);
+    const workingDays = await getWorkingDays(dFromVal);
     let allPages = "";
     for (let i = 0; i < selected.length; i++) {
       const empId = selected[i];
@@ -598,7 +581,7 @@ async function generateFromPanel() {
     win.document.open(); win.document.write(fullHtml); win.document.close();
   } catch(e) {
     win.document.write(`<p style="color:red;padding:20px">Error: ${e.message}</p>`);
-    showMsg(`Error: ${e.message}`, { title: "Generation Error", type: "err" });
+    showMsg(`Error: ${e.message}`, { title:"Generation Error", type:"err" });
   }
   document.getElementById("genLoader").classList.remove("active");
   genBtn.disabled = false; genBtn.textContent = "⚡ Generate Payslip";
@@ -613,15 +596,13 @@ function updateLoader(current, total, empId) {
 }
 
 // ══════════════════════════════════════════
-//  PAYSLIP HTML BUILDERS
+//  PAYSLIP HTML BUILDER
 // ══════════════════════════════════════════
 function buildOneSlip(d, period, title) {
   return `
   <div style="position:relative;overflow:hidden;background:white;padding:8mm;border:1px solid #d1d5db;border-radius:4px;height:100%">
     <img src="https://lh3.googleusercontent.com/d/11bxOPboUUmQxIkT6gMYWYqxfh9jZSiLo" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.04;width:55%;z-index:0;pointer-events:none" alt="">
     <div style="position:relative;z-index:1;font-family:'Source Sans 3',Arial,sans-serif;font-size:11px;color:#111">
-
-      <!-- Header -->
       <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px">
         <img src="https://lh3.googleusercontent.com/d/11bxOPboUUmQxIkT6gMYWYqxfh9jZSiLo" style="width:36px;height:36px;object-fit:contain" alt="">
         <div style="text-align:center">
@@ -629,15 +610,11 @@ function buildOneSlip(d, period, title) {
           <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;border-top:1px solid #ccc;padding-top:2px">PAYSLIP</div>
         </div>
       </div>
-
-      <!-- Title row -->
       <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #ccc;padding-bottom:4px;margin-bottom:6px">
         <span style="font-size:10px;font-weight:700;text-decoration:underline">${title}</span>
         <span style="font-size:10px">PERIOD: ${period}</span>
         <span style="font-size:9px;color:#666">TIME: ${d.time}</span>
       </div>
-
-      <!-- Employee Info -->
       <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:0 8px;margin-bottom:8px">
         <div>
           <div style="display:flex;margin-bottom:2px"><span style="width:88px;font-weight:700;font-size:11px;flex-shrink:0">EMP ID</span><span style="width:10px;font-weight:700">:</span><span style="font-weight:700">${d.empId}</span></div>
@@ -656,8 +633,6 @@ function buildOneSlip(d, period, title) {
           <div style="display:flex;margin-bottom:2px"><span style="width:60px;font-weight:700;font-size:11px;flex-shrink:0">RP UID NO</span><span style="width:10px;font-weight:700">:</span><span style="font-weight:700">${d.rpUidNo}</span></div>
         </div>
       </div>
-
-      <!-- Earnings & Deductions -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div>
           <div style="font-weight:700;font-size:10px;text-transform:uppercase;background:#e5e7eb;color:#111111;padding:3px 4px;text-align:center;letter-spacing:1px;border:1px solid #d1d5db;border-bottom:none;">Earnings</div>
@@ -688,8 +663,6 @@ function buildOneSlip(d, period, title) {
           </table>
         </div>
       </div>
-
-      <!-- Net Pay -->
       <div style="margin-top:8px;border-top:2px solid black;padding-top:6px">
         <div style="font-weight:700;font-size:13px;display:flex;justify-content:space-between;text-transform:uppercase">
           <span>Net Payable</span><span style="color:#15803d;font-family:monospace">${d.netPay}</span>
@@ -698,8 +671,6 @@ function buildOneSlip(d, period, title) {
           <span style="font-weight:700">IN WORDS:</span> ${d.netPayWords}
         </div>
       </div>
-
-      <!-- Leave table -->
       <table style="width:100%;font-size:10px;border-collapse:collapse;text-align:center;margin-top:8px">
         <thead><tr style="background:#f3f4f6">
           <th style="border:1px solid #9ca3af;padding:3px">A.L</th>
@@ -716,8 +687,6 @@ function buildOneSlip(d, period, title) {
           <td style="border:1px solid #9ca3af;padding:3px">&nbsp;</td>
         </tr></tbody>
       </table>
-
-      <!-- Summary table -->
       <table style="width:100%;font-size:10px;border-collapse:collapse;text-align:center;margin-top:16px">
         <tr style="background:#f3f4f6;font-weight:700">
           <th style="border:1px solid #9ca3af;padding:3px">GROSS PAY</th>
@@ -740,8 +709,6 @@ function buildOneSlip(d, period, title) {
           <td style="border:1px solid #9ca3af;padding:3px"></td>
         </tr>
       </table>
-
-      <!-- Signature -->
       ${title === "OFFICE COPY" ? `
       <div style="margin-top:64px;font-size:10px;text-transform:uppercase">
         EMPLOYEE SIGNATURE:..........................................<br>
@@ -751,7 +718,6 @@ function buildOneSlip(d, period, title) {
         DIRECTOR SIGNATURE:..........................................<br>
         <span style="margin-top:4px;display:inline-block">DATE:...............................</span>
       </div>`}
-
     </div>
   </div>`;
 }
@@ -810,12 +776,12 @@ function numToWords(amount) {
   function b100(n){if(n<20)return ones[n];return tens[Math.floor(n/10)]+(n%10?" "+ones[n%10]:"")}
   function b1000(n){if(n<100)return b100(n);return ones[Math.floor(n/100)]+" Hundred"+(n%100?" "+b100(n%100):"")}
   const num=Math.floor(Number(amount)||0);
-  if(num===0)return"Zero Mur Only";
+  if(num===0)return"Zero MUR Only";
   let r="";
   if(num>=1000000)r+=b1000(Math.floor(num/1000000))+" Million ";
   if(num>=1000)r+=b1000(Math.floor((num%1000000)/1000))+" Thousand ";
   if(num%1000)r+=b1000(num%1000);
-  return r.trim()+" Mur Only";
+  return r.trim()+" MUR Only";
 }
 
 function fmtDate(d) {
@@ -834,7 +800,6 @@ function showMsg(msg, { title="Notice", type="warn" }={}) {
 }
 function closeMsgBox() { document.getElementById("msgboxOverlay").classList.remove("active"); }
 
-// Auto-preload on page load
 window.addEventListener("load", preloadStaticData);
 </script>
 </body>
