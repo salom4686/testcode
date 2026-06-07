@@ -689,9 +689,10 @@ firebase.firestore().collection("HOLIDAY_LIST").get()
           _cache.empMap = {};
           empSnap.forEach(d => {
             const e = d.data();
-            const emp = {
+          const emp = {
               id: e.id || d.id, name: e.name || "", passport: e.passport || "",
               desig: e.designation || "", salary: parseInt(e.salary) || 0, joining: e.joining || "",
+              wpNo: e.wpNo || "", rpUidNo: e.rpUidNo || "",
             };
             _cache.empList.push(emp);
             _cache.empMap[emp.id] = emp;
@@ -750,7 +751,7 @@ rec.others += parseFloat(d.OTHERS)       || 0;
               if (!otDateStr) continue;
               if (otDateStr < dFromVal || otDateStr > dToVal) continue;
               const id = String(row.ID).trim();
-              otMap[id] = (otMap[id] || 0) + (parseFloat(row.Total_Taka) || 0);
+              otMap[id] = (otMap[id] || 0) + (parseFloat(row.Total_Mur) || 0);
             }
           }
         }
@@ -801,9 +802,10 @@ rec.others += parseFloat(d.OTHERS)       || 0;
       serviceLength = { total: months, formatted };
     }
   }
-  return {
+ return {
     empId: emp.id, name: emp.name, desig: emp.desig, passport: emp.passport,
-    joining: emp.joining, entryDate: now.toLocaleDateString("en-GB"),
+    joining: emp.joining, wpNo: emp.wpNo || "", rpUidNo: emp.rpUidNo || "",
+    entryDate: now.toLocaleDateString("en-GB"),
     time: now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
     serviceLength, normalWork: normalAmt.toFixed(2), holidayWork: att.hol.toFixed(2),
     sundayWork: att.sun.toFixed(2), overtime: totalOT.toFixed(2),
@@ -1303,12 +1305,12 @@ let _attEmpLoaded = false;
         function b100(n){if(n<20)return ones[n];return tens[Math.floor(n/10)]+(n%10?" "+ones[n%10]:"")}
         function b1000(n){if(n<100)return b100(n);return ones[Math.floor(n/100)]+" Hundred"+(n%100?" "+b100(n%100):"")}
         const num=Math.floor(Number(amount)||0);
-        if(num===0)return"Zero Taka Only";
+        if(num===0)return"Zero Mur Only";
         let r="";
         if(num>=1000000)r+=b1000(Math.floor(num/1000000))+" Million ";
         if(num>=1000)r+=b1000(Math.floor((num%1000000)/1000))+" Thousand ";
         if(num%1000)r+=b1000(num%1000);
-        return r.trim()+" Taka Only";
+        return r.trim()+" Mur Only";
       }
       function fmt2(n) { return Number(n||0).toFixed(2); }
       function fmtDate(d) {
@@ -1466,7 +1468,7 @@ let _attEmpLoaded = false;
       // ══════════════════════════════════════════
       //  PAYSLIP HTML BUILDERS
       // ══════════════════════════════════════════
-      function buildOneSlip(d, period, title) {
+     function buildOneSlip(d, period, title) {
         return `
         <div style="position:relative;overflow:hidden;background:white;padding:8mm;border:1px solid #d1d5db;border-radius:4px;height:100%">
           <img src="https://lh3.googleusercontent.com/d/11bxOPboUUmQxIkT6gMYWYqxfh9jZSiLo" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.04;width:55%;z-index:0;pointer-events:none" alt="">
@@ -1483,20 +1485,22 @@ let _attEmpLoaded = false;
               <span style="font-size:10px">PERIOD: ${period}</span>
               <span style="font-size:9px;color:#666">TIME: ${d.time}</span>
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 8px;margin-bottom:8px">
+            <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:0 8px;margin-bottom:8px">
               <div>
-                <div style="display:flex;margin-bottom:2px"><span style="width:88px;font-weight:700;font-size:11px;flex-shrink:0">EMP ID</span><span style="width:10px;font-weight:700">:</span><span style="font-weight:700">${d.empId}</span></div>
-                <div style="display:flex;margin-bottom:2px"><span style="width:88px;font-weight:700;font-size:11px;flex-shrink:0">EMP NAME</span><span style="width:10px;font-weight:700">:</span><span style="font-weight:700">${d.name}</span></div>
-                <div style="display:flex;margin-bottom:2px"><span style="width:88px;font-weight:700;font-size:11px;flex-shrink:0">DESIGNATION</span><span style="width:10px;font-weight:700">:</span><span>${d.desig}</span></div>
-                <div style="display:flex;margin-bottom:2px"><span style="width:88px;font-weight:700;font-size:11px;flex-shrink:0">PASSPORT NO</span><span style="width:10px;font-weight:700">:</span><span>${d.passport}</span></div>
-                <div style="display:flex;margin-bottom:2px"><span style="width:88px;font-weight:700;font-size:11px;flex-shrink:0">JOINING DATE</span><span style="width:10px;font-weight:700">:</span><span>${d.joining}</span></div>
-              </div>
+  <div style="display:flex;margin-bottom:2px"><span style="width:88px;font-weight:700;font-size:11px;flex-shrink:0">EMP ID</span><span style="width:10px;font-weight:700">:</span><span style="font-weight:700">${d.empId}</span></div>
+  <div style="display:flex;margin-bottom:2px"><span style="width:88px;font-weight:700;font-size:11px;flex-shrink:0">EMP NAME</span><span style="width:10px;font-weight:700">:</span><span style="font-weight:700">${d.name}</span></div>
+  <div style="display:flex;margin-bottom:2px"><span style="width:88px;font-weight:700;font-size:11px;flex-shrink:0">DESIGNATION</span><span style="width:10px;font-weight:700">:</span><span>${d.desig}</span></div>
+  <div style="display:flex;margin-bottom:2px"><span style="width:88px;font-weight:700;font-size:11px;flex-shrink:0">PASSPORT NO</span><span style="width:10px;font-weight:700">:</span><span>${d.passport}</span></div>
+  <div style="display:flex;margin-bottom:2px"><span style="width:88px;font-weight:700;font-size:11px;flex-shrink:0">JOINING DATE</span><span style="width:10px;font-weight:700">:</span><span>${d.joining}</span></div>
+  <div style="display:flex;margin-bottom:2px;align-items:center"><span style="width:88px;font-weight:700;font-size:11px;flex-shrink:0">PERIOD</span><span style="width:10px;font-weight:700">:</span><span style="font-weight:700;font-size:11px">${d.serviceLength ? d.serviceLength.total + ' Months <span style="font-size:10px;font-weight:600;color:#374151">('+d.serviceLength.formatted+')</span>' : ''}</span></div>
+</div>
               <div>
                 <div style="display:flex;margin-bottom:2px"><span style="width:60px;font-weight:700;font-size:11px;flex-shrink:0">DATE</span><span style="width:10px;font-weight:700">:</span><span>${d.entryDate}</span></div>
                 <div style="display:flex;margin-bottom:2px"><span style="width:60px;font-weight:700;font-size:11px;flex-shrink:0">GANG</span><span style="width:10px;font-weight:700">:</span><span></span></div>
                 <div style="display:flex;margin-bottom:2px"><span style="width:60px;font-weight:700;font-size:11px;flex-shrink:0">SRN</span><span style="width:10px;font-weight:700">:</span><span></span></div>
                 <div style="display:flex;margin-bottom:2px"><span style="width:60px;font-weight:700;font-size:11px;flex-shrink:0">NPS NO</span><span style="width:10px;font-weight:700">:</span><span></span></div>
-                <div style="display:flex;margin-bottom:2px;align-items:center"><span style="width:60px;font-weight:700;font-size:11px;flex-shrink:0">PERIOD</span><span style="width:10px;font-weight:700">:</span><span style="font-weight:700;font-size:11px">${d.serviceLength ? d.serviceLength.total + ' Months <span style="font-size:10px;font-weight:600;color:#374151">('+d.serviceLength.formatted+')</span>' : ''}</span></div>
+                <div style="display:flex;margin-bottom:2px"><span style="width:60px;font-weight:700;font-size:11px;flex-shrink:0">WP NO</span><span style="width:10px;font-weight:700">:</span><span style="font-weight:700">${d.wpNo}</span></div>
+                <div style="display:flex;margin-bottom:2px"><span style="width:60px;font-weight:700;font-size:11px;flex-shrink:0">RP UID NO</span><span style="width:10px;font-weight:700">:</span><span style="font-weight:700">${d.rpUidNo}</span></div>
               </div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -1571,14 +1575,20 @@ let _attEmpLoaded = false;
                 <td style="border:1px solid #9ca3af;padding:3px"></td>
               </tr>
             </table>
+
+           ${title === "OFFICE COPY" ? `
+            <div style="margin-top:64px;font-size:10px;text-transform:uppercase">
+              EMPLOYEE SIGNATURE:..........................................<br>
+              <span style="margin-top:4px;display:inline-block">DATE:...............................</span>
+            </div>` : `
             <div style="margin-top:64px;font-size:10px;text-transform:uppercase">
               DIRECTOR SIGNATURE:..........................................<br>
               <span style="margin-top:4px;display:inline-block">DATE:...............................</span>
-            </div>
+            </div>`}
+
           </div>
         </div>`;
       }
-
       function payslipWindowCSS() {
         return `<style>
           *{box-sizing:border-box;margin:0;padding:0}
@@ -1754,13 +1764,13 @@ async function generateReport() {
       else return ones[Math.floor(n/100)]+" Hundred "+(n%100?convert(n%100):"");
     }
     const num = Math.round(amount);
-    if (num===0) return "Zero Taka Only";
+    if (num===0) return "Zero Mur Only";
     let result = "";
     if (num>=10000000) { result+=convert(Math.floor(num/10000000))+"Crore "; }
     if (num%10000000>=100000) { result+=convert(Math.floor((num%10000000)/100000))+"Lakh "; }
     if (num%100000>=1000) { result+=convert(Math.floor((num%100000)/1000))+"Thousand "; }
     result+=convert(num%1000);
-    return result.trim()+" Taka Only";
+    return result.trim()+" Mur Only";
   }
 
   try {
@@ -1804,7 +1814,7 @@ workers[d.ID].fine += parseFloat(d.FINE)          || 0;
             const otDate = new Date(row.OT_Date||df);
             if (dFromVal && dToVal && (otDate<dFrom||otDate>dTo)) continue;
             workers[row.ID].otH += parseFloat(row.TOTAL_OT_HOURS)||0;
-            workers[row.ID].otA += parseFloat(row.Total_Taka)||0;
+            workers[row.ID].otA += parseFloat(row.Total_Mur)||0;
           }
         }
       }
@@ -1882,7 +1892,8 @@ workers[d.ID].fine += parseFloat(d.FINE)          || 0;
   </div>
 </div>
 
-      <span style="font-size:10px">Period: ${dFromVal||"…"} to ${dToVal||"…"}</span>
+      <div>
+        <span style="font-size:10px">Period: ${dFromVal||"…"} to ${dToVal||"…"}</span>
       <span style="font-size:10px">Printed: ${formatDateTime()}</span>
     </div>
     <table>
@@ -1962,13 +1973,13 @@ workers[d.ID].fine += parseFloat(d.FINE)          || 0;
           else return ones[Math.floor(n/100)]+" Hundred "+(n%100?convert(n%100):"");
         }
         const num = Math.round(amount);
-        if (num===0) return "Zero Taka Only";
+        if (num===0) return "Zero Mur Only";
         let result = "";
         if (num>=10000000) { result+=convert(Math.floor(num/10000000))+"Crore "; }
         if (num%10000000>=100000) { result+=convert(Math.floor((num%10000000)/100000))+"Lakh "; }
         if (num%100000>=1000) { result+=convert(Math.floor((num%100000)/1000))+"Thousand "; }
         result+=convert(num%1000);
-        return result.trim()+" Taka Only";
+        return result.trim()+" Mur Only";
       }
 
       // ══════════════════════════════════════════
@@ -2121,7 +2132,7 @@ let _otCache     = null;
               };
             }
             empGroups[id].totalHrs += parseFloat(r.TOTAL_OT_HOURS||0);
-            empGroups[id].totalAmt += parseFloat(r.Total_Taka||0);
+            empGroups[id].totalAmt += parseFloat(r.Total_Mur||0);
             empGroups[id].records.push(r);
           });
 
@@ -2225,7 +2236,7 @@ let _otCache     = null;
         const name  = filtered[0].Name || empId;
         const desig = filtered[0].Designation || "-";
         let totHrs = 0, totAmt = 0;
-        filtered.forEach(r => { totHrs += parseFloat(r.TOTAL_OT_HOURS||0); totAmt += parseFloat(r.Total_Taka||0); });
+        filtered.forEach(r => { totHrs += parseFloat(r.TOTAL_OT_HOURS||0); totAmt += parseFloat(r.Total_Mur||0); });
 
         const rows = filtered.map((r, i) => `<tr style="${i%2===1?'background:#f8faff;':''}">
           <td style="text-align:center;color:#9ca3af;font-size:10px;padding:7px 8px">${i+1}</td>
@@ -2233,7 +2244,7 @@ let _otCache     = null;
           <td style="padding:7px 8px;color:#6b7280">${r.Site||"-"}</td>
           <td style="text-align:right;font-family:monospace;color:#1d4ed8;font-weight:700;padding:7px 8px">${parseFloat(r.TOTAL_OT_HOURS||0).toFixed(2)}</td>
           <td style="text-align:right;font-size:11px;color:#6b7280;padding:7px 8px">${r.OT_Rate||"-"}</td>
-          <td style="text-align:right;font-family:monospace;color:#065f46;font-weight:700;padding:7px 8px">${parseFloat(r.Total_Taka||0).toFixed(2)}</td>
+          <td style="text-align:right;font-family:monospace;color:#065f46;font-weight:700;padding:7px 8px">${parseFloat(r.Total_Mur||0).toFixed(2)}</td>
           <td style="font-size:11px;color:#6b7280;padding:7px 8px">${r.Remark||r.remark||"-"}</td>
         </tr>`).join("");
 
@@ -2266,7 +2277,7 @@ let _otCache     = null;
                 <th style="color:white;padding:9px 8px;border:1px solid #335185;text-align:left">Site / Project</th>
                 <th style="color:white;padding:9px 8px;border:1px solid #335185;text-align:right">OT Hours</th>
                 <th style="color:white;padding:9px 8px;border:1px solid #335185;text-align:right">OT Rate</th>
-                <th style="color:white;padding:9px 8px;border:1px solid #335185;text-align:right">Amount (Taka)</th>
+                <th style="color:white;padding:9px 8px;border:1px solid #335185;text-align:right">Amount (Mur)</th>
                 <th style="color:white;padding:9px 8px;border:1px solid #335185;text-align:left">Remark</th>
               </tr>
             </thead>
