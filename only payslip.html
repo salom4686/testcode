@@ -90,6 +90,12 @@
     .msgbox-btn { padding:8px 22px; border:2px solid transparent; border-radius:7px; font-size:12px; font-weight:700; cursor:pointer; font-family:"Source Sans 3",sans-serif; }
     .msgbox-btn.primary { background:var(--brand-gold); color:var(--brand-blue); border-color:var(--brand-gold); }
     .content { padding: 24px 32px; color: #a0b8d8; font-size: 13px; text-align: center; }
+    .home-summary { padding: 20px 32px; margin: 20px 32px; font-family: "Source Sans 3", monospace; text-align: left; color: #ffffff; overflow-x: auto; }
+    .home-summary-title { color: #ffffff; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+    .home-summary-table { border-collapse: collapse; min-width: 100%; }
+    .home-summary-table th, .home-summary-table td { padding: 8px 16px; text-align: left; white-space: nowrap; border-bottom: 1px solid rgba(255,255,255,0.15); }
+    .home-summary-table th { color: #ffffff; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; border-bottom: 2px solid rgba(255,255,255,0.3); }
+    .home-summary-table td { color: #ffffff; font-weight: 700; font-family: monospace; font-size: 15px; }
   </style>
 </head>
 <body>
@@ -106,10 +112,16 @@
     <label>To:</label>
     <input type="text" id="dateTo" placeholder="End Date" style="width:130px" />
     <button class="btn btn-gold" onclick="openEmpPanel()">👥 Select Employees &amp; Payslip</button>
+    <button class="btn" style="background:#0d9488;color:#fff;border-color:#0d9488" onclick="refreshAllData()" id="refreshBtn">🔄 Refresh</button>
     <span id="cacheStatus" style="color:#6a88aa;font-size:11px;font-weight:600">
       <span class="status-dot status-loading"></span> Data not loaded yet
     </span>
   </div>
+</div>
+
+<!-- ── Home Page Total Salary Summary (auto-loads on page open) ── -->
+<div class="home-summary" id="homeSummary">
+  <div class="home-summary-title">⏳ Loading Total Salary Summary...</div>
 </div>
 
 <!-- Employee Panel -->
@@ -155,7 +167,7 @@
   <div class="gen-count-display">
     <div class="gen-count-label">Completed</div>
     <div class="gen-count-numbers" id="genCountCurrent">0</div>
-    <div class="gen-count-of">of <span id="genCountTotal">0</span> payslip(s)</div>
+    <div class="gen-count-of">of <span id="genCountTotal">0</span> payslip(s) </div>
   </div>
   <div class="gen-progress-wrap"><div class="gen-progress-bar" id="genProgressBar"></div></div>
   <div class="gen-emp-badge" id="genEmpBadge">🔄 Initializing...</div>
@@ -218,10 +230,20 @@ const redDayConfig = {
   onDayCreate: function(dObj, dStr, fp, dayElem) { redDayCreate(dayElem); }
 };
 
-flatpickr("#dateFrom",      { ...redDayConfig, onChange: syncPanelDates });
-flatpickr("#dateTo",        { ...redDayConfig, onChange: syncPanelDates });
-flatpickr("#panelDateFrom", { ...redDayConfig });
-flatpickr("#panelDateTo",   { ...redDayConfig });
+// ── Default date range: 1st of current month → today ──
+function getDefaultDateRange() {
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+  const pad = (n) => String(n).padStart(2, "0");
+  const toStr = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  return { from: toStr(firstDay), to: toStr(now) };
+}
+const _defaultRange = getDefaultDateRange();
+
+flatpickr("#dateFrom",      { ...redDayConfig, defaultDate: _defaultRange.from, onChange: syncPanelDates });
+flatpickr("#dateTo",        { ...redDayConfig, defaultDate: _defaultRange.to,   onChange: syncPanelDates });
+flatpickr("#panelDateFrom", { ...redDayConfig, defaultDate: _defaultRange.from });
+flatpickr("#panelDateTo",   { ...redDayConfig, defaultDate: _defaultRange.to });
 
 // Holiday load from Firestore
 firebase.firestore().collection("HOLIDAY_LIST").get()
@@ -261,6 +283,26 @@ function syncPanelDates() {
   const t = document.getElementById("dateTo").value;
   if (f) try { document.getElementById("panelDateFrom")._flatpickr.setDate(f); } catch(e){}
   if (t) try { document.getElementById("panelDateTo")._flatpickr.setDate(t); } catch(e){}
+  // ── From ও To দুটোই বাছা হলে, সেই রেঞ্জ অনুযায়ী হোম সামারি রিফ্রেশ করি ──
+  if (f && t) loadHomeSummary(f, t);
+}
+
+// ── Helper: "2026-06-01" → "JUNE_2026" ───────────────────────
+function getMonthKey(dateStr) {
+  const months = [
+    "JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE",
+    "JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"
+  ];
+  const d = new Date(dateStr);
+  return `${months[d.getMonth()]}_${d.getFullYear()}`;
+}
+
+// ── Helper: "2026-06-01" → "JUNE_2026" (for SALARY_POSTED path) ──
+function getMonthYearKey(dateStr) {
+  if (!dateStr) return "UNKNOWN";
+  const d = new Date(dateStr);
+  const monthNames = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+  return `${monthNames[d.getMonth()]}_${d.getFullYear()}`;
 }
 
 // ══════════════════════════════════════════
@@ -270,6 +312,37 @@ let _cache = {
   loaded: false, loading: false,
   empList: [], empMap: {}, advMap: {}, fineMap: {},
 };
+
+// ══════════════════════════════════════════
+//  REFRESH BUTTON — সব ক্যাশ ক্লিয়ার করে ডাটাবেস থেকে নতুন ডাটা আনে
+// ══════════════════════════════════════════
+async function refreshAllData() {
+  const btn = document.getElementById("refreshBtn");
+  const originalText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = "⏳ Refreshing...";
+  try {
+    // সব ক্যাশ রিসেট
+    _cache.loaded = false;
+    _cache.loading = false;
+    _cache.empList = [];
+    _cache.empMap = {};
+    _cache.advMap = {};
+    _cache.fineMap = {};
+    _attCache = {};
+
+    await preloadStaticData();
+    const f = document.getElementById("dateFrom").value || _defaultRange.from;
+    const t = document.getElementById("dateTo").value   || _defaultRange.to;
+    await loadHomeSummary(f, t);
+
+    showMsg("✅ ডাটাবেস থেকে নতুন ডাটা লোড করা হয়েছে।", { title: "Refreshed", type: "ok" });
+  } catch(e) {
+    showMsg(`Error: ${e.message}`, { title: "Refresh Error", type: "err" });
+  }
+  btn.disabled = false;
+  btn.innerHTML = originalText;
+}
 
 async function preloadStaticData() {
   if (_cache.loaded || _cache.loading) return;
@@ -325,6 +398,9 @@ function setStatus(type, msg) {
 
 let _attCache = {};
 
+// ══════════════════════════════════════════
+//  ATTENDANCE + OT + OTHERS RANGE DATA
+// ══════════════════════════════════════════
 async function fetchRangeData(dFromVal, dToVal) {
   const key = `${dFromVal}|${dToVal}`;
   if (_attCache[key]) return _attCache[key];
@@ -333,7 +409,7 @@ async function fetchRangeData(dFromVal, dToVal) {
   const db   = firebase.firestore();
   const rtdb = firebase.database();
 
-  // ── Attendance ──
+  // ── 1. Present_Absent (attendance + status + holiday/sunday work) ──
   const snap = await db.collectionGroup("Present_Absent")
     .where("DATE", ">=", dFromVal)
     .where("DATE", "<=", dToVal)
@@ -344,18 +420,30 @@ async function fetchRangeData(dFromVal, dToVal) {
     const d = doc.data();
     if (!d.ID || !d.DATE) return;
     const id = String(d.ID).trim();
-    if (!attendance[id]) attendance[id] = { norm:0, hol:0, sun:0, abs:0, fine:0, others:0 };
+    if (!attendance[id]) attendance[id] = { norm:0, hol:0, sun:0, abs:0, pres:0, fine:0, others:0 };
     const rec = attendance[id];
-    if (d.STATUS === "ABSENT") rec.abs++;
+    if (d.STATUS === "ABSENT")  rec.abs++;
+    if (d.STATUS === "PRESENT") rec.pres++;
     if (d.REMARK  === "NORMAL WORK") rec.norm++;
     rec.hol    += parseFloat(d.HOLIDAY_WORK) || 0;
     rec.sun    += parseFloat(d.SUNDAY_WORK)  || 0;
     rec.fine   += parseFloat(d.FINE)         || 0;
-    rec.others += parseFloat(d.OTHERS)       || 0;
   });
 
-  // ── Overtime ──
+  // ── 2. "Others" — আলাদা sub-collection থেকে AMOUNT (client-side date filter) ──
+  const othersSnap = await db.collectionGroup("Others").get();
+  othersSnap.forEach(doc => {
+    const d = doc.data();
+    if (!d.ID || !d.DATE) return;
+    if (d.DATE < dFromVal || d.DATE > dToVal) return;
+    const id = String(d.ID).trim();
+    if (!attendance[id]) attendance[id] = { norm:0, hol:0, sun:0, abs:0, pres:0, fine:0, others:0 };
+    attendance[id].others += parseFloat(d.AMOUNT) || 0;
+  });
+
+  // ── 3. Overtime — Hours × Rate (RTDB: OVER_TIME) ──
   const otMap  = {};
+  const otHrsMap = {};
   const otSnap = await rtdb.ref("OVER_TIME").once("value");
   const otData = otSnap.val() || {};
   for (const monthKey in otData) {
@@ -370,15 +458,43 @@ async function fetchRangeData(dFromVal, dToVal) {
         const otDateStr = String(row.OT_Date || "").trim();
         if (!otDateStr || otDateStr < dFromVal || otDateStr > dToVal) continue;
         const id = String(row.ID).trim();
-        otMap[id] = (otMap[id] || 0) + (parseFloat(row.Total_MUR) || 0);
+        const otHrs  = parseFloat(row.TOTAL_OT_HOURS || row.Total_OT_Hours || 0);
+        const otRate = parseFloat(row.OT_Rate || row.ot_rate || row.OT_RATE || 0);
+        otMap[id]    = (otMap[id]    || 0) + (otHrs * otRate);
+        otHrsMap[id] = (otHrsMap[id] || 0) + otHrs;
       }
     }
   }
 
-  const result = { attendance, otMap };
+  const result = { attendance, otMap, otHrsMap };
   _attCache[key] = result;
   setStatus("ok", `✅ Data ready — ${Object.keys(attendance).length} employee records`);
   return result;
+}
+
+// ══════════════════════════════════════════
+//  BONUS DATA (Performance + Attendance Bonus) — date range wise
+// ══════════════════════════════════════════
+async function fetchBonusForEmp(empId, dFromVal, dToVal) {
+  const rtdb = firebase.database();
+  const dFrom = new Date(dFromVal), dTo = new Date(dToVal);
+  const monthKey = getMonthKey(dFromVal);
+  const bonusSnap = await rtdb.ref(`BONUS_ENTRY/${monthKey}`).once("value");
+  const bonusMonthData = bonusSnap.val() || {};
+  let pBonus = 0, aBonus = 0;
+  for (const dateKey in bonusMonthData) {
+    const dr = bonusMonthData[dateKey];
+    if (!dr || typeof dr !== "object") continue;
+    if (!dr[empId]) continue;
+    const row = dr[empId];
+    const date = dateKey.replace("DATE_", "");
+    const bonusDate = new Date(row.DATE || date);
+    if (bonusDate >= dFrom && bonusDate <= dTo) {
+      pBonus += parseFloat(row.PERFORMANCE_BONUS) || 0;
+      aBonus += parseFloat(row.ATTENDANCE_BONUS)  || 0;
+    }
+  }
+  return { pBonus, aBonus };
 }
 
 // ══════════════════════════════════════════
@@ -390,26 +506,25 @@ function getDaysInMonth(dateStr) {
   return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
 }
 
-async function buildPayslipData(empId, dFromVal, dToVal, rangeData, workingDays) {
+async function buildPayslipData(empId, dFromVal, dToVal, rangeData, workingDays, pBonus = 0, aBonus = 0) {
   const emp = _cache.empMap[empId] || { id:empId, name:"", desig:"", passport:"", joining:"", salary:0, wpNo:"", rpUidNo:"" };
   const salary    = emp.salary;
   const isCook    = (emp.desig || "").trim().toUpperCase() === "COOK";
-  const monthDays = getDaysInMonth(dFromVal);
-  const dailyRate = isCook
-    ? parseFloat((salary / monthDays).toFixed(2))
-    : parseFloat((salary / workingDays).toFixed(2));
+  const dailyRate = parseFloat((salary / workingDays).toFixed(2));
 
-  const att          = rangeData.attendance[empId] || { norm:0, hol:0, sun:0, abs:0, others:0 };
-  const totalOT      = rangeData.otMap[empId]  || 0;
-  const totalAdvance = _cache.advMap[empId]    || 0;
-  const totalFine    = _cache.fineMap[empId]   || 0;
+  const att          = rangeData.attendance[empId] || { norm:0, hol:0, sun:0, abs:0, pres:0, others:0 };
+  const totalOT      = rangeData.otMap[empId]    || 0;
+  const totalOTHrs   = (rangeData.otHrsMap && rangeData.otHrsMap[empId]) || 0;
+  const totalAdvance = _cache.advMap[empId]      || 0;
+  const totalFine    = _cache.fineMap[empId]     || 0;
 
-  const normalAmt = dailyRate * att.norm;
-  const gross     = normalAmt + att.hol + att.sun + totalOT + (att.others || 0);
+  // ── Cook হলে Present দিয়ে হিসাব, বাকিদের জন্য Normal Work দিয়ে ──
+  const normalAmt = isCook ? dailyRate * att.pres : dailyRate * att.norm;
+  const gross     = normalAmt + att.hol + att.sun + totalOT + (att.others || 0) + pBonus + aBonus;
   const csgEmp    = Math.round(gross * 0.015 * 100) / 100;
   const npsEmp    = Math.round(gross * 0.01  * 100) / 100;
   const totalDed  = csgEmp + npsEmp + totalAdvance + totalFine;
-  const netPay    = gross - totalDed;
+  const netPay    = Math.round(gross - totalDed);
 
   const now = new Date();
   let serviceLength = "";
@@ -443,7 +558,8 @@ async function buildPayslipData(empId, dFromVal, dToVal, rangeData, workingDays)
     advanceRefund: totalAdvance.toFixed(2),
     fine: totalFine.toFixed(2),
     absentDays: att.abs, totalDed: totalDed.toFixed(2),
-    netPay: netPay.toFixed(2), netPayWords: numToWords(netPay),
+    netPay: netPay, netPayWords: numToWords(netPay),
+    pBonus: pBonus.toFixed(2), aBonus: aBonus.toFixed(2),
   };
 }
 
@@ -552,6 +668,27 @@ async function generateFromPanel() {
     if (!_cache.loaded) await preloadStaticData();
     const rangeData   = await fetchRangeData(dFromVal, dToVal);
     const workingDays = await getWorkingDays(dFromVal);
+
+    // ✅ BONUS: একবারে সব bonus data লোড করি
+    const rtdb = firebase.database();
+    const bonusSnap = await rtdb.ref("BONUS_ENTRY").once("value");
+    const bonusData = bonusSnap.val() || {};
+    const dFrom = new Date(dFromVal), dTo = new Date(dToVal);
+    const monthKey = getMonthKey(dFromVal);
+
+    // ── PAID status সব employee-এর জন্য একবারে প্যারালালি নিয়ে আসি (লুপের ভেতরে নয়) ──
+    const postedMonthKey = getMonthYearKey(dFromVal);
+    const postedSnaps = await Promise.all(
+      selected.map(empId => rtdb.ref(`SALARY_POSTED/${postedMonthKey}/${empId}`).once("value"))
+    );
+    selected.forEach((empId, idx) => {
+      const _postedInfo = postedSnaps[idx].val();
+      if (_postedInfo && _postedInfo.status === "PAID") {
+        _cache.advMap[empId]  = _postedInfo.adv  || 0;
+        _cache.fineMap[empId] = _postedInfo.fine || 0;
+      }
+    });
+
     let allPages = "";
     for (let i = 0; i < selected.length; i++) {
       const empId = selected[i];
@@ -563,7 +700,24 @@ async function generateFromPanel() {
           win.document.getElementById("st").textContent = `Processing: ${empId}`;
         }
       } catch(e2) {}
-      const d = await buildPayslipData(empId, dFromVal, dToVal, rangeData, workingDays);
+
+      // ✅ BONUS: এই employee-এর bonus হিসাব করুন
+      let pBonus = 0, aBonus = 0;
+      if (bonusData[monthKey] && typeof bonusData[monthKey] === "object") {
+        for (const df in bonusData[monthKey]) {
+          const dr = bonusData[monthKey][df];
+          if (!dr || typeof dr !== "object") continue;
+          if (!dr[empId]) continue;
+          const row = dr[empId];
+          const bonusDate = new Date(row.DATE || df);
+          if (bonusDate >= dFrom && bonusDate <= dTo) {
+            pBonus += parseFloat(row.PERFORMANCE_BONUS) || 0;
+            aBonus += parseFloat(row.ATTENDANCE_BONUS)  || 0;
+          }
+        }
+      }
+
+      const d = await buildPayslipData(empId, dFromVal, dToVal, rangeData, workingDays, pBonus, aBonus);
       allPages += `<div class="page">${buildOneSlip(d, period, "EMPLOYEE COPY")}${buildOneSlip(d, period, "OFFICE COPY")}</div>`;
       updateLoader(i + 1, selected.length, empId);
     }
@@ -642,9 +796,10 @@ function buildOneSlip(d, period, title) {
             <tr><td style="border:1px solid #e5e7eb;padding:1px 3px">Sundays</td><td style="text-align:right;font-family:monospace;border:1px solid #e5e7eb;padding:1px 3px">${d.sundayWork}</td></tr>
             <tr><td style="border:1px solid #e5e7eb;padding:1px 3px">Fix Travelling</td><td style="text-align:right;font-family:monospace;border:1px solid #e5e7eb;padding:1px 3px">0.00</td></tr>
             <tr><td style="border:1px solid #e5e7eb;padding:1px 3px">Overtime</td><td style="text-align:right;font-family:monospace;border:1px solid #e5e7eb;padding:1px 3px">${d.overtime}</td></tr>
-            <tr><td style="border:1px solid #e5e7eb;padding:1px 3px">Performance Bonus</td><td style="text-align:right;font-family:monospace;border:1px solid #e5e7eb;padding:1px 3px">0.00</td></tr>
-            <tr><td style="border:1px solid #e5e7eb;padding:1px 3px">Attendance Bonus</td><td style="text-align:right;font-family:monospace;border:1px solid #e5e7eb;padding:1px 3px">0.00</td></tr>
+            <tr><td style="border:1px solid #e5e7eb;padding:1px 3px">Performance Bonus</td><td style="text-align:right;font-family:monospace;border:1px solid #e5e7eb;padding:1px 3px">${d.pBonus}</td></tr>
+            <tr><td style="border:1px solid #e5e7eb;padding:1px 3px">Attendance Bonus</td><td style="text-align:right;font-family:monospace;border:1px solid #e5e7eb;padding:1px 3px">${d.aBonus}</td></tr>
             <tr><td style="border:1px solid #e5e7eb;padding:1px 3px">P.R.G.F</td><td style="text-align:right;font-family:monospace;border:1px solid #e5e7eb;padding:1px 3px">00</td></tr>
+            <tr><td style="border:1px solid #e5e7eb;padding:1px 3px">Other</td><td style="text-align:right;font-family:monospace;border:1px solid #e5e7eb;padding:1px 3px">${d.others}</td></tr>
             <tr style="font-weight:700;border-top:1px solid black"><td style="border:1px solid #e5e7eb;padding:3px">GROSS</td><td style="text-align:right;font-family:monospace;border:1px solid #e5e7eb;padding:3px">${d.gross}</td></tr>
           </table>
         </div>
@@ -658,6 +813,7 @@ function buildOneSlip(d, period, title) {
             <tr><td style="border:1px solid #e5e7eb;padding:1px 3px">Fine</td><td style="text-align:right;font-family:monospace;border:1px solid #e5e7eb;padding:1px 3px">${d.fine}</td></tr>
             <tr><td style="border:1px solid #e5e7eb;padding:1px 3px">Absent <span style="color:#aaa;font-size:9px">(info)</span></td><td style="text-align:right;font-family:monospace;border:1px solid #e5e7eb;padding:1px 3px">${d.absentDays} Days</td></tr>
             <tr><td style="border:1px solid #e5e7eb;padding:1px 3px">P.R.G.F</td><td style="text-align:right;font-family:monospace;border:1px solid #e5e7eb;padding:1px 3px">00</td></tr>
+            <tr><td style="border:1px solid #e5e7eb;padding:1px 3px">&nbsp;</td><td style="border:1px solid #e5e7eb;padding:1px 3px"></td></tr>
             <tr><td style="border:1px solid #e5e7eb;padding:1px 3px">&nbsp;</td><td style="border:1px solid #e5e7eb;padding:1px 3px"></td></tr>
             <tr style="font-weight:700;border-top:1px solid black"><td style="border:1px solid #e5e7eb;padding:3px">TOTAL</td><td style="text-align:right;font-family:monospace;border:1px solid #e5e7eb;padding:3px">${d.totalDed}</td></tr>
           </table>
@@ -724,19 +880,19 @@ function buildOneSlip(d, period, title) {
 
 function payslipWindowCSS() {
   return `<style>
-    *{box-sizing:border-box;margin:0;padding:0}
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
     body{background:#f3f4f6;font-family:'Source Sans 3',Arial,sans-serif;padding:10mm}
     .page{display:grid;grid-template-columns:1fr 1fr;gap:20mm;max-width:277mm;margin:0 auto 10mm;background:white;padding:6mm;border-radius:8px;position:relative}
     .page::after{content:"";position:absolute;top:4mm;bottom:4mm;left:50%;transform:translateX(-50%);width:0;border-left:2px dashed #ccc;pointer-events:none}
-    .page::before{content:"✂";position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:14px;color:#bbb;pointer-events:none;background:white;padding:0 3px;line-height:1}
+    .page::before{content:"✂";position:absolute;top:0;left:50%;transform:translateX(-50%) scaleY(-1);font-size:14px;color:#bbb;pointer-events:none;background:white;padding:0 3px;line-height:1}
     .no-print{text-align:center;margin-bottom:8mm}
     .no-print button{background:#002147;color:#ffd700;border:2px solid #ffd700;padding:10px 28px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s}
     .no-print button:hover{background:#ffd700;color:#002147}
     @media print{
-      @page{size:A4 landscape;margin:6mm}
+      @page{size:A4 landscape;margin:2mm 6mm 6mm 6mm}
       body{background:white;padding:0}
       .no-print{display:none!important}
-      .page{box-shadow:none;border-radius:0;padding:2mm 0;max-width:100%;gap:22mm;margin:0;page-break-after:always;break-after:page}
+      .page{box-shadow:none;border-radius:0;padding:0;max-width:100%;gap:22mm;margin:0;page-break-after:always;break-after:page}
       .page:last-child{page-break-after:avoid;break-after:avoid}
     }
   </style>`;
@@ -800,7 +956,117 @@ function showMsg(msg, { title="Notice", type="warn" }={}) {
 }
 function closeMsgBox() { document.getElementById("msgboxOverlay").classList.remove("active"); }
 
+// ══════════════════════════════════════════
+//  HOME PAGE — TOTAL SALARY SUMMARY (auto, on page load)
+// ══════════════════════════════════════════
+async function loadHomeSummary(dFromOverride, dToOverride) {
+  const box = document.getElementById("homeSummary");
+  if (!box) return;
+  try {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const pad = (n) => String(n).padStart(2, "0");
+    const toStr = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    const dFromVal = dFromOverride || toStr(firstDay);
+    const dToVal   = dToOverride   || toStr(now);
+
+    box.innerHTML = `<div class="home-summary-title">⏳ Loading Total Salary Summary...</div>`;
+
+    if (!_cache.loaded) await preloadStaticData();
+    const workingDays = await getWorkingDays(dFromVal);
+    const rangeData    = await fetchRangeData(dFromVal, dToVal);
+
+    const rtdb = firebase.database();
+    const dFrom = new Date(dFromVal), dTo = new Date(dToVal);
+
+    // ── তারিখ রেঞ্জ একাধিক মাস স্প্যান করলেও সব মাসের bonus আনি ──
+    const bonusMonthKeys = new Set();
+    for (let d = new Date(dFrom.getFullYear(), dFrom.getMonth(), 1); d <= dTo; d.setMonth(d.getMonth()+1)) {
+      bonusMonthKeys.add(getMonthKey(toStr(d)));
+    }
+    const bonusMonthData = {};
+    await Promise.all([...bonusMonthKeys].map(async mk => {
+      const snap = await rtdb.ref(`BONUS_ENTRY/${mk}`).once("value");
+      Object.assign(bonusMonthData, snap.val() || {});
+    }));
+
+    let totPresent=0, totAbsent=0, totSunday=0, totHoliday=0, totOT=0, totOthers=0;
+    let totPBonus=0, totABonus=0, totGross=0, totAdv=0, totFine=0, totNps=0, totCsg=0, totNet=0;
+
+    _cache.empList.forEach(emp => {
+      const empId = emp.id;
+      const att = rangeData.attendance[empId] || { norm:0, hol:0, sun:0, abs:0, pres:0, others:0 };
+      const isCook = (emp.desig || "").trim().toUpperCase() === "COOK";
+      const dailyRate = parseFloat((emp.salary / workingDays).toFixed(2));
+      const normalAmt = isCook ? dailyRate * att.pres : dailyRate * att.norm;
+      const totalOT = rangeData.otMap[empId] || 0;
+
+      // Bonus lookup for this employee within range
+      let pBonus = 0, aBonus = 0;
+      for (const dateKey in bonusMonthData) {
+        const dr = bonusMonthData[dateKey];
+        if (!dr || typeof dr !== "object" || !dr[empId]) continue;
+        const row = dr[empId];
+        const date = dateKey.replace("DATE_", "");
+        const bonusDate = new Date(row.DATE || date);
+        if (bonusDate >= dFrom && bonusDate <= dTo) {
+          pBonus += parseFloat(row.PERFORMANCE_BONUS) || 0;
+          aBonus += parseFloat(row.ATTENDANCE_BONUS)  || 0;
+        }
+      }
+
+      const adv  = _cache.advMap[empId]  || 0;
+      const fine = _cache.fineMap[empId] || 0;
+      const gross = normalAmt + att.hol + att.sun + totalOT + (att.others || 0) + pBonus + aBonus;
+      const csg   = Math.round(gross * 0.015 * 100) / 100;
+      const nps   = Math.round(gross * 0.01  * 100) / 100;
+      const net   = Math.round(gross - (csg + nps + adv + fine));
+
+      totPresent += att.pres;  totAbsent += att.abs;
+      totSunday  += att.sun;   totHoliday += att.hol;
+      totOT      += totalOT;   totOthers += (att.others || 0);
+      totPBonus  += pBonus;    totABonus += aBonus;
+      totAdv     += adv;       totFine   += fine;
+      totNps     += nps;       totCsg    += csg;
+      totGross   += gross;     totNet    += net;
+    });
+
+    const fmt = (n) => Number(n||0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const rows = [
+      ["TOTAL PRESENT",   totPresent, ""],
+      ["TOTAL ABSENT",    totAbsent,  ""],
+      ["TOTAL SUNDAY",    totSunday.toFixed(2), ""],
+      ["TOTAL HOLI DAY",  totHoliday.toFixed(2), ""],
+      ["TOTAL OT AMOUNT", fmt(totOT), ""],
+      ["TOTAL OTHERS",    fmt(totOthers), ""],
+      ["A BONUS",         fmt(totABonus), ""],
+      ["P BONUS",         fmt(totPBonus), ""],
+      ["GROSS SALARY",    fmt(totGross), "positive"],
+      ["ADV",             fmt(totAdv), "negative"],
+      ["FINE",            fmt(totFine), "negative"],
+      ["NPS 1%",          fmt(totNps), "negative"],
+      ["CSG 1.5%",        fmt(totCsg), "negative"],
+      ["NET SALARY",      fmt(totNet), "positive"],
+    ];
+
+    box.innerHTML = `
+      <div class="home-summary-title">📊 Total Salary Summary &nbsp; <span style="color:#a0b8d8;font-size:10px;letter-spacing:0.5px;text-transform:none">(${dFromVal} to ${dToVal})</span></div>
+      <table class="home-summary-table">
+        <thead>
+          <tr>${rows.map(([label]) => `<th>${label}</th>`).join("")}</tr>
+        </thead>
+        <tbody>
+          <tr>${rows.map(([, value]) => `<td>${value}</td>`).join("")}</tr>
+        </tbody>
+      </table>
+    `;
+  } catch(e) {
+    box.innerHTML = `<div class="home-summary-title" style="color:#ff6b6b">⚠️ Summary load error: ${e.message}</div>`;
+  }
+}
+
 window.addEventListener("load", preloadStaticData);
+window.addEventListener("load", () => loadHomeSummary(_defaultRange.from, _defaultRange.to));
 </script>
 </body>
 </html>
