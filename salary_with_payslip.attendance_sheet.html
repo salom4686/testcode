@@ -374,12 +374,16 @@ th.th-pbonus, th.th-abonus { background: #f0f0f0 !important; color: #000 !import
       </div>
     </div>
 
+    <!-- ══ MONTHLY DUPLICATE WARNING TABLE (auto, on load) ══ -->
+    <div id="monthlyDupWarning"></div>
+
+    
     <!-- ══ DAILY ATTENDANCE CONTROLS ══ -->
     <div class="att-controls" id="attendance-controls">
       <div class="att-filter-row">
         <label>Search Type:</label>
         <select class="filter-type-select" id="attFilterType" onchange="onFilterTypeChange()">
-          <option value="all">All Records</option>
+          <option value="all">Total Attendance</option>
           <option value="employee">Employee</option>
           <option value="project">Project</option>
           <option value="date"> Date Range</option>
@@ -442,7 +446,7 @@ th.th-pbonus, th.th-abonus { background: #f0f0f0 !important; color: #000 !import
       <div class="ot-filter-row">
         <label>Search Type:</label>
         <select class="filter-type-select" id="otFilterType" onchange="onOtFilterChange()" style="min-width:140px;padding:8px 12px;font-size:12px;font-family:'Source Sans 3',sans-serif;border:2px solid var(--brand-gold);border-radius:6px;background:#001530;color:var(--brand-gold);font-weight:700;outline:none;">
-          <option value="all">All Records</option>
+          <option value="all">Total Overtime</option>
           <option value="employee">Employee</option>
           <option value="project">Project/Site</option>
           <option value="id">ID</option>
@@ -970,6 +974,101 @@ flatpickr("#otDateTo",       { ...redDayConfig, defaultDate: _defaultRange.to })
           _attEmpLoaded = true;
         } catch(e) { console.error("Filter options load error:", e); }
       }
+
+
+// ══════════════════════════════════════════
+//  AUTO DUPLICATE CHECK — Current Month, shown as table on Home page
+// ══════════════════════════════════════════
+async function checkMonthlyDuplicatesOnLoad() {
+  const warnBox = document.getElementById("monthlyDupWarning");
+  if (!warnBox) return;
+  try {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    const pad = (n) => String(n).padStart(2, "0");
+    const toStr = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    const monthFrom = toStr(firstDay);
+    const monthTo   = toStr(lastDay);
+
+    const db = firebase.firestore();
+    const snap = await db.collectionGroup("Present_Absent")
+      .where("DATE", ">=", monthFrom).where("DATE", "<=", monthTo).get();
+
+    const groups = {};
+    snap.forEach(doc => {
+      const d = doc.data();
+      if (!d.ID || !d.DATE) return;
+      const key = `${d.DATE}__${String(d.ID).trim()}`;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push({ date: d.DATE, id: String(d.ID).trim(), name: d.EMPLOYEE_NAME || "-" });
+    });
+
+    const dupGroups = Object.values(groups).filter(arr => arr.length > 1);
+    if (!dupGroups.length) { warnBox.innerHTML = ""; return; }
+
+    dupGroups.sort((a,b) => a[0].date.localeCompare(b[0].date) || a[0].id.localeCompare(b[0].id));
+    let totalDupRows = 0;
+    dupGroups.forEach(g => totalDupRows += g.length);
+
+    const tableRows = dupGroups.map((g, i) => `
+      <tr>
+        <td style="text-align:center;color:#7f1d1d;font-size:10px">${i+1}</td>
+        <td style="font-weight:700;color:#7f1d1d">${g[0].date}</td>
+        <td style="font-weight:800;color:#991b1b;font-family:monospace">${g[0].id}</td>
+        <td>${g[0].name}</td>
+        <td style="text-align:center">
+          <span style="background:#fee2e2;color:#991b1b;font-size:10.5px;font-weight:800;padding:3px 10px;border-radius:10px">${g.length}× Duplicate</span>
+        </td>
+        <td style="text-align:center">
+          <button class="btn-view" style="background:#991b1b;border-color:#991b1b;color:#fff"
+            onclick="goToDuplicate('${g[0].date}','${g[0].id}')">👁️ View</button>
+        </td>
+      </tr>`).join("");
+
+    warnBox.innerHTML = `
+      <div style="background:#fff5f5;border:2px solid #dc2626;border-radius:10px;margin:0 32px 18px;overflow:hidden;box-shadow:0 4px 16px rgba(220,38,38,0.15)">
+        <div style="background:linear-gradient(135deg,#7f1d1d,#991b1b);padding:10px 18px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:18px">⚠️</span>
+          <span style="color:#fff;font-weight:800;font-size:13px;letter-spacing:0.5px">
+            ${totalDupRows} duplicate attendance record(s) found this month (${monthFrom} to ${monthTo}) across ${dupGroups.length} ID/date group(s). This list will stay until they are deleted.
+          </span>
+        </div>
+        <div style="max-height:280px;overflow-y:auto">
+          <table style="width:100%;border-collapse:collapse;margin:0">
+            <thead>
+              <tr style="background:#fecaca">
+                <th style="padding:7px 6px;font-size:10px;color:#7f1d1d;border:1px solid #fca5a5">SL</th>
+                <th style="padding:7px 6px;font-size:10px;color:#7f1d1d;border:1px solid #fca5a5">Date</th>
+                <th style="padding:7px 6px;font-size:10px;color:#7f1d1d;border:1px solid #fca5a5">Emp ID</th>
+                <th style="padding:7px 6px;font-size:10px;color:#7f1d1d;border:1px solid #fca5a5">Name</th>
+                <th style="padding:7px 6px;font-size:10px;color:#7f1d1d;border:1px solid #fca5a5">Count</th>
+                <th style="padding:7px 6px;font-size:10px;color:#7f1d1d;border:1px solid #fca5a5">Action</th>
+              </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+        </div>
+      </div>`;
+  } catch(e) {
+    console.error("Monthly duplicate check error:", e);
+  }
+}
+
+// ── Clicking the duplicate's View button jumps to Daily Attendance, filtered ──
+function goToDuplicate(dateStr, empId) {
+  switchTab("attendance");
+  document.getElementById("attFilterType").value = "id";
+  onFilterTypeChange();
+  document.getElementById("attIdInput").value = empId;
+  try {
+    document.getElementById("attDateFrom")._flatpickr.setDate(dateStr);
+    document.getElementById("attDateTo")._flatpickr.setDate(dateStr);
+  } catch(e) {}
+  generateAttendance();
+}
+
+// ══════════════════════════════════════════
 // ══════════════════════════════════════════
 //  DAILY ATTENDANCE GENERATION
 // ══════════════════════════════════════════
@@ -984,20 +1083,25 @@ async function generateAttendance() {
   const selProj  = document.getElementById("attProjectSelect").value;
   const selId    = document.getElementById("attIdInput").value.trim();
   const selName  = document.getElementById("attNameInput").value.trim().toLowerCase();
+
   attOut.innerHTML = '<p style="padding:30px;text-align:center;color:#ffd700;font-size:14px;font-style:italic">⏳ Loading attendance data...</p>';
+
   try {
-    const db = firebase.firestore();
+    const db   = firebase.firestore();
+    const rtdb = firebase.database();
+
+    // ── 1. Present_Absent ─────────────────────────────────────
     const snap = await db.collectionGroup("Present_Absent").get();
     let records = [];
     snap.forEach(doc => {
       const d = doc.data();
       const docDate = new Date(d.DATE);
       if (dFrom && dTo && (docDate < dFrom || docDate > dTo)) return;
-      if (filterType==="employee" && selEmp && String(d.ID).trim()!==selEmp) return;
+      if (filterType==="employee" && selEmp  && String(d.ID).trim()!==selEmp) return;
       if (filterType==="project"  && selProj && (d.SIDE_NAME||"").trim()!==selProj) return;
-      if (filterType==="id"   && selId  && String(d.ID).trim()!==selId) return;
-      if (filterType==="name" && selName && !(d.EMPLOYEE_NAME||"").toLowerCase().includes(selName)) return;
-      d._path = doc.ref.path; // সার্ভার থেকে ডিলিট করার জন্য ডকুমেন্ট পাথ সংরক্ষণ
+      if (filterType==="id"       && selId   && String(d.ID).trim()!==selId) return;
+      if (filterType==="name"     && selName && !(d.EMPLOYEE_NAME||"").toLowerCase().includes(selName)) return;
+      d._path = doc.ref.path;
       records.push(d);
     });
     records.sort((a,b) => {
@@ -1005,7 +1109,63 @@ async function generateAttendance() {
       return dd !== 0 ? dd : String(a.ID).localeCompare(String(b.ID));
     });
 
-    // ── একই DATE + ID একাধিকবার থাকলে count রাখা হচ্ছে (ডুপ্লিকেট ডিটেকশন) ──
+    if (!records.length) {
+      attOut.innerHTML = '<p style="padding:30px;text-align:center;color:#ffd700;font-size:14px">📭 No records found.</p>';
+      return;
+    }
+
+    // ── 2. Unique month keys বের করি ─────────────────────────
+    // e.g. ["JUNE_2026", "MAY_2026"]
+    const monthKeySet = new Set(records.map(r => getMonthKey(r.DATE)));
+    const monthKeys   = [...monthKeySet];
+
+    // ── 3. BONUS_ENTRY — month-wise একবারে লোড ───────────────
+    // bonusMap[date][empId] = { ATTENDANCE_BONUS, PERFORMANCE_BONUS }
+    const bonusMap = {};
+    await Promise.all(monthKeys.map(async mk => {
+      const snap = await rtdb.ref(`BONUS_ENTRY/${mk}`).once("value");
+      const data = snap.val() || {};
+      // data = { DATE_2026-06-01: { "ACL-0006": { ATTENDANCE_BONUS, PERFORMANCE_BONUS } } }
+      for (const dateKey in data) {
+        const date = dateKey.replace("DATE_", ""); // "2026-06-01"
+        if (!bonusMap[date]) bonusMap[date] = {};
+        const empData = data[dateKey];
+        for (const empId in empData) {
+          bonusMap[date][empId] = empData[empId];
+        }
+      }
+    }));
+
+    // ── 4. Others — month-wise Firestore collectionGroup ─────
+   // ── 4. Others — date+empId wise directly fetch ───────────────
+const othersMap = {};
+
+// records থেকে unique date+monthKey combinations
+const dateMonthPairs = [...new Set(records.map(r => `${getMonthKey(r.DATE)}||${r.DATE}`))];
+
+await Promise.all(dateMonthPairs.map(async pair => {
+  const [mk, date] = pair.split("||");
+  const dateKey = `DATE_${date}`; // "DATE_2026-06-01"
+
+  const oSnap = await db
+    .collection("DailyAttendance")
+    .doc(mk)
+    .collection("DATES")
+    .doc(dateKey)
+    .collection("Others")
+    .get();
+
+  oSnap.forEach(oDoc => {
+    const od  = oDoc.data();
+    const eid = String(od.ID || "").trim();
+    if (!eid) return;
+    if (!othersMap[date])      othersMap[date]      = {};
+    if (!othersMap[date][eid]) othersMap[date][eid] = 0;
+    othersMap[date][eid] += Number(od.AMOUNT || 0);
+  });
+}));
+
+    // ── 5. Duplicate detection ────────────────────────────────
     const dupCountMap = {};
     records.forEach(r => {
       const key = `${r.DATE}__${String(r.ID).trim()}`;
@@ -1016,54 +1176,107 @@ async function generateAttendance() {
       if (c > 1) { totalDupGroups++; totalDupRows += c; }
     });
 
-    if (!records.length) {
-      attOut.innerHTML = '<p style="padding:30px;text-align:center;color:#ffd700;font-size:14px">📭 No records found.</p>';
-      return;
-    }
-    let totPresent=0,totAbsent=0,totHoliday=0,totSunday=0,uniqueEmps=new Set(),uniqueDates=new Set();
+    // ── 6. Summary counters ───────────────────────────────────
+    let totPresent=0, totAbsent=0, totHoliday=0, totSunday=0;
+    let uniqueEmps=new Set(), uniqueDates=new Set();
     records.forEach(r => {
       if (r.STATUS==="PRESENT") totPresent++;
       else if (r.STATUS==="ABSENT") totAbsent++;
-      if (parseInt(r.HOLIDAY_WORK)>0) totHoliday+=parseInt(r.HOLIDAY_WORK);
-      if (parseInt(r.SUNDAY_WORK)>0)  totSunday+=parseInt(r.SUNDAY_WORK);
-      uniqueEmps.add(r.ID); uniqueDates.add(r.DATE);
+      if (parseInt(r.HOLIDAY_WORK)>0) totHoliday += parseInt(r.HOLIDAY_WORK);
+      if (parseInt(r.SUNDAY_WORK)>0)  totSunday  += parseInt(r.SUNDAY_WORK);
+      uniqueEmps.add(r.ID);
+      uniqueDates.add(r.DATE);
     });
-    let periodText = (dFromVal&&dToVal)?`${dFromVal} to ${dToVal}`:dFromVal?`From ${dFromVal}`:"All Dates";
-    let filterDesc = filterType==="employee"&&selEmp?`Employee: ${selEmp}`:filterType==="project"&&selProj?`Project: ${selProj}`:filterType==="id"&&selId?`ID: ${selId}`:filterType==="name"&&selName?`Name: "${selName}"`:"All Records";
-    const rows = records.map((r,i) => {
+
+    let periodText = (dFromVal&&dToVal) ? `${dFromVal} to ${dToVal}` : dFromVal ? `From ${dFromVal}` : "All Dates";
+    let filterDesc = filterType==="employee"&&selEmp ? `Employee: ${selEmp}`
+                   : filterType==="project"&&selProj  ? `Project: ${selProj}`
+                   : filterType==="id"&&selId          ? `ID: ${selId}`
+                   : filterType==="name"&&selName      ? `Name: "${selName}"`
+                   : "TOTAL ATTENDANCE";
+
+    // ── 7. Table rows ─────────────────────────────────────────
+    const rows = records.map((r, i) => {
       const status = (r.STATUS||"").toUpperCase();
-      const holW = parseInt(r.HOLIDAY_WORK)||0, sunW = parseInt(r.SUNDAY_WORK)||0;
+      const holW   = parseInt(r.HOLIDAY_WORK) || 0;
+      const sunW   = parseInt(r.SUNDAY_WORK)  || 0;
+      const empId  = String(r.ID || "").trim();
+      const date   = r.DATE;
+
+      // Others & Bonus lookup
+      const othersAmt = (othersMap[date]?.[empId]) || 0;
+      const bonusData = bonusMap[date]?.[empId]    || {};
+      const aBonus    = bonusData.ATTENDANCE_BONUS   || 0;
+      const pBonus    = bonusData.PERFORMANCE_BONUS  || 0;
+
       let badgeClass = "present";
       if (status==="ABSENT") badgeClass="absent";
-      else if (holW>0) badgeClass="holiday";
-      else if (sunW>0) badgeClass="sunday";
+      else if (holW>0)       badgeClass="holiday";
+      else if (sunW>0)       badgeClass="sunday";
 
-      // ── ডুপ্লিকেট রো চেক (একই তারিখে একই ID একাধিকবার) ──
-      const dupKey = `${r.DATE}__${String(r.ID).trim()}`;
-      const isDup = dupCountMap[dupKey] > 1;
-      // রো-এর ব্যাকগ্রাউন্ড + লেখা লাল ও বোল্ড — ইনলাইন স্টাইলে
+      const dupKey  = `${date}__${empId}`;
+      const isDup   = dupCountMap[dupKey] > 1;
       const rowStyle = isDup ? ' style="background:rgba(220,38,38,0.22);color:#ff4d4d;font-weight:700"' : '';
+
+      const checkboxCell = isDup
+        ? `<td style="text-align:center;padding:4px">
+             <input type="checkbox" class="dup-checkbox" data-path="${r._path}"
+               data-date="${date}" data-id="${empId}" data-name="${r.EMPLOYEE_NAME||''}"
+               style="width:15px;height:15px;cursor:pointer;accent-color:#dc2626" />
+           </td>`
+        : `<td></td>`;
+
       const dupFlag = isDup
-        ? ` <span style="font-size:9px;font-weight:700;color:#ff4d4d;margin-left:4px" title="একই তারিখে এই ID একাধিকবার আছে">⚠️ DUP</span>
-            <button onclick="deleteDuplicateRecord('${r._path}', this)" title="এই রেকর্ড সার্ভার থেকে স্থায়ীভাবে ডিলিট করুন"
-              style="margin-left:6px;background:#dc2626;color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;cursor:pointer;vertical-align:middle">🗑️</button>`
+        ? ` <span style="font-size:9px;font-weight:700;color:#ff4d4d;margin-left:4px" title="Duplicate Record ">⚠️DUPLICATE</span>
+            <button onclick="deleteDuplicateRecord('${r._path}', this)" title="Delete this duplicate record permanently"
+              style="margin-left:6px;background:#dc2626;color:#fff;border:none;border-radius:4px;
+              padding:2px 7px;font-size:10px;font-weight:700;cursor:pointer;vertical-align:middle">🗑️</button>`
         : '';
 
       return `<tr${rowStyle}>
-        <td style="text-align:center;color:${isDup ? '#ff4d4d' : '#9ca3af'};font-size:10px">${i+1}</td>
-        <td>${r.DATE||"-"}${dupFlag}</td>
-        <td style="font-weight:700;color:${isDup ? '#ff4d4d' : 'var(--brand-blue)'}">${r.ID||"-"}</td>
+        ${checkboxCell}
+     <td style="text-align:center;color:${isDup?'#ff4d4d':'#000000'};font-size:14px">${records.length - i}</td>
+        <td>${date||"-"}${dupFlag}</td>
+        <td style="font-weight:700;color:${isDup?'#ff4d4d':'var(--brand-blue)'}">${empId||"-"}</td>
         <td>${r.EMPLOYEE_NAME||"-"}</td>
         <td>${r.PASSPORT||"-"}</td>
         <td>${r.DESIGNATION||"-"}</td>
         <td style="text-align:center"><span class="att-badge ${badgeClass}">${status}</span></td>
         <td>${r.SIDE_NAME||"-"}</td>
-        <td style="text-align:center">${holW||0}</td>
-        <td style="text-align:center">${sunW||0}</td>
-        <td style="text-align:right;font-size:10px;color:${isDup ? '#ff4d4d' : '#6b7280'}">${r.SALARY||"-"}</td>
+        <td style="text-align:center">${holW}</td>
+        <td style="text-align:center">${sunW}</td>
+        <td style="text-align:center">${othersAmt > 0 ? othersAmt : "-"}</td>
+        <td style="text-align:center">${aBonus > 0 ? aBonus : "-"}</td>
+        <td style="text-align:center">${pBonus > 0 ? pBonus : "-"}</td>
+        <td style="text-align:right;font-size:10px;color:${isDup?'#ff4d4d':'#000000'}">${r.SALARY||"-"}</td>
         <td>${r.REMARK||"-"}</td>
       </tr>`;
     }).join("");
+
+    // ── 8. Bulk delete toolbar ────────────────────────────────
+    const bulkToolbar = totalDupRows > 0 ? `
+      <div id="bulkDeleteBar" style="
+        display:flex;align-items:center;gap:10px;margin-bottom:10px;
+        background:rgba(220,38,38,0.12);border:1px solid rgba(220,38,38,0.4);
+        border-radius:8px;padding:8px 14px;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;color:#ff9090;font-size:12px;font-weight:700;user-select:none">
+          <input type="checkbox" id="selectAllDups" onchange="toggleSelectAllDups(this.checked)"
+            style="width:15px;height:15px;cursor:pointer;accent-color:#dc2626" />
+          All Duplicate Rows Select
+          <span style="color:#ff6b6b;font-size:11px">${totalDupRows} </span>
+        </label>
+        <span id="selCountBadge"
+          style="background:rgba(220,38,38,0.3);color:#ffaaaa;font-size:11px;font-weight:700;
+          padding:2px 10px;border-radius:12px;display:none">0 Selected</span>
+        <button id="bulkDeleteBtn" onclick="bulkDeleteSelected()"
+          style="margin-left:auto;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;
+          border:none;border-radius:6px;padding:7px 16px;font-size:12px;font-weight:800;
+          cursor:pointer;box-shadow:0 3px 10px rgba(220,38,38,0.35);display:none">
+          🗑️ Select Item Delete
+        </button>
+      </div>` : '';
+
+    // ── 9. Final render ───────────────────────────────────────
     attOut.innerHTML = `
       <div class="print-header">
         <span class="co-name">ALOMHOW CO LTD — Daily Attendance Report</span>
@@ -1071,7 +1284,7 @@ async function generateAttendance() {
         <span>Printed: ${formatDateTime()}</span>
       </div>
       <div class="summary-cards">
-        <div class="s-card"><div class="s-card-label">Total Records</div><div class="s-card-value">${records.length}</div></div>
+        <div class="s-card"><div class="s-card-label">TOTAL ATTENDANCE</div><div class="s-card-value">${records.length}</div></div>
         <div class="s-card"><div class="s-card-label">Employees</div><div class="s-card-value">${uniqueEmps.size}</div></div>
         <div class="s-card"><div class="s-card-label">Days Covered</div><div class="s-card-value">${uniqueDates.size}</div></div>
         <div class="s-card green"><div class="s-card-label">Present</div><div class="s-card-value">${totPresent}</div></div>
@@ -1081,110 +1294,234 @@ async function generateAttendance() {
         ${totalDupRows > 0 ? `<div class="s-card red"><div class="s-card-label">⚠️ Duplicate Rows</div><div class="s-card-value">${totalDupRows}</div></div>` : ''}
       </div>
       <div style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
-        <div style="color:#ffd700;font-size:11px;font-weight:700">📋 ${records.length} record(s) | Filter: <span style="color:#a0c4ff">${filterDesc}</span>${totalDupRows > 0 ? ` | <span style="color:#ff6b6b">⚠️ ${totalDupRows} duplicate row(s) found in ${totalDupGroups} group(s)</span>` : ''}</div>
-        <input type="text" placeholder="🔍 Search..." style="padding:6px 12px;border:1.5px solid #3a5a8a;border-radius:6px;background:#001530;color:#e0e8f4;font-size:11px;outline:none;width:220px" oninput="searchAttFn(this.value)" />
+        <div style="color:#ffd700;font-size:11px;font-weight:700">
+          📋 ${records.length}-Total Attendance: <span style="color:#a0c4ff">${filterDesc}</span>
+          ${totalDupRows > 0 ? ` | <span style="color:#ff6b6b">⚠️ ${totalDupRows} duplicate row (s) in ${totalDupGroups} group(s)</span>` : ''}
+        </div>
+        <input type="text" placeholder="🔍 Search..."
+          style="padding:6px 12px;border:1.5px solid #3a5a8a;border-radius:6px;
+          background:#001530;color:#e0e8f4;font-size:11px;outline:none;width:220px"
+          oninput="searchAttFn(this.value)" />
       </div>
+      ${bulkToolbar}
       <table id="attTable">
         <thead><tr>
+          <th style="width:32px;text-align:center">☑</th>
           <th>SL</th><th>Date</th><th>EMP ID</th><th>Employee Name</th>
           <th>Passport</th><th>Designation</th><th>Status</th>
           <th>Project / Site</th><th>Holiday</th><th>Sunday</th>
+          <th>Others</th><th>A Bonus</th><th>P Bonus</th>
           <th>Salary</th><th>Remark</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>`;
+
+    document.querySelectorAll('.dup-checkbox').forEach(cb => {
+      cb.addEventListener('change', updateSelectionCount);
+    });
+
   } catch(e) {
     attOut.innerHTML = `<p style="padding:20px;color:red">⚠️ Error: ${e.message}</p>`;
   }
 }
-
-/* এখন আর আলাদা CSS লাগবে না — ডুপ্লিকেট রো-এর ব্যাকগ্রাউন্ড সরাসরি
-   ইনলাইন style অ্যাট্রিবিউট দিয়ে সেট করা হচ্ছে (উপরে rowStyle ভ্যারিয়েবল দেখুন)।
-   ফাইল লোড হওয়ার সাথে সাথেই ডুপ্লিকেট রো লাল ব্যাকগ্রাউন্ডে দেখাবে। */
+// ══════════════════════════════════════════
+//  সিলেকশন কাউন্ট আপডেট
+// ══════════════════════════════════════════
+function updateSelectionCount() {
+  const checked = document.querySelectorAll('.dup-checkbox:checked');
+  const badge = document.getElementById('selCountBadge');
+  const btn = document.getElementById('bulkDeleteBtn');
+  if (!badge || !btn) return;
+  if (checked.length > 0) {
+    badge.textContent = `${checked.length} Selected`;
+    badge.style.display = 'inline-block';
+    btn.style.display = 'inline-block';
+    btn.textContent = `🗑️ ${checked.length} Delete`;
+  } else {
+    badge.style.display = 'none';
+    btn.style.display = 'none';
+  }
+  // selectAll চেকবক্স সিঙ্ক
+  const allCbs = document.querySelectorAll('.dup-checkbox');
+  const selectAllCb = document.getElementById('selectAllDups');
+  if (selectAllCb) {
+    selectAllCb.checked = checked.length === allCbs.length && allCbs.length > 0;
+    selectAllCb.indeterminate = checked.length > 0 && checked.length < allCbs.length;
+  }
+}
 
 // ══════════════════════════════════════════
-//  কাস্টম "DELETE CONFIRM" মডাল (সুন্দর ডিজাইন)
+//  সব ডুপ্লিকেট সিলেক্ট / আনসিলেক্ট
 // ══════════════════════════════════════════
-function showDeleteConfirmModal({ dateText, idText, nameText, onConfirm }) {
-  // আগের কোনো মডাল খোলা থাকলে সরিয়ে দেওয়া হচ্ছে
+function toggleSelectAllDups(checked) {
+  document.querySelectorAll('.dup-checkbox').forEach(cb => { cb.checked = checked; });
+  updateSelectionCount();
+}
+
+// ══════════════════════════════════════════
+//  নির্বাচিত সব রেকর্ড একবারে ডিলিট
+// ══════════════════════════════════════════
+async function bulkDeleteSelected() {
+  const checked = Array.from(document.querySelectorAll('.dup-checkbox:checked'));
+  if (!checked.length) return;
+
+  // কনফার্ম মডাল দেখানো
+  const info = checked.map(cb => ({
+    path: cb.dataset.path,
+    date: cb.dataset.date,
+    id: cb.dataset.id,
+    name: cb.dataset.name
+  }));
+
+  showBulkDeleteConfirmModal(info, async () => {
+    const btn = document.getElementById('bulkDeleteBtn');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Deleting...'; }
+    try {
+      const db = firebase.firestore();
+      const batch = db.batch();
+      info.forEach(item => { if (item.path) batch.delete(db.doc(item.path)); });
+      await batch.commit();
+      showDeleteToast(`${info.length} Selected Records Deleted Successfully`, "success");
+      await generateAttendance();
+      checkMonthlyDuplicatesOnLoad();
+    } catch(e) {
+      if (btn) { btn.disabled = false; btn.textContent = `🗑️ ${info.length} Delete`; }
+      showDeleteToast("Error Deleting Records: " + e.message, "error");
+    }
+  });
+}
+
+// ══════════════════════════════════════════
+//  BULK DELETE কনফার্ম মডাল
+// ══════════════════════════════════════════
+function showBulkDeleteConfirmModal(items, onConfirm) {
   const existing = document.getElementById("delConfirmOverlay");
   if (existing) existing.remove();
+
+  const preview = items.slice(0, 5).map(it =>
+    `<div style="display:flex;justify-content:space-between;font-size:11px;color:#cbd5e1;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+       <span style="color:#7d8aa3">${it.date}</span>
+       <span style="font-weight:700;color:#fff">${it.id}</span>
+       <span style="color:#94a3b8;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${it.name}</span>
+     </div>`
+  ).join('');
+  const moreText = items.length > 5 ? `<div style="text-align:center;font-size:10px;color:#7d8aa3;margin-top:4px">... এবং আরও ${items.length-5} টি রেকর্ড</div>` : '';
 
   const overlay = document.createElement("div");
   overlay.id = "delConfirmOverlay";
   overlay.style.cssText = `
     position:fixed;inset:0;background:rgba(0,8,20,0.72);backdrop-filter:blur(3px);
     display:flex;align-items:center;justify-content:center;z-index:99999;
-    animation:delFadeIn .15s ease-out;
-  `;
+    animation:delFadeIn .15s ease-out;`;
+  overlay.innerHTML = `
+    <style>
+      @keyframes delFadeIn { from{opacity:0} to{opacity:1} }
+      @keyframes delPopIn { from{opacity:0;transform:scale(.92) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }
+    </style>
+    <div id="delConfirmBox" style="
+      width:370px;max-width:90vw;background:linear-gradient(160deg,#0a1a33,#001530);
+      border:1.5px solid #dc2626;border-radius:14px;padding:22px 22px 18px;
+      animation:delPopIn .18s ease-out;font-family:inherit;box-shadow:0 12px 40px rgba(220,38,38,0.25)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="width:38px;height:38px;border-radius:50%;background:rgba(220,38,38,0.15);
+          display:flex;align-items:center;justify-content:center;font-size:19px">🗑️</div>
+        <div>
+          <div style="color:#fff;font-size:15px;font-weight:800">${items.length} Selected Records?</div>
+          <div style="color:#94a3b8;font-size:11px;margin-top:1px">This action cannot be undone</div>
+        </div>
+      </div>
+      <div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.3);
+        border-radius:8px;padding:10px 12px;margin-bottom:16px;max-height:160px;overflow-y:auto">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:#7d8aa3;padding-bottom:4px;margin-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.1)">
+          <span>Date</span><span>EMP ID</span><span>Name</span>
+        </div>
+        ${preview}${moreText}
+      </div>
+      <div style="display:flex;gap:10px">
+        <button id="delConfirmCancelBtn" style="flex:1;padding:10px 0;border:1.5px solid #3a5a8a;
+          border-radius:8px;background:transparent;color:#cbd5e1;font-size:12.5px;font-weight:700;cursor:pointer">Cancel</button>
+        <button id="delConfirmOkBtn" style="flex:1;padding:10px 0;border:none;
+          border-radius:8px;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;
+          font-size:12.5px;font-weight:800;cursor:pointer">🗑️ Delete All</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  const close = () => overlay.remove();
+  overlay.querySelector("#delConfirmCancelBtn").onclick = close;
+  overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
+  overlay.querySelector("#delConfirmOkBtn").onclick = () => { close(); onConfirm(); };
+}
 
+// ══════════════════════════════════════════
+//  একক DELETE কনফার্ম মডাল (আগেরটি অপরিবর্তিত)
+// ══════════════════════════════════════════
+function showDeleteConfirmModal({ dateText, idText, nameText, onConfirm }) {
+  const existing = document.getElementById("delConfirmOverlay");
+  if (existing) existing.remove();
+  const overlay = document.createElement("div");
+  overlay.id = "delConfirmOverlay";
+  overlay.style.cssText = `
+    position:fixed;inset:0;background:rgba(0,8,20,0.72);backdrop-filter:blur(3px);
+    display:flex;align-items:center;justify-content:center;z-index:99999;
+    animation:delFadeIn .15s ease-out;`;
   overlay.innerHTML = `
     <style>
       @keyframes delFadeIn { from{opacity:0} to{opacity:1} }
       @keyframes delPopIn { from{opacity:0;transform:scale(.92) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }
       #delConfirmBox button:hover { filter:brightness(1.12); transform:translateY(-1px); }
-      #delConfirmBox button:active { transform:translateY(0); filter:brightness(0.95); }
     </style>
     <div id="delConfirmBox" style="
       width:340px;max-width:90vw;background:linear-gradient(160deg,#0a1a33,#001530);
-      border:1.5px solid #dc2626;border-radius:14px;box-shadow:0 12px 40px rgba(220,38,38,0.25),0 0 0 1px rgba(255,255,255,0.04) inset;
+      border:1.5px solid #dc2626;border-radius:14px;box-shadow:0 12px 40px rgba(220,38,38,0.25);
       padding:22px 22px 18px;animation:delPopIn .18s ease-out;font-family:inherit;">
-
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
         <div style="width:38px;height:38px;border-radius:50%;background:rgba(220,38,38,0.15);
-          display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0">🗑️</div>
+          display:flex;align-items:center;justify-content:center;font-size:19px">🗑️</div>
         <div>
-          <div style="color:#fff;font-size:15px;font-weight:800;letter-spacing:.2px">রেকর্ড ডিলিট করুন?</div>
+          <div style="color:#fff;font-size:15px;font-weight:800">রেকর্ড ডিলিট করুন?</div>
           <div style="color:#94a3b8;font-size:11px;margin-top:1px">এই কাজটি Undo করা যাবে না</div>
         </div>
       </div>
-
       <div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.3);
         border-radius:8px;padding:10px 12px;margin-bottom:16px">
-        <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#cbd5e1;padding:2px 0">
-          <span style="color:#7d8aa3">তারিখ</span><span style="font-weight:700;color:#fff">${dateText || "-"}</span>
+        <div style="display:flex;justify-content:space-between;font-size:11.5px;padding:2px 0">
+          <span style="color:#7d8aa3">Date</span><span style="font-weight:700;color:#fff">${dateText||"-"}</span>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#cbd5e1;padding:2px 0">
-          <span style="color:#7d8aa3">EMP ID</span><span style="font-weight:700;color:#fff">${idText || "-"}</span>
+        <div style="display:flex;justify-content:space-between;font-size:11.5px;padding:2px 0">
+          <span style="color:#7d8aa3">EMP ID</span><span style="font-weight:700;color:#fff">${idText||"-"}</span>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#cbd5e1;padding:2px 0">
-          <span style="color:#7d8aa3">নাম</span><span style="font-weight:700;color:#fff">${nameText || "-"}</span>
+        <div style="display:flex;justify-content:space-between;font-size:11.5px;padding:2px 0">
+          <span style="color:#7d8aa3">Name</span><span style="font-weight:700;color:#fff">${nameText||"-"}</span>
         </div>
       </div>
-
       <div style="display:flex;gap:10px">
         <button id="delConfirmCancelBtn" style="flex:1;padding:10px 0;border:1.5px solid #3a5a8a;
-          border-radius:8px;background:transparent;color:#cbd5e1;font-size:12.5px;font-weight:700;
-          cursor:pointer;transition:.15s">বাতিল</button>
+          border-radius:8px;background:transparent;color:#cbd5e1;font-size:12.5px;font-weight:700;cursor:pointer">Cancel</button>
         <button id="delConfirmOkBtn" style="flex:1;padding:10px 0;border:none;
-          border-radius:8px;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:12.5px;
-          font-weight:800;cursor:pointer;transition:.15s;box-shadow:0 4px 12px rgba(220,38,38,0.35)">🗑️ ডিলিট করুন</button>
+          border-radius:8px;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;
+          font-size:12.5px;font-weight:800;cursor:pointer">🗑️ Delete</button>
       </div>
     </div>`;
-
   document.body.appendChild(overlay);
-
   const close = () => overlay.remove();
   overlay.querySelector("#delConfirmCancelBtn").onclick = close;
-  overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+  overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
   overlay.querySelector("#delConfirmOkBtn").onclick = () => { close(); onConfirm(); };
 }
 
 // ══════════════════════════════════════════
-//  সুন্দর "TOAST" নোটিফিকেশন (alert() এর বদলে)
+//  TOAST নোটিফিকেশন
 // ══════════════════════════════════════════
 function showDeleteToast(message, type = "success") {
   const colors = type === "success"
     ? { bg: "linear-gradient(135deg,#16a34a,#15803d)", icon: "✅" }
     : { bg: "linear-gradient(135deg,#ef4444,#dc2626)", icon: "⚠️" };
-
   const toast = document.createElement("div");
   toast.style.cssText = `
     position:fixed;top:24px;right:24px;z-index:100000;
     background:${colors.bg};color:#fff;padding:13px 18px;border-radius:10px;
     font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:9px;
-    box-shadow:0 8px 24px rgba(0,0,0,0.35);animation:delToastIn .2s ease-out;max-width:320px;
-  `;
+    box-shadow:0 8px 24px rgba(0,0,0,0.35);animation:delToastIn .2s ease-out;max-width:320px;`;
   toast.innerHTML = `
     <style>
       @keyframes delToastIn { from{opacity:0;transform:translateX(30px)} to{opacity:1;transform:translateX(0)} }
@@ -1199,21 +1536,19 @@ function showDeleteToast(message, type = "success") {
 }
 
 // ══════════════════════════════════════════
-//  DUPLICATE রেকর্ড সার্ভার (Firestore) থেকে ডিলিট
+//  একক DUPLICATE রেকর্ড ডিলিট
 // ══════════════════════════════════════════
 async function deleteDuplicateRecord(path, btn) {
   if (!path) {
-    showDeleteToast("এই রেকর্ডের পাথ পাওয়া যায়নি, ডিলিট করা সম্ভব হচ্ছে না।", "error");
+    showDeleteToast("Record path not found.", "error");
     return;
   }
-
-  // রো থেকে Date / ID / Name বের করে মডালে দেখানো হচ্ছে
   const tr = btn ? btn.closest("tr") : null;
   const cells = tr ? tr.querySelectorAll("td") : [];
-  const dateText = cells[1] ? cells[1].childNodes[0].textContent.trim() : "";
-  const idText   = cells[2] ? cells[2].textContent.trim() : "";
-  const nameText = cells[3] ? cells[3].textContent.trim() : "";
-
+  // চেকবক্স কলাম যোগ হয়েছে, তাই index +1 করা হয়েছে
+  const dateText = cells[2] ? cells[2].childNodes[0].textContent.trim() : "";
+  const idText   = cells[3] ? cells[3].textContent.trim() : "";
+  const nameText = cells[4] ? cells[4].textContent.trim() : "";
   showDeleteConfirmModal({
     dateText, idText, nameText,
     onConfirm: async () => {
@@ -1221,40 +1556,68 @@ async function deleteDuplicateRecord(path, btn) {
         if (btn) { btn.disabled = true; btn.textContent = "⏳"; }
         const db = firebase.firestore();
         await db.doc(path).delete();
-        showDeleteToast("রেকর্ডটি সার্ভার থেকে ডিলিট হয়ে গেছে।", "success");
-        // টেবিল রিফ্রেশ করে আপডেটেড তালিকা দেখানো হচ্ছে
+        showDeleteToast("Record deleted from server.", "success");
         await generateAttendance();
+        checkMonthlyDuplicatesOnLoad();
       } catch (e) {
         if (btn) { btn.disabled = false; btn.textContent = "🗑️"; }
-        showDeleteToast("ডিলিট করতে সমস্যা হয়েছে: " + e.message, "error");
+        showDeleteToast("Error deleting record: " + e.message, "error");
       }
     }
   });
 }
 
+// ══════════════════════════════════════════
+//  TABLE SEARCH
+// ══════════════════════════════════════════
+function searchAttFn(val) {
+  const f = val.trim().toUpperCase();
+  const tbl = document.getElementById("attTable");
+  if (!tbl) return;
 
-      function searchAttFn(val) {
-        const f = val.toUpperCase();
-        const tbl = document.getElementById("attTable");
-        if (!tbl) return;
-        Array.from(tbl.querySelectorAll("tbody tr")).forEach(r => {
-          r.style.display = (r.textContent||"").toUpperCase().includes(f) ? "" : "none";
-        });
+  const rows = Array.from(tbl.querySelectorAll("tbody tr"));
+  const totalRows = rows.length;
+
+  if (!f) {
+    rows.forEach((r, i) => {
+      r.style.display = "";
+      const slCell = r.querySelectorAll("td")[1];
+      if (slCell) {
+        slCell.textContent = totalRows - i;
+        const isDup = r.style.background.includes("220,38,38");
+        slCell.style.color = isDup ? "#ff4d4d" : "#000000";
       }
+    });
+    return;
+  }
 
-      function clearAttendance() {
-        document.getElementById("attOutput").innerHTML = "";
-        document.getElementById("attFilterType").value = "all";
-        onFilterTypeChange();
-        try { document.getElementById("attDateFrom")._flatpickr.clear(); } catch(e) {}
-        try { document.getElementById("attDateTo")._flatpickr.clear(); } catch(e) {}
-        document.getElementById("attIdInput").value = "";
-        document.getElementById("attNameInput").value = "";
-        document.getElementById("attEmpSelect").value = "";
-        document.getElementById("attProjectSelect").value = "";
+  let visibleCount = 0;
+  rows.forEach(r => {
+    const match = (r.textContent || "").toUpperCase().includes(f);
+    r.style.display = match ? "" : "none";
+    if (match) {
+      visibleCount++;
+      const slCell = r.querySelectorAll("td")[1];
+      if (slCell) {
+        slCell.textContent = visibleCount;
+        const isDup = r.style.background.includes("220,38,38");
+        slCell.style.color = isDup ? "#ff4d4d" : "#000000";
       }
+    }
+  });
+}
 
-      // ══════════════════════════════════════════
+function clearAttendance() {
+  document.getElementById("attOutput").innerHTML = "";
+  document.getElementById("attFilterType").value = "all";
+  onFilterTypeChange();
+  try { document.getElementById("attDateFrom")._flatpickr.clear(); } catch(e) {}
+  try { document.getElementById("attDateTo")._flatpickr.clear(); } catch(e) {}
+  document.getElementById("attIdInput").value = "";
+  document.getElementById("attNameInput").value = "";
+  document.getElementById("attEmpSelect").value = "";
+  document.getElementById("attProjectSelect").value = "";
+}     // ══════════════════════════════════════════
       //  ATTENDANCE MATRIX
       // ══════════════════════════════════════════
       let _matrixPrintData = null;
@@ -1635,77 +1998,170 @@ async function deleteDuplicateRecord(path, btn) {
           if (cb) tr.style.background = cb.checked ? "#ede9fe" : "";
         });
       }
-  async function openDetailsTab(empId, dFromVal, dToVal) {
-        const win = window.open("", "_blank");
-        win.document.write(`<!doctype html><html><head><title>Loading...</title><style>
-          body{display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#002147;font-family:sans-serif;flex-direction:column;gap:16px}
-          .spinner{width:48px;height:48px;border:4px solid #1e3a5f;border-top-color:#ffd700;border-radius:50%;animation:spin .7s linear infinite}
-          @keyframes spin{to{transform:rotate(360deg)}}
-          .msg{color:#ffd700;font-size:16px;font-weight:700;letter-spacing:1px}
-          .sub{color:#6a88aa;font-size:12px}
-        </style></head><body>
-          <div class="spinner"></div>
-          <div class="msg">⏳ Loading Details</div>
-          <div class="sub">Employee ID: ${empId}</div>
-        </body></html>`);
-        try {
-          const db = firebase.firestore();
-          const rtdb = firebase.database();
-          const dFrom = new Date(dFromVal), dTo = new Date(dToVal);
-          const empDoc = await db.collection("EMPLOYEE_LIST").doc(empId).get();
-          const emp = empDoc.exists ? empDoc.data() : { name: "Unknown" };
-          const snap = await db.collectionGroup("Present_Absent").get();
-          let att = [];
-          snap.forEach((doc) => {
-            const d = doc.data();
-            const docDate = new Date(d.DATE);
-            if (String(d.ID).trim() !== String(empId).trim()) return;
-            if (dFromVal && dToVal && (docDate < dFrom || docDate > dTo)) return;
-            att.push(d);
-          });
-          att.sort((a,b) => new Date(a.DATE) - new Date(b.DATE));
-          const otSnap = await rtdb.ref("OVER_TIME").once("value");
-          const otData = otSnap.val() || {};
-          let otMap = {};
-          for (const my in otData) {
-            const md = otData[my];
-            if (typeof md !== "object") continue;
-            for (const df in md) {
-              const dr = md[df];
-              if (typeof dr !== "object") continue;
-              for (const rk in dr) {
-                const row = dr[rk];
-                if (row && String(row.ID) === String(empId)) otMap[row.OT_Date || df] = row;
-              }
-            }
-          }
-          let rows = att.map((r,i) => {
-            const ot = otMap[r.DATE] || {};
-            return `<tr><td style="text-align:center">${i+1}</td><td>${r.DATE}</td><td style="text-align:center">${r.STATUS}</td><td>${r.SIDE_NAME||"-"}</td><td style="text-align:center">${ot.TOTAL_OT_HOURS||0}</td><td style="text-align:center">${r.HOLIDAY_WORK||0}</td><td style="text-align:center">${r.SUNDAY_WORK||0}</td><td>${r.REMARK||"-"}</td></tr>`;
-          }).join("");
-          const html = `<!doctype html><html><head><title>Details - ${empId}</title><style>
-            body{font-family:'Source Sans 3',sans-serif;padding:30px;background:#f4f7f6;color:#1a1a2e}
-            .header{background:#002147;color:#ffd700;padding:20px;border-radius:10px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
-            table{width:100%;border-collapse:collapse;background:white;border-radius:8px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,0.1)}
-            th{background:#002147;color:white;padding:12px;font-size:11px;text-transform:uppercase;border:1px solid #335185}
-            td{padding:10px;border:1px solid #eee;font-size:12px}
-            tr:hover{background:#fffecb}
-            .btn-print{background:#ffd700;color:#002147;border:2px solid #ffd700;padding:8px 20px;border-radius:6px;font-weight:700;cursor:pointer;transition:all .2s}
-            @media print{.no-print{display:none}}
-          </style></head><body>
-            <div class="header">
-              <div><h2 style="margin:0">Monthly Attendance Details</h2><p style="margin:5px 0 0;font-size:14px">${empId} — ${emp.name}</p></div>
-              <button class="btn-print no-print" onclick="window.print()">🖨️ Print Report</button>
-            </div>
-            <p style="margin-bottom:10px;font-size:12px"><b>Period:</b> ${dFromVal} to ${dToVal}</p>
-            <table><thead><tr><th>SL</th><th>Date</th><th>Status</th><th>Project Name</th><th>OT Hours</th><th>Holiday Work</th><th>Sunday Work</th><th>Remark</th></tr></thead><tbody>${rows}</tbody></table>
-          </body></html>`;
-          win.document.open(); win.document.write(html); win.document.close();
-        } catch(e) {
-          win.document.write(`<p style="color:red">Error: ${e.message}</p>`);
+ async function openDetailsTab(empId, dFromVal, dToVal) {
+  const win = window.open("", "_blank");
+  win.document.write(`<!doctype html><html><head><title>Loading...</title><style>
+    body{display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#002147;font-family:sans-serif;flex-direction:column;gap:16px}
+    .spinner{width:48px;height:48px;border:4px solid #1e3a5f;border-top-color:#ffd700;border-radius:50%;animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .msg{color:#ffd700;font-size:16px;font-weight:700;letter-spacing:1px}
+    .sub{color:#6a88aa;font-size:12px}
+  </style></head><body>
+    <div class="spinner"></div>
+    <div class="msg">⏳ Loading Details</div>
+    <div class="sub">Employee ID: ${empId}</div>
+  </body></html>`);
+
+  try {
+    const db = firebase.firestore();
+    const rtdb = firebase.database();
+    const dFrom = new Date(dFromVal), dTo = new Date(dToVal);
+
+    // ── 1. Employee info ──────────────────────────────────────
+    const empDoc = await db.collection("EMPLOYEE_LIST").doc(empId).get();
+    const emp = empDoc.exists ? empDoc.data() : { name: "Unknown" };
+
+    // ── 2. Attendance (Present_Absent collectionGroup) ────────
+    const snap = await db.collectionGroup("Present_Absent").get();
+    let att = [];
+    snap.forEach((doc) => {
+      const d = doc.data();
+      const docDate = new Date(d.DATE);
+      if (String(d.ID).trim() !== String(empId).trim()) return;
+      if (dFromVal && dToVal && (docDate < dFrom || docDate > dTo)) return;
+      att.push(d);
+    });
+    att.sort((a, b) => new Date(a.DATE) - new Date(b.DATE));
+
+    // ── 3. OT (RTDB: OVER_TIME) ───────────────────────────────
+    const otSnap = await rtdb.ref("OVER_TIME").once("value");
+    const otData = otSnap.val() || {};
+    let otMap = {};
+    for (const my in otData) {
+      const md = otData[my];
+      if (typeof md !== "object") continue;
+      for (const df in md) {
+        const dr = md[df];
+        if (typeof dr !== "object") continue;
+        for (const rk in dr) {
+          const row = dr[rk];
+          if (row && String(row.ID) === String(empId))
+            otMap[row.OT_Date || df] = row;
         }
       }
- 
+    }
+
+    // ── 4. BONUS_ENTRY (RTDB) — date-wise ────────────────────
+    // Path: BONUS_ENTRY/{MONTH_YEAR}/{DATE_KEY}/{empId}
+    // Month key বের করি dFromVal থেকে (e.g. "JUNE_2026")
+    const monthKey = getMonthKey(dFromVal); // helper নিচে
+    const bonusSnap = await rtdb.ref(`BONUS_ENTRY/${monthKey}`).once("value");
+    const bonusMonthData = bonusSnap.val() || {};
+    // bonusMap[date] = { ATTENDANCE_BONUS, PERFORMANCE_BONUS }
+    let bonusMap = {};
+    for (const dateKey in bonusMonthData) {
+      const dateData = bonusMonthData[dateKey];
+      if (typeof dateData !== "object") continue;
+      if (dateData[empId]) {
+        // dateKey format: DATE_2026-06-01 → date: 2026-06-01
+        const date = dateKey.replace("DATE_", "");
+        bonusMap[date] = dateData[empId];
+      }
+    }
+
+    // ── 5. Others (Firestore: DailyAttendance) — date-wise ───
+    // Path: DailyAttendance/{MONTH_YEAR}/DATES/{DATE_KEY}/Others
+    // সব date-এর Others docs একসাথে collectionGroup দিয়ে নেওয়া যাবে না
+    // তাই attendance-এর প্রতিটি unique date-এর জন্য query করব
+    const uniqueDates = [...new Set(att.map(r => r.DATE))];
+    let othersMap = {}; // othersMap[date] = total AMOUNT
+    const othersPromises = uniqueDates.map(async (date) => {
+      const dateKey = `DATE_${date}`;
+      const othersSnap = await db
+        .collection("DailyAttendance")
+        .doc(monthKey)
+        .collection("DATES")
+        .doc(dateKey)
+        .collection("Others")
+        .where("ID", "==", empId)
+        .get();
+      let total = 0;
+      othersSnap.forEach(doc => {
+        total += Number(doc.data().AMOUNT || 0);
+      });
+      othersMap[date] = total;
+    });
+    await Promise.all(othersPromises);
+
+    // ── 6. Table rows ─────────────────────────────────────────
+    let rows = att.map((r, i) => {
+      const ot       = otMap[r.DATE]    || {};
+      const bonus    = bonusMap[r.DATE] || {};
+      const others   = othersMap[r.DATE] || 0;
+      const aBonus   = bonus.ATTENDANCE_BONUS   || 0;
+      const pBonus   = bonus.PERFORMANCE_BONUS  || 0;
+      return `<tr>
+        <td style="text-align:center">${i + 1}</td>
+        <td>${r.DATE}</td>
+        <td style="text-align:center">${r.STATUS}</td>
+        <td>${r.SIDE_NAME || "-"}</td>
+        <td style="text-align:center">${ot.TOTAL_OT_HOURS || 0}</td>
+        <td style="text-align:center">${r.HOLIDAY_WORK || 0}</td>
+        <td style="text-align:center">${r.SUNDAY_WORK || 0}</td>
+        <td style="text-align:center">${others > 0 ? others : "-"}</td>
+        <td style="text-align:center">${aBonus > 0 ? aBonus : "-"}</td>
+        <td style="text-align:center">${pBonus > 0 ? pBonus : "-"}</td>
+        <td>${r.REMARK || "-"}</td>
+      </tr>`;
+    }).join("");
+
+    // ── 7. Final HTML ─────────────────────────────────────────
+    const html = `<!doctype html><html><head><title>Details - ${empId}</title><style>
+      body{font-family:'Source Sans 3',sans-serif;padding:30px;background:#f4f7f6;color:#1a1a2e}
+      .header{background:#002147;color:#ffd700;padding:20px;border-radius:10px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+      table{width:100%;border-collapse:collapse;background:white;border-radius:8px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,0.1)}
+      th{background:#002147;color:white;padding:12px;font-size:11px;text-transform:uppercase;border:1px solid #335185}
+      td{padding:10px;border:1px solid #eee;font-size:12px}
+      tr:hover{background:#fffecb}
+      .btn-print{background:#ffd700;color:#002147;border:2px solid #ffd700;padding:8px 20px;border-radius:6px;font-weight:700;cursor:pointer}
+      @media print{.no-print{display:none}}
+    </style></head><body>
+      <div class="header">
+        <div>
+          <h2 style="margin:0">Monthly Attendance Details</h2>
+          <p style="margin:5px 0 0;font-size:14px">${empId} — ${emp.name}</p>
+        </div>
+        <button class="btn-print no-print" onclick="window.print()">🖨️ Print Report</button>
+      </div>
+      <p style="margin-bottom:10px;font-size:12px"><b>Period:</b> ${dFromVal} to ${dToVal}</p>
+      <table>
+        <thead><tr>
+          <th>SL</th><th>Date</th><th>Status</th><th>Project Name</th>
+          <th>OT Hours</th><th>Holiday Work</th><th>Sunday Work</th>
+          <th>Others</th><th>A Bonus</th><th>P Bonus</th><th>Remark</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </body></html>`;
+
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+
+  } catch (e) {
+    win.document.write(`<p style="color:red">Error: ${e.message}</p>`);
+  }
+}
+
+// ── Helper: "2026-06-01" → "JUNE_2026" ───────────────────────
+function getMonthKey(dateStr) {
+  const months = [
+    "JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE",
+    "JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"
+  ];
+  const d = new Date(dateStr);
+  return `${months[d.getMonth()]}_${d.getFullYear()}`;
+}
       // ══════════════════════════════════════════
       //  GENERATE PAYSLIPS
       // ══════════════════════════════════════════
@@ -2645,7 +3101,7 @@ async function deleteDuplicateRecord(path, btn) {
           let periodText = (dFromVal&&dToVal) ? `${dFromVal} to ${dToVal}` : "All Dates";
           let filterDesc = filterType==="employee"&&selEmp ? `Employee: ${selEmp}` :
                            filterType==="project"&&selSite ? `Site: ${selSite}` :
-                           filterType==="id"&&selId ? `ID: ${selId}` : "All Records";
+                           filterType==="id"&&selId ? `ID: ${selId}` : "";
 
           const tableRows = sortedIds.map((id, i) => {
             const g = empGroups[id];
@@ -2741,7 +3197,7 @@ async function deleteDuplicateRecord(path, btn) {
           const rate = parseFloat(r.OT_Rate || r.ot_rate || r.OT_RATE || 0);
           const amt  = hrs * rate;
           return `<tr style="${i%2===1?'background:#f8faff;':''}">
-            <td style="text-align:center;color:#9ca3af;font-size:10px;padding:7px 8px">${i+1}</td>
+            <td style="text-align:center;color:#000000;font-size:10px;padding:7px 8px">${i+1}</td>
             <td style="padding:7px 8px;font-weight:600">${r.OT_Date||"-"}</td>
             <td style="padding:7px 8px;color:#6b7280">${r.Site||"-"}</td>
             <td style="text-align:right;font-family:monospace;color:#1d4ed8;font-weight:700;padding:7px 8px">${hrs.toFixed(2)}</td>
@@ -3002,10 +3458,10 @@ async function deleteDuplicateRecord(path, btn) {
       document.getElementById("advDetailOverlay").addEventListener("click", function(e) {
         if (e.target===this) closeAdvDetail();
       });
-
-      // Auto-preload on page load
-      switchTab("monthly");
-      window.addEventListener("load", preloadStaticData);
+// Auto-preload on page load
+switchTab("monthly");
+window.addEventListener("load", preloadStaticData);
+window.addEventListener("load", checkMonthlyDuplicatesOnLoad);
     </script>
   </body>
 </html>
